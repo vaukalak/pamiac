@@ -32,4 +32,4 @@ Owners edit. Shared visitors view.
 
 ## Agents
 
-Create a token under Agent token. The contract is in `agent/SKILL.md`. The token can list, read, create, and update that user's notes and diagrams, and search them by embedding.
+Create a token under Agent token. The contract is in `agent/SKILL.md`. The skill reads `PAMIAC_TOKEN` from the agent environment. The token can list, read, create, and update that user's notes and diagrams, and search them by embedding.

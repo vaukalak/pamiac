@@ -1,19 +1,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { TokenRow } from "@/components/token-row";
 
-type TokenRow = {
+type TokenRecord = {
   id: string;
   name: string;
   tokenPrefix: string;
+  secret: string | null;
   createdAt: string;
   lastUsedAt: string | null;
   revokedAt: string | null;
 };
 
-const SKILL = `Use a Pamiac token to read and edit the user's notes and UML diagrams.
+const SKILL = `Set PAMIAC_TOKEN in the cloud agent's environment to the token you just created. Read PAMIAC_TOKEN from the agent environment and send Authorization: Bearer <PAMIAC_TOKEN> on every request. Do not ask the user to paste the token. If PAMIAC_TOKEN is missing, say so and stop.
 
-Authorization: Bearer pam_...
+Authorization: Bearer <PAMIAC_TOKEN>
+App: the origin the user is using. Ask for the app URL if you do not already know it.
 Base: /api/agent/v1
 
 POST /search
@@ -29,16 +32,36 @@ PATCH /documents/:id
 Search uses this user's document embeddings. Diagram relations can refer to an element by id or by name.`;
 
 export function TokenManager() {
-  const [tokens, setTokens] = useState<TokenRow[]>([]);
+  const [tokens, setTokens] = useState<TokenRecord[]>([]);
   const [name, setName] = useState("Cloud agent");
-  const [secret, setSecret] = useState<string | null>(null);
   const [error, setError] = useState("");
+  const [skillMessage, setSkillMessage] = useState("");
 
   async function reload() {
     const response = await fetch("/api/tokens");
     if (!response.ok) return;
-    const body = (await response.json()) as { tokens: TokenRow[] };
+    const body = (await response.json()) as { tokens: TokenRecord[] };
     setTokens(body.tokens);
+  }
+
+  async function copySkill() {
+    setSkillMessage("");
+    try {
+      await navigator.clipboard.writeText(SKILL);
+      setSkillMessage("Skill copied.");
+    } catch {
+      setSkillMessage("Could not copy the skill.");
+    }
+  }
+
+  function downloadSkill() {
+    const file = new Blob([SKILL], { type: "text/markdown;charset=utf-8" });
+    const url = URL.createObjectURL(file);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = "SKILL.md";
+    anchor.click();
+    URL.revokeObjectURL(url);
   }
 
   useEffect(() => {
@@ -58,12 +81,6 @@ export function TokenManager() {
       setError(body.error ?? "Could not create a token");
       return;
     }
-    setSecret(body.token);
-    await reload();
-  }
-
-  async function revoke(id: string) {
-    await fetch(`/api/tokens?id=${id}`, { method: "DELETE" });
     await reload();
   }
 
@@ -72,8 +89,9 @@ export function TokenManager() {
       <p className="eyebrow">Agents</p>
       <h1>Personal access token</h1>
       <p className="lede">
-        Create a token and give it to a cloud agent. With it, the agent can search embeddings of
-        your notes and diagrams, then read, update, or create them.
+        Create a token and set PAMIAC_TOKEN in the cloud agent's environment to the token you just
+        created. With it, the agent can search embeddings of your notes and diagrams, then read,
+        update, or create them.
       </p>
       <form className="form-stack" onSubmit={create} style={{ maxWidth: 460 }}>
         <div>
@@ -85,30 +103,30 @@ export function TokenManager() {
         </button>
         {error ? <p className="error">{error}</p> : null}
       </form>
-      {secret ? (
-        <div style={{ marginTop: 16 }}>
-          <p>Copy this token now. Pamiac will not show it again.</p>
-          <div className="secret">{secret}</div>
-        </div>
-      ) : null}
       <div className="token-list">
         {tokens.map((token) => (
-          <div className="token-row" key={token.id}>
-            <div>
-              <strong>{token.name}</strong>
-              <div className="hint">
-                {token.tokenPrefix}… · {token.revokedAt ? "revoked" : token.lastUsedAt ? `used ${new Date(token.lastUsedAt).toLocaleString()}` : "never used"}
-              </div>
-            </div>
-            {token.revokedAt ? null : (
-              <button className="btn danger small" onClick={() => void revoke(token.id)} type="button">
-                Revoke
-              </button>
-            )}
-          </div>
+          <TokenRow
+            key={token.id}
+            id={token.id}
+            name={token.name}
+            tokenPrefix={token.tokenPrefix}
+            secret={token.secret}
+            lastUsedAt={token.lastUsedAt}
+            revokedAt={token.revokedAt}
+            onRevoked={() => void reload()}
+          />
         ))}
       </div>
       <h2>What to give the agent</h2>
+      <div className="skill-actions">
+        <button className="btn secondary" type="button" onClick={() => void copySkill()}>
+          copy skill
+        </button>
+        <button className="btn secondary" type="button" onClick={downloadSkill}>
+          download skill
+        </button>
+      </div>
+      {skillMessage ? <p className="hint">{skillMessage}</p> : null}
       <pre className="skill">{SKILL}</pre>
     </div>
   );
