@@ -17,8 +17,8 @@ export type UmlFlowNode = Node<UmlNodeData, "uml">;
 function ActorFigure() {
   return (
     <svg width="54" height="72" viewBox="0 0 54 72" aria-hidden="true">
-      <circle cx="27" cy="10" r="8" fill="none" stroke="#1a1814" strokeWidth="1.6" />
-      <path d="M27 18 v22 M12 30 h30 M27 40 l-12 24 M27 40 l12 24" fill="none" stroke="#1a1814" strokeWidth="1.6" />
+      <circle cx="27" cy="10" r="8" fill="none" stroke="var(--uml-ink)" strokeWidth="1.6" />
+      <path d="M27 18 v22 M12 30 h30 M27 40 l-12 24 M27 40 l12 24" fill="none" stroke="var(--uml-ink)" strokeWidth="1.6" />
     </svg>
   );
 }

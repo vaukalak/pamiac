@@ -2,21 +2,35 @@
 
 import { BlockNoteView } from "@blocknote/mantine";
 import { useCreateBlockNote } from "@blocknote/react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useSyncExternalStore } from "react";
 import "@blocknote/mantine/style.css";
 import "@blocknote/core/fonts/inter.css";
 
-export function NoteEditor({
-  initial,
-  editable,
-  onChange,
-}: {
+interface Properties {
   initial: string;
   editable: boolean;
   onChange: (markdown: string) => void;
-}) {
+}
+
+function subscribeToColorScheme(onStoreChange: () => void) {
+  const query = window.matchMedia("(prefers-color-scheme: dark)");
+  query.addEventListener("change", onStoreChange);
+  return () => query.removeEventListener("change", onStoreChange);
+}
+
+function colorSchemeSnapshot() {
+  return window.matchMedia("(prefers-color-scheme: dark)").matches;
+}
+
+function colorSchemeServerSnapshot() {
+  return false;
+}
+
+export function NoteEditor(props: Properties) {
+  const { initial, editable, onChange } = props;
   const editor = useCreateBlockNote();
   const ready = useRef(false);
+  const dark = useSyncExternalStore(subscribeToColorScheme, colorSchemeSnapshot, colorSchemeServerSnapshot);
 
   useEffect(() => {
     if (ready.current) return;
@@ -30,6 +44,7 @@ export function NoteEditor({
       <BlockNoteView
         editor={editor}
         editable={editable}
+        theme={dark ? "dark" : "light"}
         onChange={() => {
           if (!ready.current || !editable) return;
           onChange(editor.blocksToMarkdownLossy(editor.document));
