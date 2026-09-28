@@ -121,6 +121,7 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 560; letter-spacing: -0.03e
   grid-template-columns: repeat(3, 1fr);
   gap: 14px;
 }
+.hero .feature-grid { grid-template-columns: 1fr; }
 .feature, .doc-card, .auth-card, .panel, .setup, .token-row {
   background: var(--card);
   border: 1px solid var(--line);
