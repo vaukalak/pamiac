@@ -493,6 +493,29 @@ select:focus {
   width: min(1120px, calc(100% - 32px));
   align-items: center;
 }
+.topbar-tools {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+}
+.library-link {
+  color: var(--ink-soft);
+  font-size: 14px;
+  text-decoration: none;
+}
+.library-link:hover {
+  color: var(--ink);
+}
+.library-link:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+.diagram-heading {
+  flex: 1;
+  min-width: 0;
+}
 .title-input {
   font-family: var(--serif);
   font-size: 32px;
@@ -503,6 +526,56 @@ select:focus {
 }
 .title-input:focus {
   box-shadow: none;
+}
+.note-sheet {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  min-height: 70vh;
+  padding: 36px 0 48px;
+}
+.note-title {
+  margin: 0;
+  padding: 0 54px 8px;
+  font-size: 48px;
+  font-weight: 560;
+  letter-spacing: -0.03em;
+  line-height: 1.08;
+}
+.note-title-input {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0 0 6px;
+  border: none;
+  border-bottom: 1px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  resize: none;
+  overflow: hidden;
+  min-height: 0;
+  font: inherit;
+  letter-spacing: inherit;
+  line-height: inherit;
+  color: var(--ink);
+  field-sizing: content;
+}
+.note-title-input:hover:not(:disabled):not(:focus) {
+  border-bottom-color: var(--line);
+}
+.note-title-input:focus,
+.note-title-input:focus:hover {
+  outline: none;
+  border-color: transparent;
+  border-bottom-color: var(--teal);
+  box-shadow: none;
+}
+.note-title-input:disabled {
+  color: var(--ink);
+  -webkit-text-fill-color: var(--ink);
+  opacity: 1;
+  cursor: default;
 }
 .save-state {
   color: var(--ink-soft);
@@ -515,11 +588,11 @@ select:focus {
   margin: 0 auto;
 }
 .note-editor {
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  min-height: 70vh;
-  padding: 8px 8px 64px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  min-height: 0;
+  padding: 0;
 }
 .note-editor .bn-container {
   --bn-colors-editor-background: transparent;
@@ -984,7 +1057,12 @@ code {
   .hero {
     margin-top: 28px;
   }
-  .workspace h1 {
+  .workspace h1,
+  .note-title {
     font-size: 38px;
+  }
+  .topbar {
+    flex-wrap: wrap;
+    row-gap: 10px;
   }
 }
