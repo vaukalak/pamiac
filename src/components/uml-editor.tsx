@@ -41,7 +41,7 @@ const KIND_LABEL: Record<UmlKind, string> = {
 function edgeAppearance(type: UmlRelationType) {
   const dashed = type === "dependency" || type === "realization";
   const style = {
-    stroke: "#1a1814",
+    stroke: "var(--uml-ink)",
     strokeWidth: 1.6,
     strokeDasharray: dashed ? "6 4" : undefined,
   };
@@ -281,7 +281,7 @@ function UmlCanvas({
               refY="4"
               viewBox="0 0 8 8"
             >
-              <path d="M0 0 L8 4 L0 8" fill="none" stroke="#1a1814" />
+              <path d="M0 0 L8 4 L0 8" fill="none" stroke="var(--uml-ink)" />
             </marker>
             <marker
               id="uml-triangle"
@@ -292,7 +292,7 @@ function UmlCanvas({
               refY="6"
               viewBox="0 0 12 12"
             >
-              <path d="M0 0 L12 6 L0 12 Z" fill="#fffdf8" stroke="#1a1814" />
+              <path d="M0 0 L12 6 L0 12 Z" fill="var(--uml-fill)" stroke="var(--uml-ink)" />
             </marker>
             <marker
               id="uml-diamond"
@@ -303,7 +303,7 @@ function UmlCanvas({
               refY="6"
               viewBox="0 0 16 12"
             >
-              <path d="M0 6 L8 0 L16 6 L8 12 Z" fill="#1a1814" />
+              <path d="M0 6 L8 0 L16 6 L8 12 Z" fill="var(--uml-ink)" />
             </marker>
             <marker
               id="uml-diamond-open"
@@ -314,7 +314,7 @@ function UmlCanvas({
               refY="6"
               viewBox="0 0 16 12"
             >
-              <path d="M0 6 L8 0 L16 6 L8 12 Z" fill="#fffdf8" stroke="#1a1814" />
+              <path d="M0 6 L8 0 L16 6 L8 12 Z" fill="var(--uml-fill)" stroke="var(--uml-ink)" />
             </marker>
           </defs>
         </svg>
@@ -330,8 +330,9 @@ function UmlCanvas({
           nodesDraggable={editable}
           nodesConnectable={editable}
           elementsSelectable
+          colorMode="system"
         >
-          <Background color="#d9d0c0" gap={22} />
+          <Background color="var(--flow-grid)" gap={22} />
           <Controls />
           <MiniMap pannable zoomable />
         </ReactFlow>
