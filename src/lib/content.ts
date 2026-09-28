@@ -36,8 +36,7 @@ export function serializeContent(type: DocumentType, content: unknown, previous?
     if (typeof content !== "string") throw new Error("Note content must be markdown text");
     return content;
   }
-  const parsed =
-    typeof content === "string" ? JSON.parse(content) : content;
+  const parsed = typeof content === "string" ? JSON.parse(content) : content;
   const prior = previous ? readDiagram(previous) : undefined;
   return JSON.stringify(parseDiagram(parsed, prior));
 }

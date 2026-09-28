@@ -4,7 +4,8 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
-import { SharePanel } from "@/components/share-panel";
+import { DocumentOwnerActions } from "@/components/document/document-owner-actions";
+import { ShareModal } from "@/components/share/share-modal";
 import type { Visibility } from "@/lib/access";
 import type { DiagramContent } from "@/lib/diagram";
 
@@ -15,16 +16,7 @@ const UmlEditor = dynamic(() => import("@/components/uml-editor").then((mod) => 
   ssr: false,
 });
 
-export function DocumentScreen({
-  id,
-  type,
-  title,
-  content,
-  visibility,
-  emails,
-  hasPassword,
-  canEdit,
-}: {
+interface Properties {
   id: string;
   type: "note" | "diagram";
   title: string;
@@ -33,7 +25,10 @@ export function DocumentScreen({
   emails: string[];
   hasPassword: boolean;
   canEdit: boolean;
-}) {
+}
+
+export function DocumentScreen(props: Properties) {
+  const { id, type, title, content, visibility, emails, hasPassword, canEdit } = props;
   const router = useRouter();
   const [name, setName] = useState(title);
   const [status, setStatus] = useState<"saved" | "saving" | "error">("saved");
@@ -57,12 +52,6 @@ export function DocumentScreen({
     }, 700);
   }
 
-  async function remove() {
-    if (!window.confirm("Delete this document?")) return;
-    const response = await fetch(`/api/documents/${id}`, { method: "DELETE" });
-    if (response.ok) router.push("/workspace");
-  }
-
   const wide = type === "diagram";
 
   return (
@@ -84,24 +73,27 @@ export function DocumentScreen({
           />
         </div>
         <span className="save-state">
-          {canEdit ? (status === "saving" ? "Saving…" : status === "error" ? "Not saved" : "Saved") : "View only"}
+          {canEdit
+            ? status === "saving"
+              ? "Saving…"
+              : status === "error"
+                ? "Not saved"
+                : "Saved"
+            : "View only"}
         </span>
         {canEdit ? (
-          <>
-            <button className="btn secondary small" onClick={() => setSharing(true)} type="button">
-              Share
-            </button>
-            <button className="btn danger small" onClick={() => void remove()} type="button">
-              Delete
-            </button>
-          </>
+          <DocumentOwnerActions id={id} onShare={() => setSharing(true)} />
         ) : (
           <span className="badge">{shareState.visibility}</span>
         )}
       </div>
       <div className={wide ? "editor-shell wide" : "editor-shell"}>
         {type === "note" ? (
-          <NoteEditor editable={canEdit} initial={content} onChange={(markdown) => schedule({ content: markdown })} />
+          <NoteEditor
+            editable={canEdit}
+            initial={content}
+            onChange={(markdown) => schedule({ content: markdown })}
+          />
         ) : (
           <UmlEditor
             editable={canEdit}
@@ -111,7 +103,7 @@ export function DocumentScreen({
         )}
       </div>
       {sharing ? (
-        <SharePanel
+        <ShareModal
           emails={shareState.emails}
           hasPassword={shareState.hasPassword}
           id={id}
@@ -119,6 +111,7 @@ export function DocumentScreen({
             setSharing(false);
             router.refresh();
           }}
+          onSaved={(share) => setShareState(share)}
           visibility={shareState.visibility}
         />
       ) : null}

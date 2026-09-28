@@ -45,7 +45,8 @@ function edgeAppearance(type: UmlRelationType) {
     strokeWidth: 1.6,
     strokeDasharray: dashed ? "6 4" : undefined,
   };
-  if (type === "inheritance" || type === "realization") return { style, markerEnd: "url(#uml-triangle)" };
+  if (type === "inheritance" || type === "realization")
+    return { style, markerEnd: "url(#uml-triangle)" };
   if (type === "composition") {
     return { style, markerStart: "url(#uml-diamond)", markerEnd: "url(#uml-arrow)" };
   }
@@ -141,7 +142,9 @@ function UmlCanvas({
   editable: boolean;
   onChange: (diagram: DiagramContent) => void;
 }) {
-  const starting = toFlow(parseDiagram(initial ? JSON.parse(initial) : { nodes: [], relations: [] }));
+  const starting = toFlow(
+    parseDiagram(initial ? JSON.parse(initial) : { nodes: [], relations: [] }),
+  );
   const [nodes, setNodes, onNodesChange] = useNodesState<UmlFlowNode>(starting.nodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(starting.edges);
   const [relationType, setRelationType] = useState<UmlRelationType>("association");
@@ -161,7 +164,13 @@ function UmlCanvas({
   }, [nodes, edges, onChange]);
 
   const onConnect: OnConnect = (connection: Connection) => {
-    if (!editable || !connection.source || !connection.target || connection.source === connection.target) return;
+    if (
+      !editable ||
+      !connection.source ||
+      !connection.target ||
+      connection.source === connection.target
+    )
+      return;
     setEdges((current) =>
       addEdge(
         {
@@ -192,7 +201,9 @@ function UmlCanvas({
   function updateSelected(patch: Partial<UmlNodeData>) {
     if (!selectedNode) return;
     setNodes((current) =>
-      current.map((node) => (node.id === selectedNode.id ? { ...node, data: { ...node.data, ...patch } } : node)),
+      current.map((node) =>
+        node.id === selectedNode.id ? { ...node, data: { ...node.data, ...patch } } : node,
+      ),
     );
   }
 
@@ -204,7 +215,9 @@ function UmlCanvas({
           <button
             draggable={editable}
             key={kind}
-            onClick={() => editable && addNode(kind, { x: 80 + nodes.length * 24, y: 80 + nodes.length * 16 })}
+            onClick={() =>
+              editable && addNode(kind, { x: 80 + nodes.length * 24, y: 80 + nodes.length * 16 })
+            }
             onDragStart={(event) => {
               event.dataTransfer.setData("application/pamiac-uml", kind);
               event.dataTransfer.effectAllowed = "move";
@@ -254,19 +267,53 @@ function UmlCanvas({
           addNode(kind, screenToFlowPosition({ x: event.clientX, y: event.clientY }));
         }}
       >
-        {nodes.length === 0 ? <div className="canvas-empty">Drag a class, actor, or note onto the canvas.</div> : null}
+        {nodes.length === 0 ? (
+          <div className="canvas-empty">Drag a class, actor, or note onto the canvas.</div>
+        ) : null}
         <svg width="0" height="0" style={{ position: "absolute" }}>
           <defs>
-            <marker id="uml-arrow" markerHeight="8" markerWidth="8" orient="auto-start-reverse" refX="8" refY="4" viewBox="0 0 8 8">
+            <marker
+              id="uml-arrow"
+              markerHeight="8"
+              markerWidth="8"
+              orient="auto-start-reverse"
+              refX="8"
+              refY="4"
+              viewBox="0 0 8 8"
+            >
               <path d="M0 0 L8 4 L0 8" fill="none" stroke="#1a1814" />
             </marker>
-            <marker id="uml-triangle" markerHeight="12" markerWidth="12" orient="auto-start-reverse" refX="12" refY="6" viewBox="0 0 12 12">
+            <marker
+              id="uml-triangle"
+              markerHeight="12"
+              markerWidth="12"
+              orient="auto-start-reverse"
+              refX="12"
+              refY="6"
+              viewBox="0 0 12 12"
+            >
               <path d="M0 0 L12 6 L0 12 Z" fill="#fffdf8" stroke="#1a1814" />
             </marker>
-            <marker id="uml-diamond" markerHeight="12" markerWidth="16" orient="auto-start-reverse" refX="0" refY="6" viewBox="0 0 16 12">
+            <marker
+              id="uml-diamond"
+              markerHeight="12"
+              markerWidth="16"
+              orient="auto-start-reverse"
+              refX="0"
+              refY="6"
+              viewBox="0 0 16 12"
+            >
               <path d="M0 6 L8 0 L16 6 L8 12 Z" fill="#1a1814" />
             </marker>
-            <marker id="uml-diamond-open" markerHeight="12" markerWidth="16" orient="auto-start-reverse" refX="0" refY="6" viewBox="0 0 16 12">
+            <marker
+              id="uml-diamond-open"
+              markerHeight="12"
+              markerWidth="16"
+              orient="auto-start-reverse"
+              refX="0"
+              refY="6"
+              viewBox="0 0 16 12"
+            >
               <path d="M0 6 L8 0 L16 6 L8 12 Z" fill="#fffdf8" stroke="#1a1814" />
             </marker>
           </defs>
@@ -308,7 +355,9 @@ function UmlCanvas({
                 id="uml-stereo"
                 disabled={!editable}
                 value={selectedNode.data.stereotype ?? ""}
-                onChange={(event) => updateSelected({ stereotype: event.target.value || undefined })}
+                onChange={(event) =>
+                  updateSelected({ stereotype: event.target.value || undefined })
+                }
               />
             </div>
             {selectedNode.data.kind === "class" ||
@@ -321,7 +370,9 @@ function UmlCanvas({
                     id="uml-attrs"
                     disabled={!editable}
                     value={selectedNode.data.attributes.join("\n")}
-                    onChange={(event) => updateSelected({ attributes: event.target.value.split("\n") })}
+                    onChange={(event) =>
+                      updateSelected({ attributes: event.target.value.split("\n") })
+                    }
                   />
                 </div>
                 <div>
@@ -330,7 +381,9 @@ function UmlCanvas({
                     id="uml-methods"
                     disabled={!editable}
                     value={selectedNode.data.methods.join("\n")}
-                    onChange={(event) => updateSelected({ methods: event.target.value.split("\n") })}
+                    onChange={(event) =>
+                      updateSelected({ methods: event.target.value.split("\n") })
+                    }
                   />
                 </div>
               </>

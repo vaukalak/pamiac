@@ -18,13 +18,19 @@ function ActorFigure() {
   return (
     <svg width="54" height="72" viewBox="0 0 54 72" aria-hidden="true">
       <circle cx="27" cy="10" r="8" fill="none" stroke="#1a1814" strokeWidth="1.6" />
-      <path d="M27 18 v22 M12 30 h30 M27 40 l-12 24 M27 40 l12 24" fill="none" stroke="#1a1814" strokeWidth="1.6" />
+      <path
+        d="M27 18 v22 M12 30 h30 M27 40 l-12 24 M27 40 l12 24"
+        fill="none"
+        stroke="#1a1814"
+        strokeWidth="1.6"
+      />
     </svg>
   );
 }
 
 export function UmlNodeView({ data, selected }: NodeProps<UmlFlowNode>) {
-  const showCompartments = data.kind === "class" || data.kind === "interface" || data.kind === "component";
+  const showCompartments =
+    data.kind === "class" || data.kind === "interface" || data.kind === "component";
   return (
     <div className={`uml-card kind-${data.kind}${selected ? " is-selected" : ""}`}>
       <Handle type="target" position={Position.Top} />
@@ -39,10 +45,18 @@ export function UmlNodeView({ data, selected }: NodeProps<UmlFlowNode>) {
       {showCompartments ? (
         <>
           <ul>
-            {data.attributes.length ? data.attributes.map((line) => <li key={line}>{line}</li>) : <li>&nbsp;</li>}
+            {data.attributes.length ? (
+              data.attributes.map((line) => <li key={line}>{line}</li>)
+            ) : (
+              <li>&nbsp;</li>
+            )}
           </ul>
           <ul>
-            {data.methods.length ? data.methods.map((line) => <li key={line}>{line}</li>) : <li>&nbsp;</li>}
+            {data.methods.length ? (
+              data.methods.map((line) => <li key={line}>{line}</li>)
+            ) : (
+              <li>&nbsp;</li>
+            )}
           </ul>
         </>
       ) : null}

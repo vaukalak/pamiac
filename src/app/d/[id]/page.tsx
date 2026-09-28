@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
-import { AppHeader } from "@/components/app-header";
+import { AppHeader } from "@/components/header/app-header";
 import { DocumentScreen } from "@/components/document-screen";
 import { LockedDocument } from "@/components/locked-document";
 import { SetupScreen } from "@/components/setup-screen";

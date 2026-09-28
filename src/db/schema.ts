@@ -131,6 +131,7 @@ export const agentTokens = pgTable(
     tokenPrefix: text("token_prefix").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     lastUsedAt: timestamp("last_used_at", { withTimezone: true }),
+    expiresAt: timestamp("expires_at", { withTimezone: true }),
     revokedAt: timestamp("revoked_at", { withTimezone: true }),
   },
   (table) => [index("agent_token_user_idx").on(table.userId)],
