@@ -88,15 +88,17 @@ export function normalizeDiagram(input: unknown, previous?: DiagramContent): Dia
   );
   const nodes = parsed.nodes.map((node, index) => ({
     ...node,
-    attributes: node.attributes ?? [],
-    methods: node.methods ?? [],
+    attributes: (node.attributes ?? []).map((line) => line.trim()).filter(Boolean),
+    methods: (node.methods ?? []).map((line) => line.trim()).filter(Boolean),
     position: node.position ?? previousPositions.get(node.id) ?? gridPosition(index),
   }));
   const ids = new Set(nodes.map((node) => node.id));
-  const relations = parsed.relations.filter(
-    (relation) => ids.has(relation.from) && ids.has(relation.to),
-  );
-  return { nodes, relations };
+  for (const relation of parsed.relations) {
+    if (!ids.has(relation.from) || !ids.has(relation.to)) {
+      throw new Error(`Relation ${relation.id} references a missing element`);
+    }
+  }
+  return { nodes, relations: parsed.relations };
 }
 
 export function diagramToText(diagram: DiagramContent): string {
@@ -121,14 +123,37 @@ export function diagramToText(diagram: DiagramContent): string {
   return [...blocks, ...links].join("\n\n").trim();
 }
 
-export function ensureNodeIds(input: {
-  nodes: Array<Partial<UmlNode> & { name: string; kind: UmlKind }>;
-  relations: Array<Partial<UmlRelation> & { from: string; to: string; type: UmlRelationType }>;
-}): DiagramContent {
+const looseDiagramSchema = z.object({
+  nodes: z
+    .array(
+      umlNodeSchema.partial({ id: true, attributes: true, methods: true }).required({
+        kind: true,
+        name: true,
+      }),
+    )
+    .max(200),
+  relations: z
+    .array(
+      umlRelationSchema.partial({ id: true }).required({
+        from: true,
+        to: true,
+        type: true,
+      }),
+    )
+    .max(400),
+});
+
+export function ensureNodeIds(
+  input: {
+    nodes: Array<Partial<UmlNode> & { name: string; kind: UmlKind }>;
+    relations: Array<Partial<UmlRelation> & { from: string; to: string; type: UmlRelationType }>;
+  },
+  previous?: DiagramContent,
+): DiagramContent {
   const used = new Set<string>();
   const nodes = input.nodes.map((node, index) => {
     const id = node.id && !used.has(node.id) ? node.id : slugId(node.name, used);
-    if (node.id) used.add(id);
+    used.add(id);
     return {
       id,
       kind: node.kind,
@@ -137,7 +162,7 @@ export function ensureNodeIds(input: {
       attributes: node.attributes ?? [],
       methods: node.methods ?? [],
       body: node.body,
-      position: node.position ?? gridPosition(index),
+      position: node.position ?? previous?.nodes.find((item) => item.id === id)?.position ?? gridPosition(index),
     };
   });
   const nameToId = new Map(nodes.map((node) => [node.name, node.id]));
@@ -148,5 +173,9 @@ export function ensureNodeIds(input: {
     type: relation.type,
     label: relation.label,
   }));
-  return normalizeDiagram({ nodes, relations });
+  return normalizeDiagram({ nodes, relations }, previous);
+}
+
+export function parseDiagram(input: unknown, previous?: DiagramContent): DiagramContent {
+  return ensureNodeIds(looseDiagramSchema.parse(input), previous);
 }

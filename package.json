@@ -7,8 +7,30 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "test": "node --experimental-strip-types --test src/**/*.test.ts",
-    "db:push": "drizzle-kit push",
+    "test": "node --experimental-strip-types --test src/lib/*.test.ts",
+    "db:push": "node --experimental-strip-types scripts/enable-vector.ts && drizzle-kit push",
     "db:studio": "drizzle-kit studio"
+  },
+  "dependencies": {
+    "@blocknote/core": "^0.55.0",
+    "@blocknote/mantine": "^0.55.0",
+    "@blocknote/react": "^0.55.0",
+    "@neondatabase/serverless": "^1.1.0",
+    "@xyflow/react": "^12.12.0",
+    "better-auth": "^1.7.6",
+    "drizzle-orm": "^0.45.3",
+    "next": "^16.3.6",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "ws": "^8.22.0",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.3",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@types/ws": "^8.18.1",
+    "drizzle-kit": "^0.31.11",
+    "typescript": "^7.0.2"
   }
 }
