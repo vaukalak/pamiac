@@ -30,7 +30,11 @@ export function NoteEditor(props: Properties) {
   const { initial, editable, onChange } = props;
   const editor = useCreateBlockNote();
   const ready = useRef(false);
-  const dark = useSyncExternalStore(subscribeToColorScheme, colorSchemeSnapshot, colorSchemeServerSnapshot);
+  const dark = useSyncExternalStore(
+    subscribeToColorScheme,
+    colorSchemeSnapshot,
+    colorSchemeServerSnapshot,
+  );
 
   useEffect(() => {
     if (ready.current) return;

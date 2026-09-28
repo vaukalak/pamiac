@@ -1,9 +1,10 @@
 import { redirect } from "next/navigation";
-import { AppHeader } from "@/components/app-header";
-import { DocumentBoard, type BoardDocument } from "@/components/document-board";
+import { AppHeader } from "@/components/header/app-header";
+import { DocumentBoard, type BoardDocument } from "@/components/library/document-board";
 import { SetupScreen } from "@/components/setup-screen";
-import { listDocuments } from "@/lib/documents";
+import type { Visibility } from "@/lib/access";
 import type { DocumentType } from "@/lib/content";
+import { listLibraryDocuments } from "@/lib/documents";
 import { getSession } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
@@ -24,7 +25,7 @@ export default async function WorkspacePage() {
 
   let rows;
   try {
-    rows = await listDocuments(result.session.user.id);
+    rows = await listLibraryDocuments(result.session.user.id);
   } catch (error) {
     return <SetupScreen detail={setupDetail(error)} />;
   }
@@ -33,8 +34,10 @@ export default async function WorkspacePage() {
     type: row.type as DocumentType,
     title: row.title,
     content: row.content,
-    visibility: row.visibility,
-    updatedAt: row.updatedAt.toISOString(),
+    visibility: row.visibility as Visibility,
+    updatedAt: row.updatedAt,
+    hasPassword: row.hasPassword,
+    emails: row.emails,
   }));
 
   return (

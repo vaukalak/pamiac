@@ -71,7 +71,10 @@ export function LockedDocument({
         {reason === "email" ? (
           <>
             <h1>This account does not have access</h1>
-            <p>Ask the owner to add your email, or open the link while signed in as an invited person.</p>
+            <p>
+              Ask the owner to add your email, or open the link while signed in as an invited
+              person.
+            </p>
             <Link className="btn secondary" href="/workspace">
               Back to your library
             </Link>

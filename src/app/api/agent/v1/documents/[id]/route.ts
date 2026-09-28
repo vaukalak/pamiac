@@ -1,5 +1,10 @@
 import { z } from "zod";
-import { getOwnedDocument, presentDocument, requireAgentUser, updateDocumentContent } from "@/lib/documents";
+import {
+  getOwnedDocument,
+  presentDocument,
+  requireAgentUser,
+  updateDocumentContent,
+} from "@/lib/documents";
 import { agentJson, corsHeaders, errorResponse, readJson } from "@/lib/http";
 
 export function OPTIONS() {

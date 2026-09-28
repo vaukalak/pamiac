@@ -10,10 +10,10 @@ const base = {
 };
 
 test("owner can edit a private document", () => {
-  assert.deepEqual(
-    resolveAccess({ ...base, isOwner: true, visibility: "private" }),
-    { level: "edit", reason: "owner" },
-  );
+  assert.deepEqual(resolveAccess({ ...base, isOwner: true, visibility: "private" }), {
+    level: "edit",
+    reason: "owner",
+  });
 });
 
 test("public link is viewable without a session", () => {
@@ -22,18 +22,12 @@ test("public link is viewable without a session", () => {
 
 test("password link stays locked until the cookie matches", () => {
   assert.equal(resolveAccess({ ...base, visibility: "password" }).reason, "password");
-  assert.equal(
-    resolveAccess({ ...base, visibility: "password", passwordOk: true }).level,
-    "view",
-  );
+  assert.equal(resolveAccess({ ...base, visibility: "password", passwordOk: true }).level, "view");
 });
 
 test("email share requires the invited account", () => {
   const allowedEmails = ["ada@example.com"];
-  assert.equal(
-    resolveAccess({ ...base, visibility: "emails", allowedEmails }).reason,
-    "login",
-  );
+  assert.equal(resolveAccess({ ...base, visibility: "emails", allowedEmails }).reason, "login");
   assert.equal(
     resolveAccess({
       ...base,

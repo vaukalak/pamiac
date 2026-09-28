@@ -1,0 +1,115 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import {
+  type BoardChange,
+  type BoardDocument,
+  type LibraryFilter,
+  type LibraryView,
+} from "@/components/library/board-document";
+import { DocumentCard } from "@/components/library/document-card";
+import { LibraryCreate } from "@/components/library/library-create";
+import { LibraryEmpty } from "@/components/library/library-empty";
+import { LibraryFilters } from "@/components/library/library-filters";
+import { ViewToggle } from "@/components/library/view-toggle";
+
+export type { BoardDocument };
+
+interface Properties {
+  documents: BoardDocument[];
+}
+
+const VIEW_KEY = "pamiac-library-view";
+
+export function DocumentBoard(props: Properties) {
+  const { documents } = props;
+  const [filter, setFilter] = useState<LibraryFilter>("all");
+  const [items, setItems] = useState(documents);
+  const [view, setView] = useState<LibraryView>("grid");
+  const [dragging, setDragging] = useState<string | null>(null);
+  const visible = useMemo(
+    () => items.filter((item) => filter === "all" || item.type === filter),
+    [items, filter],
+  );
+  const reorder = view === "grid" && filter === "all";
+
+  useEffect(() => {
+    const stored = window.localStorage.getItem(VIEW_KEY);
+    if (stored === "grid" || stored === "list") setView(stored);
+  }, []);
+
+  function chooseView(next: LibraryView) {
+    setView(next);
+    window.localStorage.setItem(VIEW_KEY, next);
+  }
+
+  function apply(change: BoardChange) {
+    setItems((current) => {
+      if (change.kind === "delete") return current.filter((item) => item.id !== change.id);
+      return current.map((item) => {
+        if (item.id !== change.id) return item;
+        if (change.kind === "rename") return { ...item, title: change.title };
+        return {
+          ...item,
+          visibility: change.visibility,
+          emails: change.emails,
+          hasPassword: change.hasPassword,
+        };
+      });
+    });
+  }
+
+  async function dropOn(targetId: string) {
+    if (!dragging || dragging === targetId || !reorder) return;
+    const next = [...items];
+    const from = next.findIndex((item) => item.id === dragging);
+    const to = next.findIndex((item) => item.id === targetId);
+    if (from < 0 || to < 0) return;
+    const [moved] = next.splice(from, 1);
+    next.splice(to, 0, moved);
+    setItems(next);
+    setDragging(null);
+    await fetch("/api/documents", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ids: next.map((item) => item.id) }),
+    });
+  }
+
+  return (
+    <div>
+      <div className="workspace-head">
+        <div>
+          <h1>Library</h1>
+          <p className="lede">Notes and diagrams.</p>
+        </div>
+        <LibraryCreate />
+      </div>
+      <div className="library-tools">
+        <LibraryFilters filter={filter} onChange={setFilter} />
+        <ViewToggle onChange={chooseView} view={view} />
+      </div>
+      {visible.length === 0 ? (
+        <LibraryEmpty filter={filter} />
+      ) : (
+        <div className={view === "grid" ? "doc-grid" : "doc-list"}>
+          {visible.map((document) => (
+            <DocumentCard
+              document={document}
+              dragging={dragging === document.id}
+              key={document.id}
+              layout={view}
+              onChange={apply}
+              onDragStart={setDragging}
+              onDrop={(id) => void dropOn(id)}
+              reorder={reorder}
+            />
+          ))}
+        </div>
+      )}
+      {reorder && items.length > 1 ? (
+        <p className="hint">Drag cards to reorder the library.</p>
+      ) : null}
+    </div>
+  );
+}

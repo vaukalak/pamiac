@@ -1,4 +1,4 @@
-import { and, asc, cosineDistance, eq, ilike, isNull, or } from "drizzle-orm";
+import { and, asc, cosineDistance, eq, ilike, inArray, isNull, or } from "drizzle-orm";
 import { getDb } from "@/db";
 import { agentTokens, documentEmbeddings, documentShares, documents } from "@/db/schema";
 import type { Visibility } from "@/lib/access";
@@ -22,6 +22,30 @@ export async function listDocuments(ownerId: string) {
     .from(documents)
     .where(eq(documents.ownerId, ownerId))
     .orderBy(asc(documents.sortIndex), asc(documents.createdAt));
+}
+
+export async function listLibraryDocuments(ownerId: string) {
+  const rows = await listDocuments(ownerId);
+  const ids = rows.map((row) => row.id);
+  const shares = ids.length
+    ? await getDb().select().from(documentShares).where(inArray(documentShares.documentId, ids))
+    : [];
+  const emails = new Map<string, string[]>();
+  for (const share of shares) {
+    const current = emails.get(share.documentId) ?? [];
+    current.push(share.email);
+    emails.set(share.documentId, current);
+  }
+  return rows.map((row) => ({
+    id: row.id,
+    type: row.type,
+    title: row.title,
+    content: row.content,
+    visibility: row.visibility,
+    updatedAt: row.updatedAt.toISOString(),
+    hasPassword: Boolean(row.passwordHash),
+    emails: emails.get(row.id) ?? [],
+  }));
 }
 
 export async function createDocument(ownerId: string, type: DocumentType, title?: string) {
@@ -57,10 +81,7 @@ export async function getDocumentBundle(id: string) {
   const db = getDb();
   const [document] = await db.select().from(documents).where(eq(documents.id, id));
   if (!document) return null;
-  const shares = await db
-    .select()
-    .from(documentShares)
-    .where(eq(documentShares.documentId, id));
+  const shares = await db.select().from(documentShares).where(eq(documentShares.documentId, id));
   return { document, emails: shares.map((share) => share.email) };
 }
 
@@ -126,7 +147,8 @@ export async function updateShare(
   let passwordHash = current.passwordHash;
   if (input.visibility === "password") {
     if (input.password) {
-      if (input.password.length < 4) throw new HttpError(400, "Password must be at least 4 characters");
+      if (input.password.length < 4)
+        throw new HttpError(400, "Password must be at least 4 characters");
       passwordHash = hashPassword(input.password);
     } else if (!passwordHash) {
       throw new HttpError(400, "Set a password for this link");
@@ -151,8 +173,15 @@ export async function updateShare(
   return { visibility: input.visibility, emails, hasPassword: Boolean(passwordHash) };
 }
 
-async function upsertEmbedding(document: { id: string; type: string; title: string; content: string }) {
-  const embedding = embedText(documentText(document.type as DocumentType, document.title, document.content));
+async function upsertEmbedding(document: {
+  id: string;
+  type: string;
+  title: string;
+  content: string;
+}) {
+  const embedding = embedText(
+    documentText(document.type as DocumentType, document.title, document.content),
+  );
   await getDb()
     .insert(documentEmbeddings)
     .values({ documentId: document.id, embedding, updatedAt: new Date() })
@@ -232,6 +261,9 @@ export async function requireAgentUser(request: Request) {
   if (!row || !tokenHashesMatch(row.tokenHash, tokenHash)) {
     throw new HttpError(401, "Invalid agent token");
   }
+  if (row.expiresAt && row.expiresAt.getTime() <= Date.now()) {
+    throw new HttpError(401, "Expired agent token");
+  }
   await getDb()
     .update(agentTokens)
     .set({ lastUsedAt: new Date() })
@@ -247,6 +279,7 @@ export async function listTokens(userId: string) {
       tokenPrefix: agentTokens.tokenPrefix,
       createdAt: agentTokens.createdAt,
       lastUsedAt: agentTokens.lastUsedAt,
+      expiresAt: agentTokens.expiresAt,
       revokedAt: agentTokens.revokedAt,
     })
     .from(agentTokens)
@@ -254,7 +287,7 @@ export async function listTokens(userId: string) {
     .orderBy(asc(agentTokens.createdAt));
 }
 
-export async function issueToken(userId: string, name: string) {
+export async function issueToken(userId: string, name: string, expiresAt: Date | null) {
   const trimmed = name.trim();
   if (!trimmed || trimmed.length > 80) throw new HttpError(400, "Give the token a name");
   const created = createAgentToken();
@@ -265,6 +298,7 @@ export async function issueToken(userId: string, name: string) {
     name: trimmed,
     tokenHash: created.tokenHash,
     tokenPrefix: created.tokenPrefix,
+    expiresAt,
   });
   return { id, name: trimmed, token: created.token, tokenPrefix: created.tokenPrefix };
 }
@@ -273,7 +307,9 @@ export async function revokeToken(userId: string, id: string) {
   const [row] = await getDb()
     .update(agentTokens)
     .set({ revokedAt: new Date() })
-    .where(and(eq(agentTokens.id, id), eq(agentTokens.userId, userId), isNull(agentTokens.revokedAt)))
+    .where(
+      and(eq(agentTokens.id, id), eq(agentTokens.userId, userId), isNull(agentTokens.revokedAt)),
+    )
     .returning({ id: agentTokens.id });
   if (!row) throw new HttpError(404, "Token not found");
 }

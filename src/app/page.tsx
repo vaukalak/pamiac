@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AppHeader } from "@/components/app-header";
+import { AppHeader } from "@/components/header/app-header";
 
 export default function HomePage() {
   return (
