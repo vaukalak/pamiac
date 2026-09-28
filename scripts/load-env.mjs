@@ -5,7 +5,7 @@ export function loadEnvFiles() {
   readEnvFile(".env.local", true);
 }
 
-function readEnvFile(path: string, override: boolean) {
+function readEnvFile(path, override) {
   if (!existsSync(path)) return;
   for (const line of readFileSync(path, "utf8").split("\n")) {
     const trimmed = line.trim();
