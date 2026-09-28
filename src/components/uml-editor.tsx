@@ -16,6 +16,9 @@ import {
 } from "@xyflow/react";
 import { useEffect, useRef, useState } from "react";
 import "@xyflow/react/dist/style.css";
+import { DiagramPalette } from "@/components/diagram/diagram-palette";
+import { InspectorCompartments } from "@/components/diagram/inspector-compartments";
+import { UmlNodeView, type UmlFlowNode, type UmlNodeData } from "@/components/uml-node";
 import {
   UML_KINDS,
   UML_RELATIONS,
@@ -24,19 +27,9 @@ import {
   type UmlKind,
   type UmlRelationType,
 } from "@/lib/diagram";
-import { UmlNodeView, type UmlFlowNode, type UmlNodeData } from "@/components/uml-node";
+import { blankNodeData, kindHasCompartments } from "@/lib/diagram-palette";
 
 const nodeTypes = { uml: UmlNodeView };
-
-const KIND_LABEL: Record<UmlKind, string> = {
-  class: "Class",
-  interface: "Interface",
-  actor: "Actor",
-  usecase: "Use case",
-  package: "Package",
-  component: "Component",
-  note: "Note",
-};
 
 function edgeAppearance(type: UmlRelationType) {
   const dashed = type === "dependency" || type === "realization";
@@ -103,18 +96,6 @@ function toDiagram(nodes: UmlFlowNode[], edges: Edge[]): DiagramContent {
         label: typeof edge.label === "string" && edge.label ? edge.label : undefined,
       })),
   });
-}
-
-function blankData(kind: UmlKind): UmlNodeData {
-  const structured = kind === "class" || kind === "interface" || kind === "component";
-  return {
-    kind,
-    name: KIND_LABEL[kind],
-    attributes: structured ? ["id: string"] : [],
-    methods: structured ? [] : [],
-    body: kind === "note" ? "Write a note" : undefined,
-    stereotype: kind === "interface" ? "interface" : undefined,
-  };
 }
 
 export function UmlEditor({
@@ -190,7 +171,7 @@ function UmlCanvas({
       id: crypto.randomUUID(),
       type: "uml",
       position,
-      data: blankData(kind),
+      data: blankNodeData(kind),
     };
     setNodes((current) => [...current, node]);
   }
@@ -209,53 +190,20 @@ function UmlCanvas({
 
   return (
     <div className="uml-layout">
-      <aside className="palette">
-        <h3>Elements</h3>
-        {UML_KINDS.map((kind) => (
-          <button
-            draggable={editable}
-            key={kind}
-            onClick={() =>
-              editable && addNode(kind, { x: 80 + nodes.length * 24, y: 80 + nodes.length * 16 })
-            }
-            onDragStart={(event) => {
-              event.dataTransfer.setData("application/pamiac-uml", kind);
-              event.dataTransfer.effectAllowed = "move";
-            }}
-            type="button"
-          >
-            {KIND_LABEL[kind]}
-          </button>
-        ))}
-        <h3>Relation</h3>
-        <div className="rel-picker">
-          {UML_RELATIONS.map((type) => (
-            <button
-              className={relationType === type ? "active" : ""}
-              key={type}
-              onClick={() => setRelationType(type)}
-              type="button"
-            >
-              {type}
-            </button>
-          ))}
-        </div>
-        {editable ? (
-          <button
-            onClick={() =>
-              setNodes((current) =>
-                current.map((node, index) => ({
-                  ...node,
-                  position: { x: 40 + (index % 3) * 280, y: 40 + Math.floor(index / 3) * 220 },
-                })),
-              )
-            }
-            type="button"
-          >
-            Arrange
-          </button>
-        ) : null}
-      </aside>
+      <DiagramPalette
+        editable={editable}
+        onAdd={(kind) => addNode(kind, { x: 80 + nodes.length * 24, y: 80 + nodes.length * 16 })}
+        onArrange={() =>
+          setNodes((current) =>
+            current.map((node, index) => ({
+              ...node,
+              position: { x: 40 + (index % 3) * 280, y: 40 + Math.floor(index / 3) * 220 },
+            })),
+          )
+        }
+        onRelation={setRelationType}
+        relationType={relationType}
+      />
       <div
         className="canvas-wrap"
         onDragOver={(event) => event.preventDefault()}
@@ -268,7 +216,7 @@ function UmlCanvas({
         }}
       >
         {nodes.length === 0 ? (
-          <div className="canvas-empty">Drag a class, actor, or note onto the canvas.</div>
+          <div className="canvas-empty">Drag an element from the palette onto the canvas.</div>
         ) : null}
         <svg width="0" height="0" style={{ position: "absolute" }}>
           <defs>
@@ -361,33 +309,14 @@ function UmlCanvas({
                 }
               />
             </div>
-            {selectedNode.data.kind === "class" ||
-            selectedNode.data.kind === "interface" ||
-            selectedNode.data.kind === "component" ? (
-              <>
-                <div>
-                  <label htmlFor="uml-attrs">Attributes</label>
-                  <textarea
-                    id="uml-attrs"
-                    disabled={!editable}
-                    value={selectedNode.data.attributes.join("\n")}
-                    onChange={(event) =>
-                      updateSelected({ attributes: event.target.value.split("\n") })
-                    }
-                  />
-                </div>
-                <div>
-                  <label htmlFor="uml-methods">Methods</label>
-                  <textarea
-                    id="uml-methods"
-                    disabled={!editable}
-                    value={selectedNode.data.methods.join("\n")}
-                    onChange={(event) =>
-                      updateSelected({ methods: event.target.value.split("\n") })
-                    }
-                  />
-                </div>
-              </>
+            {kindHasCompartments(selectedNode.data.kind) ? (
+              <InspectorCompartments
+                attributes={selectedNode.data.attributes}
+                editable={editable}
+                methods={selectedNode.data.methods}
+                onAttributes={(attributes) => updateSelected({ attributes })}
+                onMethods={(methods) => updateSelected({ methods })}
+              />
             ) : null}
             {selectedNode.data.kind === "note" ? (
               <div>
