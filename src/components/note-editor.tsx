@@ -1,8 +1,8 @@
 "use client";
 
-import { BlockNoteView } from "@blocknote/mantine";
 import { useCreateBlockNote } from "@blocknote/react";
 import { useEffect, useRef, useSyncExternalStore } from "react";
+import { NoteEditorSurface } from "@/components/note/note-editor-surface";
 import "@blocknote/mantine/style.css";
 import "@blocknote/core/fonts/inter.css";
 
@@ -43,16 +43,18 @@ export function NoteEditor(props: Properties) {
     ready.current = true;
   }, [editor, initial]);
 
+  function handleChange() {
+    if (!ready.current || !editable) return;
+    onChange(editor.blocksToMarkdownLossy(editor.document));
+  }
+
   return (
     <div className="note-editor">
-      <BlockNoteView
-        editor={editor}
+      <NoteEditorSurface
         editable={editable}
+        editor={editor}
+        onChange={handleChange}
         theme={dark ? "dark" : "light"}
-        onChange={() => {
-          if (!ready.current || !editable) return;
-          onChange(editor.blocksToMarkdownLossy(editor.document));
-        }}
       />
     </div>
   );

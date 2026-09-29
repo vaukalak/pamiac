@@ -13,6 +13,7 @@ import {
 } from "@/lib/content";
 import { embedText, excerpt } from "@/lib/embeddings";
 import { HttpError } from "@/lib/http";
+import { currentPlan, documentRoom } from "@/lib/plans";
 import { hashPassword } from "@/lib/passwords";
 import { createAgentToken, hashAgentToken, tokenHashesMatch } from "@/lib/tokens";
 
@@ -51,6 +52,8 @@ export async function listLibraryDocuments(ownerId: string) {
 export async function createDocument(ownerId: string, type: DocumentType, title?: string) {
   const db = getDb();
   const existing = await listDocuments(ownerId);
+  const room = documentRoom(existing.length, currentPlan());
+  if (room) throw new HttpError(403, room);
   const id = crypto.randomUUID();
   const content = type === "note" ? "" : JSON.stringify({ nodes: [], relations: [] });
   const nextTitle = title?.trim() || defaultTitle(type);
@@ -277,6 +280,7 @@ export async function listTokens(userId: string) {
       id: agentTokens.id,
       name: agentTokens.name,
       tokenPrefix: agentTokens.tokenPrefix,
+      secret: agentTokens.secret,
       createdAt: agentTokens.createdAt,
       lastUsedAt: agentTokens.lastUsedAt,
       expiresAt: agentTokens.expiresAt,
@@ -298,6 +302,7 @@ export async function issueToken(userId: string, name: string, expiresAt: Date |
     name: trimmed,
     tokenHash: created.tokenHash,
     tokenPrefix: created.tokenPrefix,
+    secret: created.token,
     expiresAt,
   });
   return { id, name: trimmed, token: created.token, tokenPrefix: created.tokenPrefix };

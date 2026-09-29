@@ -1,5 +1,6 @@
-import { agentJson, corsHeaders, errorResponse } from "@/lib/http";
 import { requireAgentUser } from "@/lib/documents";
+import { UML_KINDS } from "@/lib/diagram";
+import { agentJson, corsHeaders, errorResponse } from "@/lib/http";
 
 export function OPTIONS() {
   return new Response(null, { status: 204, headers: corsHeaders() });
@@ -10,7 +11,10 @@ export async function GET(request: Request) {
     await requireAgentUser(request);
     return agentJson({
       name: "Pamiac agent API",
-      auth: "Authorization: Bearer pam_...",
+      auth: "Authorization: Bearer <PAMIAC_TOKEN>",
+      token:
+        "Read PAMIAC_TOKEN from the agent environment. Do not ask the user to paste the token. If PAMIAC_TOKEN is missing, say so and stop.",
+      app: "The origin the user is using. Ask for the app URL if you do not already know it.",
       endpoints: {
         search: {
           method: "POST",
@@ -37,7 +41,7 @@ export async function GET(request: Request) {
       diagram: {
         nodes: {
           id: "optional, otherwise generated from name",
-          kind: "class | interface | actor | participant | activation | usecase | package | component | note",
+          kind: UML_KINDS.join(" | "),
           name: "string",
           attributes: ["visibility name: type"],
           methods: ["visibility name(): type"],
