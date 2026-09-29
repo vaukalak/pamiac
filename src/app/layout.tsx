@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, IBM_Plex_Mono, Outfit } from "next/font/google";
+import { QueryProvider } from "@/components/query-provider";
 import "./globals.css";
 
 const sans = Outfit({ subsets: ["latin"], variable: "--font-sans" });
@@ -21,7 +22,9 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={`${sans.variable} ${serif.variable} ${mono.variable}`}>{children}</body>
+      <body className={`${sans.variable} ${serif.variable} ${mono.variable}`}>
+        <QueryProvider>{children}</QueryProvider>
+      </body>
     </html>
   );
 }

@@ -1,10 +1,10 @@
-import { z } from "zod";
 import {
   getOwnedDocument,
   presentDocument,
   requireAgentUser,
   updateDocumentContent,
 } from "@/lib/documents";
+import { documentUpdateSchema } from "@/lib/document-write";
 import { agentJson, corsHeaders, errorResponse, readJson } from "@/lib/http";
 
 export function OPTIONS() {
@@ -30,17 +30,16 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
   }
 }
 
-const updateSchema = z.object({
-  title: z.string().max(160).optional(),
-  content: z.unknown().optional(),
-});
-
 export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
   try {
     const userId = await requireAgentUser(request);
     const { id } = await context.params;
-    const input = updateSchema.parse(await readJson(request));
-    const document = await updateDocumentContent(userId, id, input);
+    const input = documentUpdateSchema.parse(await readJson(request));
+    const document = await updateDocumentContent(userId, id, {
+      title: input.title,
+      content: input.content,
+      patch: input.patch,
+    });
     return agentJson(presentDocument(document, origin(request)));
   } catch (error) {
     return errorResponse(error, true);

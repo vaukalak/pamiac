@@ -23,6 +23,11 @@ const required = [
   "POST /api/agent/v1/search",
   "checkout payment classes",
   "Diagram relations can refer to an element by id or by name.",
+  "GET `/api/agent/v1/documents/:id` in the same turn",
+  "only the nodes you change",
+  "Omit other nodes.",
+  "Creating a node without an id still slugs from the name",
+  "Notes remain a full markdown `content` replace.",
 ];
 
 test("published skill and /pamiac skill are the same contract", () => {
