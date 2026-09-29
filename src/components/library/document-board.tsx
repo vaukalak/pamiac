@@ -133,7 +133,7 @@ export function DocumentBoard(props: Properties) {
           />
           <WorkspaceCreate onCreated={chooseWorkspace} />
           {managing ? <WorkspaceMemberAdd key={workspaceId} workspaceId={workspaceId} /> : null}
-          {managing ? <WorkspaceLeave key={workspaceId} workspaceId={workspaceId} /> : null}
+          <WorkspaceLeave key={workspaceId} workspaceId={workspaceId} />
           <h1>Library</h1>
           <p className="lede">Notes and diagrams.</p>
         </div>

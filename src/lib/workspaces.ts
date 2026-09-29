@@ -4,7 +4,6 @@ import { workspaceMembers, workspaces } from "@/db/schema";
 import { HttpError } from "@/lib/http";
 import {
   firstMember,
-  isWorkspaceAdmin,
   PERSONAL_SPACE_ID,
   workspaceName,
   workspaceRole,
@@ -57,12 +56,9 @@ export async function leaveWorkspace(userId: string, workspaceId: string) {
     throw new HttpError(400, "Personal space has no members");
   }
   const [membership] = await getDb()
-    .select({ id: workspaceMembers.id, role: workspaceMembers.role })
+    .select({ id: workspaceMembers.id })
     .from(workspaceMembers)
     .where(and(eq(workspaceMembers.workspaceId, workspaceId), eq(workspaceMembers.userId, userId)));
   if (!membership) throw new HttpError(404, "Workspace not found");
-  if (!isWorkspaceAdmin(membership.role)) {
-    throw new HttpError(403, "Only an admin can leave");
-  }
   await getDb().delete(workspaceMembers).where(eq(workspaceMembers.id, membership.id));
 }
