@@ -26,7 +26,8 @@ test("agent skill reads PAMIAC_TOKEN and keeps the diagram contract", () => {
   assert.match(skill, /Do not invent a token/);
   assert.doesNotMatch(skill, /Ask the user for a Pamiac token/);
   assert.doesNotMatch(skill, /PAMIAC_(?!TOKEN)\w*/);
-  assert.match(skill, /origin the user is using/);
+  assert.match(skill, /https:\/\/pamiac\.com/);
+  assert.doesNotMatch(skill, /origin the user is using/);
 
   for (const kind of kinds) {
     assert.match(skill, new RegExp(`\\b${kind}\\b`));
@@ -51,10 +52,10 @@ test("token page names PAMIAC_TOKEN in the lede and the agent skill text", () =>
   assert.match(lede, /cloud agent's environment/);
   assert.match(lede, /token you just/);
   assert.match(skill, /PAMIAC_TOKEN/);
-  assert.match(skill, /Set PAMIAC_TOKEN in the cloud agent's environment/);
+  assert.doesNotMatch(skill, /Set PAMIAC_TOKEN/);
   assert.match(skill, /Authorization: Bearer <PAMIAC_TOKEN>/);
   assert.match(skill, /Do not ask the user to paste the token/);
-  assert.match(skill, /App: the origin the user is using/);
+  assert.match(skill, /App: https:\/\/pamiac\.com/);
   assert.match(skill, /Base: \/api\/agent\/v1/);
   assert.match(skill, /POST \/search/);
 });
@@ -73,8 +74,10 @@ test("token page copies and downloads the skill", () => {
   const page = readFileSync(join(root, "src/components/tokens/token-manager.tsx"), "utf8");
 
   assert.match(page, />\s*copy skill\s*</);
+  assert.match(page, />\s*copy instructions\s*</);
   assert.match(page, />\s*download skill\s*</);
   assert.match(page, /navigator\.clipboard\.writeText\(SKILL\)/);
+  assert.match(page, /navigator\.clipboard\.writeText\(INSTRUCTIONS\)/);
   assert.match(page, /download = "SKILL\.md"/);
 });
 
