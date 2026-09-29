@@ -17,7 +17,7 @@ describe("library board layout", () => {
     assert.match(sidebar, /<WorkspaceSelector/);
     assert.match(sidebar, /<WorkspaceCreate onCreated=\{onSelect\} \/>/);
     assert.equal(/WorkspaceSelector/.test(board), false);
-    assert.match(shell, /grid-template-columns:\s*minmax\(200px,\s*240px\)\s*minmax\(0,\s*1fr\)/);
+    assert.match(shell, /grid-template-columns:\s*auto\s*minmax\(0,\s*1fr\)/);
     assert.match(
       css,
       /@media \(max-width:\s*760px\)\s*\{\s*\.library-shell\s*\{\s*grid-template-columns:\s*minmax\(0,\s*1fr\);/,

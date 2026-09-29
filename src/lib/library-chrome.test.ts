@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
-import { openWorkspaceName, spaceInitial } from "./library-spaces.ts";
+import { openWorkspaceName, spaceInitial, spaceTip } from "./library-spaces.ts";
 
 function read(path: string) {
   return readFileSync(new URL(path, import.meta.url), "utf8");
@@ -13,6 +13,18 @@ describe("library chrome", () => {
     assert.equal(spaceInitial("  field notes"), "F");
     assert.equal(spaceInitial("école"), "É");
     assert.equal(spaceInitial(" \n\t"), "");
+  });
+
+  it("keeps a space tip on one line and ends a longer label with a hyphen", () => {
+    assert.equal(spaceTip("Personal space"), "Personal space");
+    assert.equal(spaceTip("a".repeat(20)), "a".repeat(20));
+    assert.equal(spaceTip("a".repeat(21)), `${"a".repeat(20)}-`);
+    assert.equal(spaceTip(""), "");
+    const emoji = "😀";
+    assert.equal(emoji.length, 2);
+    assert.equal(spaceTip(emoji.repeat(20)), emoji.repeat(20));
+    assert.equal(spaceTip(emoji.repeat(21)), `${emoji.repeat(20)}-`);
+    assert.equal(spaceTip(`${"a".repeat(19)}😀!`), `${"a".repeat(19)}😀-`);
   });
 
   it("names a workspace from the shared list", () => {
@@ -51,13 +63,30 @@ describe("library chrome", () => {
     assert.match(space, /aria-pressed=\{pressed\}/);
     assert.match(space, /aria-hidden="true"/);
     assert.match(space, /spaceInitial\(label\)/);
+    assert.match(space, /spaceTip\(label\)/);
     assert.match(space, /className="workspace-space-tip"/);
-    assert.match(space, /title=\{label\}/);
+    assert.equal(/title=/.test(space), false);
     assert.equal(/FilterChip/.test(selector), false);
     assert.match(filters, /FilterChip/);
     assert.match(selector, /pressed=\{selectedId === space\.id\}/);
     assert.match(css, /button:hover \.workspace-space-tip/);
+    assert.match(css, /button:focus \.workspace-space-tip/);
     assert.match(css, /button:focus-visible \.workspace-space-tip/);
+    const tip = css.slice(
+      css.indexOf(".workspace-space-tip {"),
+      css.indexOf(".workspace-selector button:hover .workspace-space-tip"),
+    );
+    const sidebar = css.slice(css.indexOf(".library-sidebar {"), css.indexOf(".library-switcher"));
+    const column = css.slice(
+      css.indexOf(".workspace-selector {"),
+      css.indexOf(".library-sidebar .workspace-create"),
+    );
+    assert.match(tip, /white-space:\s*nowrap/);
+    assert.match(tip, /width:\s*max-content/);
+    assert.equal(/overflow-wrap/.test(tip), false);
+    assert.match(sidebar, /width:\s*fit-content/);
+    assert.match(column, /width:\s*fit-content/);
+    assert.equal(/width:\s*100%/.test(column), false);
   });
 
   it("opens workspace creation in a modal and closes it after create", () => {

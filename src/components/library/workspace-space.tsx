@@ -1,4 +1,4 @@
-import { spaceInitial } from "@/lib/library-spaces";
+import { spaceInitial, spaceTip } from "@/lib/library-spaces";
 
 interface Properties {
   label: string;
@@ -15,11 +15,10 @@ export function WorkspaceSpace(props: Properties) {
       aria-pressed={pressed}
       className="workspace-space"
       onClick={onSelect}
-      title={label}
       type="button"
     >
       <span aria-hidden="true">{spaceInitial(label)}</span>
-      <span className="workspace-space-tip">{label}</span>
+      <span className="workspace-space-tip">{spaceTip(label)}</span>
     </button>
   );
 }
