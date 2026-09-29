@@ -54,6 +54,12 @@ export function spaceInitial(label: string) {
   return (visible ?? "").toLocaleUpperCase("en");
 }
 
+export function spaceTip(label: string) {
+  const characters = Array.from(label);
+  if (characters.length <= 20) return label;
+  return `${characters.slice(0, 20).join("")}-`;
+}
+
 export function openWorkspaceName(
   workspaceId: string,
   workspaces: readonly NamedWorkspace[] | undefined,
