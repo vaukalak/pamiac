@@ -10,6 +10,7 @@ import { errorResponse, json, readJson } from "@/lib/http";
 const createSchema = z.object({
   type: z.enum(["note", "diagram"]),
   title: z.string().max(160).optional(),
+  workspaceId: z.string().min(1).optional(),
 });
 
 export async function GET() {
@@ -26,7 +27,7 @@ export async function POST(request: Request) {
   try {
     const user = await requireLibraryUser();
     const input = createSchema.parse(await readJson(request));
-    const document = await createDocument(user.id, input.type, input.title);
+    const document = await createDocument(user.id, input.type, input.title, input.workspaceId);
     return json({ id: document.id }, 201);
   } catch (error) {
     return errorResponse(error);

@@ -96,9 +96,17 @@ describe("workspace roles", () => {
     assert.equal(/workspaceMembers/.test(reject), false);
   });
 
-  it("shows add and the paywall to admins and still opens the library for editors", () => {
+  it("shows add to admins and still opens the library for editors", () => {
     const board = readFileSync(
       new URL("../components/library/document-board.tsx", import.meta.url),
+      "utf8",
+    );
+    const manage = readFileSync(
+      new URL("../components/library/library-manage.tsx", import.meta.url),
+      "utf8",
+    );
+    const header = readFileSync(
+      new URL("../components/library/library-header.tsx", import.meta.url),
       "utf8",
     );
     const documents = readFileSync(new URL("./documents.ts", import.meta.url), "utf8");
@@ -107,10 +115,11 @@ describe("workspace roles", () => {
       documents.indexOf("export async function placeDocumentInWorkspace"),
     );
     assert.match(board, /managesWorkspace/);
-    assert.match(board, /\{managing \? <WorkspaceMemberAdd/);
-    assert.match(board, /\{managing \? <WorkspacePaywall/);
-    assert.match(board, /<WorkspaceSelector/);
-    assert.match(board, /<h1>Library<\/h1>/);
+    assert.match(manage, /\{managing \? <WorkspaceMemberAdd/);
+    assert.equal(/WorkspacePaywall/.test(board), false);
+    assert.equal(/WorkspacePaywall/.test(manage), false);
+    assert.match(header, /<WorkspaceSelector/);
+    assert.match(header, /<h1>Library<\/h1>/);
     assert.equal(/viewer/.test(board), false);
     assert.equal(/admin|editor|role/.test(gate), false);
   });

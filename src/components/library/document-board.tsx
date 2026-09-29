@@ -8,17 +8,10 @@ import {
   type LibraryFilter,
   type LibraryView,
 } from "@/components/library/board-document";
-import { DocumentCard } from "@/components/library/document-card";
-import { LibraryCreate } from "@/components/library/library-create";
-import { LibraryEmpty } from "@/components/library/library-empty";
-import { LibraryFilters } from "@/components/library/library-filters";
-import { ViewToggle } from "@/components/library/view-toggle";
-import { WorkspaceCreate } from "@/components/library/workspace-create";
-import { WorkspaceDelete } from "@/components/library/workspace-delete";
-import { WorkspaceLeave } from "@/components/library/workspace-leave";
-import { WorkspaceMemberAdd } from "@/components/library/workspace-member-add";
-import { WorkspaceSelector } from "@/components/library/workspace-selector";
-import { WorkspacePaywall } from "@/components/plan/workspace-paywall";
+import { LibraryDocuments } from "@/components/library/library-documents";
+import { LibraryHeader } from "@/components/library/library-header";
+import { LibraryManage } from "@/components/library/library-manage";
+import { LibraryTools } from "@/components/library/library-tools";
 import { libraryItemsQueryKey, libraryItemsQueryOptions } from "@/lib/library-items";
 import {
   documentsInSpace,
@@ -125,45 +118,19 @@ export function DocumentBoard(props: Properties) {
 
   return (
     <div>
-      <div className="workspace-head">
-        <div>
-          <WorkspaceSelector
-            initialWorkspaces={workspaces}
-            onSelect={chooseWorkspace}
-            selectedId={workspaceId}
-          />
-          <WorkspaceCreate onCreated={chooseWorkspace} />
-          {managing ? <WorkspaceMemberAdd key={workspaceId} workspaceId={workspaceId} /> : null}
-          <WorkspaceLeave key={workspaceId} workspaceId={workspaceId} />
-          {managing ? <WorkspaceDelete key={workspaceId} workspaceId={workspaceId} /> : null}
-          <h1>Library</h1>
-          <p className="lede">Notes and diagrams.</p>
-        </div>
-        <LibraryCreate />
-      </div>
-      {managing ? <WorkspacePaywall workspaceId={workspaceId} /> : null}
-      <div className="library-tools">
-        <LibraryFilters filter={filter} onChange={setFilter} />
-        <ViewToggle onChange={chooseView} view={view} />
-      </div>
-      {visible.length === 0 ? (
-        <LibraryEmpty filter={filter} />
-      ) : (
-        <div className={view === "grid" ? "doc-grid" : "doc-list"}>
-          {visible.map((document) => (
-            <DocumentCard
-              document={document}
-              dragging={dragging === document.id}
-              key={document.id}
-              layout={view}
-              onChange={apply}
-              onDragStart={setDragging}
-              onDrop={(id) => void dropOn(id)}
-              reorder={reorder}
-            />
-          ))}
-        </div>
-      )}
+      <LibraryHeader onSelect={chooseWorkspace} selectedId={workspaceId} workspaces={workspaces} />
+      <LibraryManage managing={managing} onCreated={chooseWorkspace} workspaceId={workspaceId} />
+      <LibraryTools filter={filter} onFilter={setFilter} onView={chooseView} view={view} />
+      <LibraryDocuments
+        dragging={dragging}
+        filter={filter}
+        layout={view}
+        onChange={apply}
+        onDragStart={setDragging}
+        onDrop={(id) => void dropOn(id)}
+        reorder={reorder}
+        visible={visible}
+      />
       {reorder && library.length > 1 ? (
         <p className="hint">Drag cards to reorder the library.</p>
       ) : null}
