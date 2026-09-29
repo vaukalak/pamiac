@@ -5,7 +5,9 @@ description: Read and edit a user's Pamiac notes and UML diagrams with a persona
 
 # Pamiac agent access
 
-Ask the user for a Pamiac token (`pam_...`) and the app URL. Send `Authorization: Bearer <token>` on every request.
+Read `PAMIAC_TOKEN` from the process environment (the agent environment). Send `Authorization: Bearer <PAMIAC_TOKEN>` on every request, using that value. Do not ask the user to paste the token. If `PAMIAC_TOKEN` is missing, say so and stop. Do not invent a token.
+
+The app base URL is the origin the user is using. When you do not already know that URL, the user can give it to you.
 
 ## Search by meaning
 

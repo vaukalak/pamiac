@@ -5,13 +5,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { DocumentOwnerActions } from "@/components/document/document-owner-actions";
+import { NoteDocument } from "@/components/document/note-document";
 import { ShareModal } from "@/components/share/share-modal";
 import type { Visibility } from "@/lib/access";
+import { defaultTitle } from "@/lib/content";
 import type { DiagramContent } from "@/lib/diagram";
 
-const NoteEditor = dynamic(() => import("@/components/note-editor").then((mod) => mod.NoteEditor), {
-  ssr: false,
-});
 const UmlEditor = dynamic(() => import("@/components/uml-editor").then((mod) => mod.UmlEditor), {
   ssr: false,
 });
@@ -27,29 +26,71 @@ interface Properties {
   canEdit: boolean;
 }
 
+function saveLabel(canEdit: boolean, status: "saved" | "saving" | "error") {
+  if (!canEdit) return "View only";
+  if (status === "saving") return "Saving…";
+  if (status === "error") return "Not saved";
+  return "Saved";
+}
+
+function noteName(title: string) {
+  return title === defaultTitle("note") ? "" : title;
+}
+
 export function DocumentScreen(props: Properties) {
   const { id, type, title, content, visibility, emails, hasPassword, canEdit } = props;
   const router = useRouter();
-  const [name, setName] = useState(title);
+  const [name, setName] = useState(type === "note" ? noteName(title) : title);
   const [status, setStatus] = useState<"saved" | "saving" | "error">("saved");
   const [sharing, setSharing] = useState(false);
   const [shareState, setShareState] = useState({ visibility, emails, hasPassword });
   const timer = useRef<number | null>(null);
   const latest = useRef<{ title: string; content?: unknown }>({ title });
+  const persistedTitle = useRef(title);
+  const contentDirty = useRef(false);
 
   function schedule(partial: { title?: string; content?: unknown }) {
     latest.current = { ...latest.current, ...partial };
+    if ("content" in partial) contentDirty.current = true;
     if (!canEdit) return;
     setStatus("saving");
     if (timer.current) window.clearTimeout(timer.current);
     timer.current = window.setTimeout(async () => {
+      const payload = latest.current;
       const response = await fetch(`/api/documents/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(latest.current),
+        body: JSON.stringify(payload),
       });
-      setStatus(response.ok ? "saved" : "error");
+      if (!response.ok) {
+        setStatus("error");
+        return;
+      }
+      if (payload.title) persistedTitle.current = payload.title;
+      if (!timer.current) contentDirty.current = false;
+      setStatus(timer.current ? "saving" : "saved");
     }, 700);
+  }
+
+  function commitTitle(value: string) {
+    setName(value);
+    const trimmed = value.trim();
+    if (!trimmed || trimmed === persistedTitle.current) {
+      latest.current = { ...latest.current, title: persistedTitle.current };
+      if (!contentDirty.current && timer.current) {
+        window.clearTimeout(timer.current);
+        timer.current = null;
+        setStatus((current) => (current === "error" ? current : "saved"));
+      }
+      return;
+    }
+    schedule({ title: trimmed });
+  }
+
+  function restoreTitle() {
+    if (name.trim()) return;
+    const persisted = persistedTitle.current;
+    setName(persisted === defaultTitle("note") ? "" : persisted);
   }
 
   const wide = type === "diagram";
@@ -57,42 +98,45 @@ export function DocumentScreen(props: Properties) {
   return (
     <>
       <div className={wide ? "topbar wide" : "topbar"}>
-        <div style={{ flex: 1 }}>
-          <Link className="hint" href="/workspace">
+        {type === "note" ? (
+          <Link className="library-link" href="/workspace">
             Library
           </Link>
-          <input
-            className="title-input"
-            value={name}
-            disabled={!canEdit}
-            aria-label="Title"
-            onChange={(event) => {
-              setName(event.target.value);
-              schedule({ title: event.target.value });
-            }}
-          />
-        </div>
-        <span className="save-state">
-          {canEdit
-            ? status === "saving"
-              ? "Saving…"
-              : status === "error"
-                ? "Not saved"
-                : "Saved"
-            : "View only"}
-        </span>
-        {canEdit ? (
-          <DocumentOwnerActions id={id} onShare={() => setSharing(true)} />
         ) : (
-          <span className="badge">{shareState.visibility}</span>
+          <div className="diagram-heading">
+            <Link className="hint" href="/workspace">
+              Library
+            </Link>
+            <input
+              aria-label="Title"
+              className="title-input"
+              disabled={!canEdit}
+              value={name}
+              onChange={(event) => {
+                setName(event.target.value);
+                schedule({ title: event.target.value });
+              }}
+            />
+          </div>
         )}
+        <div className="topbar-tools">
+          <span className="save-state">{saveLabel(canEdit, status)}</span>
+          {canEdit ? (
+            <DocumentOwnerActions id={id} onShare={() => setSharing(true)} />
+          ) : (
+            <span className="badge">{shareState.visibility}</span>
+          )}
+        </div>
       </div>
       <div className={wide ? "editor-shell wide" : "editor-shell"}>
         {type === "note" ? (
-          <NoteEditor
-            editable={canEdit}
-            initial={content}
-            onChange={(markdown) => schedule({ content: markdown })}
+          <NoteDocument
+            canEdit={canEdit}
+            content={content}
+            title={name}
+            onContent={(markdown) => schedule({ content: markdown })}
+            onTitle={commitTitle}
+            onTitleBlur={restoreTitle}
           />
         ) : (
           <UmlEditor

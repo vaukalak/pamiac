@@ -129,6 +129,7 @@ export const agentTokens = pgTable(
     name: text("name").notNull(),
     tokenHash: text("token_hash").notNull().unique(),
     tokenPrefix: text("token_prefix").notNull(),
+    secret: text("secret"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     lastUsedAt: timestamp("last_used_at", { withTimezone: true }),
     expiresAt: timestamp("expires_at", { withTimezone: true }),
