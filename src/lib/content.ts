@@ -1,5 +1,6 @@
 import { diagramToText, emptyDiagram, parseDiagram, type DiagramContent } from "@/lib/diagram";
 import { excerpt } from "@/lib/embeddings";
+import { noteMarkdown } from "@/lib/note-blocks";
 
 export type DocumentType = "note" | "diagram";
 
@@ -17,12 +18,12 @@ export function readDiagram(content: string): DiagramContent {
 }
 
 export function documentText(type: DocumentType, title: string, content: string) {
-  if (type === "note") return `${title}\n\n${content}`;
+  if (type === "note") return `${title}\n\n${noteMarkdown(content)}`;
   return `${title}\n\n${diagramToText(readDiagram(content))}`;
 }
 
 export function documentPreview(type: DocumentType, content: string) {
-  if (type === "note") return excerpt(content, 140) || "Empty note";
+  if (type === "note") return excerpt(noteMarkdown(content), 140) || "Empty note";
   const diagram = readDiagram(content);
   if (!diagram.nodes.length) return "Empty diagram";
   return diagram.nodes

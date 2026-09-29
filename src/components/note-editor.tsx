@@ -3,6 +3,7 @@
 import { useCreateBlockNote } from "@blocknote/react";
 import { useEffect, useRef, useSyncExternalStore } from "react";
 import { NoteEditorSurface } from "@/components/note/note-editor-surface";
+import { packNoteContent, readNoteContent } from "@/lib/note-blocks";
 import "@blocknote/mantine/style.css";
 import "@blocknote/core/fonts/inter.css";
 
@@ -38,14 +39,18 @@ export function NoteEditor(props: Properties) {
 
   useEffect(() => {
     if (ready.current) return;
-    const blocks = editor.tryParseMarkdownToBlocks(initial || "");
-    editor.replaceBlocks(editor.document, blocks);
+    const note = readNoteContent(initial || "");
+    if (note.blocks) {
+      editor.replaceBlocks(editor.document, note.blocks as typeof editor.document);
+    } else {
+      editor.replaceBlocks(editor.document, editor.tryParseMarkdownToBlocks(note.markdown || ""));
+    }
     ready.current = true;
   }, [editor, initial]);
 
   function handleChange() {
     if (!ready.current || !editable) return;
-    onChange(editor.blocksToMarkdownLossy(editor.document));
+    onChange(packNoteContent(editor.blocksToMarkdownLossy(editor.document), editor.document));
   }
 
   return (
