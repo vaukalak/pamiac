@@ -10,6 +10,7 @@ import {
   markedMarkdownFromBlocks,
   parseBlockMarkdown,
 } from "@/lib/block-link";
+import { packNoteContent, readNoteContent } from "@/lib/note-blocks";
 import "@blocknote/mantine/style.css";
 import "@blocknote/core/fonts/inter.css";
 
@@ -67,9 +68,10 @@ export function NoteEditor(props: Properties) {
   );
 
   function noteMarkdown() {
-    return markedMarkdownFromBlocks(editor.document, (block) =>
+    const marked = markedMarkdownFromBlocks(editor.document, (block) =>
       editor.blocksToMarkdownLossy([block]),
     );
+    return packNoteContent(marked, editor.document);
   }
 
   function emit(next: string) {
@@ -94,11 +96,14 @@ export function NoteEditor(props: Properties) {
 
     const first = appliedVersion.current === null;
     applying.current = true;
-    const marked = parseBlockMarkdown(markdown || "");
-    const blocks = marked
-      ? blocksFromMarkedMarkdown(marked, (part) => editor.tryParseMarkdownToBlocks(part))
-      : editor.tryParseMarkdownToBlocks(markdown || "");
-    editor.replaceBlocks(editor.document, blocks);
+    const note = readNoteContent(markdown || "");
+    const marked = note.blocks ? null : parseBlockMarkdown(note.markdown);
+    const blocks = note.blocks
+      ? note.blocks
+      : marked
+        ? blocksFromMarkedMarkdown(marked, (part) => editor.tryParseMarkdownToBlocks(part))
+        : editor.tryParseMarkdownToBlocks(note.markdown || "");
+    editor.replaceBlocks(editor.document, blocks as typeof editor.document);
     baseline.current = noteMarkdown();
     stored.current = markdown;
     appliedVersion.current = version;

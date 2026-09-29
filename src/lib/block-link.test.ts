@@ -194,6 +194,6 @@ test("opening a note does not publish, and copy uses the editor onChange path", 
   assert.match(copyLink, /publishNoteMarkdown\(editor\)/);
 
   const content = readFileSync(new URL("./content.ts", import.meta.url), "utf8");
-  assert.match(content, /readableBlockMarkdown\(content\)/);
-  assert.equal(content.match(/readableBlockMarkdown\(content\)/g)?.length, 2);
+  assert.match(content, /readableBlockMarkdown\(noteMarkdown\(content\)\)/);
+  assert.equal(content.match(/readableBlockMarkdown\(noteMarkdown\(content\)\)/g)?.length, 2);
 });

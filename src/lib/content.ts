@@ -1,6 +1,7 @@
 import { readableBlockMarkdown } from "./block-link.ts";
 import { diagramToText, emptyDiagram, parseDiagram, type DiagramContent } from "./diagram.ts";
 import { excerpt } from "./embeddings.ts";
+import { noteMarkdown } from "./note-blocks.ts";
 
 export type DocumentType = "note" | "diagram";
 
@@ -18,12 +19,13 @@ export function readDiagram(content: string): DiagramContent {
 }
 
 export function documentText(type: DocumentType, title: string, content: string) {
-  if (type === "note") return `${title}\n\n${readableBlockMarkdown(content)}`;
+  if (type === "note") return `${title}\n\n${readableBlockMarkdown(noteMarkdown(content))}`;
   return `${title}\n\n${diagramToText(readDiagram(content))}`;
 }
 
 export function documentPreview(type: DocumentType, content: string) {
-  if (type === "note") return excerpt(readableBlockMarkdown(content), 140) || "Empty note";
+  if (type === "note")
+    return excerpt(readableBlockMarkdown(noteMarkdown(content)), 140) || "Empty note";
   const diagram = readDiagram(content);
   if (!diagram.nodes.length) return "Empty diagram";
   return diagram.nodes
