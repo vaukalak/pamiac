@@ -2,8 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-const published = readFileSync(new URL("../../agent/SKILL.md", import.meta.url), "utf8");
-const cursorSkill = readFileSync(
+const published = readFileSync(
   new URL("../../.cursor/skills/pamiac/SKILL.md", import.meta.url),
   "utf8",
 );
@@ -24,10 +23,6 @@ const required = [
   "checkout payment classes",
   "Diagram relations can refer to an element by id or by name.",
 ];
-
-test("published skill and /pamiac skill are the same contract", () => {
-  assert.equal(cursorSkill, published);
-});
 
 test("skill reads PAMIAC_TOKEN and does not ask the user to paste it", () => {
   for (const line of required) {

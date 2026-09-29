@@ -17,7 +17,7 @@ const relationTypes = [
 ];
 
 test("agent skill reads PAMIAC_TOKEN and keeps the diagram contract", () => {
-  const skill = readFileSync(join(root, "agent/SKILL.md"), "utf8");
+  const skill = readFileSync(join(root, ".cursor/skills/pamiac/SKILL.md"), "utf8");
 
   assert.match(skill, /Read `PAMIAC_TOKEN` from the process environment/);
   assert.match(skill, /Authorization: Bearer <PAMIAC_TOKEN>/);
