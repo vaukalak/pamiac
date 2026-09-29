@@ -8,10 +8,10 @@ import {
   type LibraryFilter,
   type LibraryView,
 } from "@/components/library/board-document";
-import { LibraryDocuments } from "@/components/library/library-documents";
-import { LibraryHeader } from "@/components/library/library-header";
+import { LibraryDashboard } from "@/components/library/library-dashboard";
 import { LibraryManage } from "@/components/library/library-manage";
-import { LibraryTools } from "@/components/library/library-tools";
+import { LibrarySidebar } from "@/components/library/library-sidebar";
+import { LibrarySwitcher, type LibraryPanel } from "@/components/library/library-switcher";
 import { libraryItemsQueryKey, libraryItemsQueryOptions } from "@/lib/library-items";
 import {
   documentsInSpace,
@@ -48,6 +48,7 @@ export function DocumentBoard(props: Properties) {
   const [filter, setFilter] = useState<LibraryFilter>("all");
   const [view, setView] = useState<LibraryView>("grid");
   const [dragging, setDragging] = useState<string | null>(null);
+  const [panel, setPanel] = useState<LibraryPanel>("dashboard");
   const [workspaceId, setWorkspaceId] = useState(PERSONAL_SPACE_ID);
   const library = documentsInSpace(workspaceId, items, spacesQuery.data);
   const managing = managesWorkspace(workspaceId, spacesQuery.data);
@@ -117,23 +118,31 @@ export function DocumentBoard(props: Properties) {
   }
 
   return (
-    <div>
-      <LibraryHeader onSelect={chooseWorkspace} selectedId={workspaceId} workspaces={workspaces} />
-      <LibraryManage managing={managing} onCreated={chooseWorkspace} workspaceId={workspaceId} />
-      <LibraryTools filter={filter} onFilter={setFilter} onView={chooseView} view={view} />
-      <LibraryDocuments
-        dragging={dragging}
-        filter={filter}
-        layout={view}
-        onChange={apply}
-        onDragStart={setDragging}
-        onDrop={(id) => void dropOn(id)}
-        reorder={reorder}
-        visible={visible}
-      />
-      {reorder && library.length > 1 ? (
-        <p className="hint">Drag cards to reorder the library.</p>
-      ) : null}
+    <div className="library-shell">
+      <LibrarySidebar onSelect={chooseWorkspace} selectedId={workspaceId} workspaces={workspaces} />
+      <div className="library-main">
+        <LibrarySwitcher mode={panel} onMode={setPanel} />
+        {panel === "dashboard" ? (
+          <LibraryDashboard
+            dragging={dragging}
+            filter={filter}
+            libraryCount={library.length}
+            onChange={apply}
+            onDragStart={setDragging}
+            onDrop={(id) => {
+              void dropOn(id);
+            }}
+            onFilter={setFilter}
+            onView={chooseView}
+            reorder={reorder}
+            view={view}
+            visible={visible}
+            workspaceId={workspaceId}
+          />
+        ) : (
+          <LibraryManage managing={managing} workspaceId={workspaceId} />
+        )}
+      </div>
     </div>
   );
 }

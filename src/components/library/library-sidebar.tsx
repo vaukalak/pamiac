@@ -1,6 +1,4 @@
-"use client";
-
-import { LibraryCreate } from "@/components/library/library-create";
+import { WorkspaceCreate } from "@/components/library/workspace-create";
 import { WorkspaceSelector } from "@/components/library/workspace-selector";
 import type { NamedWorkspace } from "@/lib/library-spaces";
 
@@ -10,18 +8,25 @@ interface Properties {
   workspaces: NamedWorkspace[];
 }
 
-export function LibraryHeader(props: Properties) {
+export function LibrarySidebar(props: Properties) {
   const { onSelect, selectedId, workspaces } = props;
 
   return (
-    <div className="workspace-head">
+    <aside className="library-sidebar">
       <WorkspaceSelector
         initialWorkspaces={workspaces}
         onSelect={onSelect}
         selectedId={selectedId}
       />
-      <h1>Library</h1>
-      <LibraryCreate workspaceId={selectedId} />
-    </div>
+      <details className="library-space-add">
+        <summary>
+          <span aria-hidden="true" className="library-space-plus">
+            +
+          </span>
+          Add workspace
+        </summary>
+        <WorkspaceCreate onCreated={onSelect} />
+      </details>
+    </aside>
   );
 }

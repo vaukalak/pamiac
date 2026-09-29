@@ -32,34 +32,51 @@ export function LibraryCreate(props: Properties) {
       router.push(`/d/${id}`);
     },
   });
-  const creating = mutation.isPending ? mutation.variables : null;
+  const creating = mutation.isPending && mutation.variables ? mutation.variables : null;
   const message = mutation.error instanceof Error ? mutation.error.message : "";
 
   return (
     <div className="library-create">
-      <div className="row-actions">
-        <button
-          className="btn"
-          disabled={mutation.isPending}
-          onClick={() => {
-            mutation.mutate("note");
-          }}
-          type="button"
-        >
-          {creating === "note" ? "Creating…" : "New note"}
-        </button>
-        <button
-          className="btn secondary"
-          disabled={mutation.isPending}
-          onClick={() => {
-            mutation.mutate("diagram");
-          }}
-          type="button"
-        >
-          {creating === "diagram" ? "Creating…" : "New UML diagram"}
-        </button>
-      </div>
-      {message ? <p className="error">{message}</p> : null}
+      <details>
+        <summary aria-label="New document" className="library-plus">
+          <svg
+            aria-hidden="true"
+            fill="none"
+            height="16"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeWidth="1.75"
+            viewBox="0 0 16 16"
+            width="16"
+          >
+            <path d="M8 3v10" />
+            <path d="M3 8h10" />
+          </svg>
+        </summary>
+        <div className="menu-panel">
+          {message ? <p className="error">{message}</p> : null}
+          <button
+            className="menu-item"
+            disabled={mutation.isPending}
+            onClick={() => {
+              mutation.mutate("note");
+            }}
+            type="button"
+          >
+            {creating === "note" ? "Creating…" : "New note"}
+          </button>
+          <button
+            className="menu-item"
+            disabled={mutation.isPending}
+            onClick={() => {
+              mutation.mutate("diagram");
+            }}
+            type="button"
+          >
+            {creating === "diagram" ? "Creating…" : "New UML diagram"}
+          </button>
+        </div>
+      </details>
     </div>
   );
 }
