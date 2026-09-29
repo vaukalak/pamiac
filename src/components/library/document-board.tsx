@@ -13,41 +13,79 @@ import { LibraryCreate } from "@/components/library/library-create";
 import { LibraryEmpty } from "@/components/library/library-empty";
 import { LibraryFilters } from "@/components/library/library-filters";
 import { ViewToggle } from "@/components/library/view-toggle";
+import { WorkspaceCreate } from "@/components/library/workspace-create";
+import { WorkspaceDelete } from "@/components/library/workspace-delete";
+import { WorkspaceLeave } from "@/components/library/workspace-leave";
+import { WorkspaceMemberAdd } from "@/components/library/workspace-member-add";
+import { WorkspaceSelector } from "@/components/library/workspace-selector";
+import { WorkspacePaywall } from "@/components/plan/workspace-paywall";
 import { libraryItemsQueryKey, libraryItemsQueryOptions } from "@/lib/library-items";
+import {
+  documentsInSpace,
+  librarySpaces,
+  managesWorkspace,
+  openLibraryId,
+  PERSONAL_SPACE_ID,
+  type NamedWorkspace,
+} from "@/lib/library-spaces";
+import { workspacesQueryKey, workspacesQueryOptions } from "@/lib/library-workspaces";
 
 export type { BoardDocument };
 
 interface Properties {
   documents: BoardDocument[];
+  workspaces: NamedWorkspace[];
 }
 
 const VIEW_KEY = "pamiac-library-view";
+const OPEN_LIBRARY_KEY = "pamiac-open-library";
 
 export function DocumentBoard(props: Properties) {
-  const { documents } = props;
+  const { documents, workspaces } = props;
   const queryClient = useQueryClient();
   const itemsQuery = useQuery({
     ...libraryItemsQueryOptions(),
     initialData: documents,
   });
+  const spacesQuery = useQuery({
+    ...workspacesQueryOptions(),
+    initialData: workspaces,
+  });
   const items = itemsQuery.data;
   const [filter, setFilter] = useState<LibraryFilter>("all");
   const [view, setView] = useState<LibraryView>("grid");
   const [dragging, setDragging] = useState<string | null>(null);
+  const [workspaceId, setWorkspaceId] = useState(PERSONAL_SPACE_ID);
+  const library = documentsInSpace(workspaceId, items, spacesQuery.data);
+  const managing = managesWorkspace(workspaceId, spacesQuery.data);
   const visible = useMemo(
-    () => items.filter((item) => filter === "all" || item.type === filter),
-    [items, filter],
+    () => library.filter((item) => filter === "all" || item.type === filter),
+    [library, filter],
   );
-  const reorder = view === "grid" && filter === "all";
+  const reorder = view === "grid" && filter === "all" && workspaceId === PERSONAL_SPACE_ID;
 
   useEffect(() => {
     const stored = window.localStorage.getItem(VIEW_KEY);
     if (stored === "grid" || stored === "list") setView(stored);
   }, []);
 
+  useEffect(() => {
+    const next = openLibraryId(window.localStorage.getItem(OPEN_LIBRARY_KEY), spacesQuery.data);
+    setWorkspaceId(next);
+  }, [spacesQuery.data]);
+
   function chooseView(next: LibraryView) {
     setView(next);
     window.localStorage.setItem(VIEW_KEY, next);
+  }
+
+  function chooseWorkspace(nextId: string) {
+    const stored =
+      queryClient.getQueryData<NamedWorkspace[]>(workspacesQueryKey) ?? spacesQuery.data;
+    const known = librarySpaces(stored).some((space) => space.id === nextId);
+    if (!known) return;
+    window.localStorage.setItem(OPEN_LIBRARY_KEY, nextId);
+    setWorkspaceId(nextId);
   }
 
   function apply(change: BoardChange) {
@@ -62,6 +100,7 @@ export function DocumentBoard(props: Properties) {
           visibility: change.visibility,
           emails: change.emails,
           hasPassword: change.hasPassword,
+          workspaceId: change.workspaceId,
         };
       });
     });
@@ -88,11 +127,21 @@ export function DocumentBoard(props: Properties) {
     <div>
       <div className="workspace-head">
         <div>
+          <WorkspaceSelector
+            initialWorkspaces={workspaces}
+            onSelect={chooseWorkspace}
+            selectedId={workspaceId}
+          />
+          <WorkspaceCreate onCreated={chooseWorkspace} />
+          {managing ? <WorkspaceMemberAdd key={workspaceId} workspaceId={workspaceId} /> : null}
+          <WorkspaceLeave key={workspaceId} workspaceId={workspaceId} />
+          {managing ? <WorkspaceDelete key={workspaceId} workspaceId={workspaceId} /> : null}
           <h1>Library</h1>
           <p className="lede">Notes and diagrams.</p>
         </div>
         <LibraryCreate />
       </div>
+      {managing ? <WorkspacePaywall workspaceId={workspaceId} /> : null}
       <div className="library-tools">
         <LibraryFilters filter={filter} onChange={setFilter} />
         <ViewToggle onChange={chooseView} view={view} />
@@ -115,7 +164,7 @@ export function DocumentBoard(props: Properties) {
           ))}
         </div>
       )}
-      {reorder && items.length > 1 ? (
+      {reorder && library.length > 1 ? (
         <p className="hint">Drag cards to reorder the library.</p>
       ) : null}
     </div>

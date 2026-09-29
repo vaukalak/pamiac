@@ -1,21 +1,41 @@
-import { eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { devMagicLinks } from "@/db/schema";
 
-export async function sendMagicLink({ email, url }: { email: string; url: string }) {
+function escapeHtml(value: string) {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
+}
+
+function singleLine(value: string) {
+  const trimmed = value.replace(/[\r\n]+/g, " ").trim();
+  return trimmed || "a workspace";
+}
+
+async function deliverEmail(input: {
+  email: string;
+  url: string;
+  subject: string;
+  html: string;
+  missingKey: string;
+  log: string;
+  failure: string;
+}) {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
     if (process.env.NODE_ENV === "production") {
-      throw new Error("RESEND_API_KEY is required to send magic links");
+      throw new Error(input.missingKey);
     }
     await getDb()
       .insert(devMagicLinks)
-      .values({ email: email.toLowerCase(), url, createdAt: new Date() })
+      .values({ email: input.email.toLowerCase(), url: input.url, createdAt: new Date() })
       .onConflictDoUpdate({
         target: devMagicLinks.email,
-        set: { url, createdAt: new Date() },
+        set: { url: input.url, createdAt: new Date() },
       });
-    console.info(`Magic link for ${email}: ${url}`);
+    console.info(input.log);
     return;
   }
 
@@ -30,12 +50,45 @@ export async function sendMagicLink({ email, url }: { email: string; url: string
     },
     body: JSON.stringify({
       from,
-      to: email,
-      subject: "Your Pamiac sign-in link",
-      html: `<p>Use this link to sign in to Pamiac. It expires in 5 minutes.</p><p><a href="${url}">Sign in</a></p>`,
+      to: input.email,
+      subject: input.subject,
+      html: input.html,
     }),
   });
-  if (!response.ok) {
-    throw new Error("Could not send the magic link email");
-  }
+  if (!response.ok) throw new Error(input.failure);
+}
+
+export async function sendMagicLink({ email, url }: { email: string; url: string }) {
+  await deliverEmail({
+    email,
+    url,
+    subject: "Your Pamiac sign-in link",
+    html: `<p>Use this link to sign in to Pamiac. It expires in 5 minutes.</p><p><a href="${url}">Sign in</a></p>`,
+    missingKey: "RESEND_API_KEY is required to send magic links",
+    log: `Magic link for ${email}: ${url}`,
+    failure: "Could not send the magic link email",
+  });
+}
+
+export async function sendWorkspaceInvite({
+  email,
+  url,
+  workspaceName,
+}: {
+  email: string;
+  url: string;
+  workspaceName: string;
+}) {
+  const name = singleLine(workspaceName);
+  const safeName = escapeHtml(name);
+  const safeUrl = escapeHtml(url);
+  await deliverEmail({
+    email,
+    url,
+    subject: `Join ${name} on Pamiac`,
+    html: `<p>You are invited to ${safeName}.</p><p><a href="${safeUrl}">Open the invitation</a></p>`,
+    missingKey: "RESEND_API_KEY is required to send workspace invitations",
+    log: `Workspace invite for ${email}: ${url}`,
+    failure: "Could not send the invitation email",
+  });
 }

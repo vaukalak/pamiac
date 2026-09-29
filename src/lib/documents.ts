@@ -1,6 +1,24 @@
-import { and, asc, cosineDistance, eq, ilike, inArray, isNull, or } from "drizzle-orm";
+import {
+  and,
+  asc,
+  count,
+  cosineDistance,
+  eq,
+  exists,
+  ilike,
+  inArray,
+  isNull,
+  or,
+} from "drizzle-orm";
 import { getDb } from "@/db";
-import { agentTokens, documentEmbeddings, documentShares, documents, user } from "@/db/schema";
+import {
+  agentTokens,
+  documentEmbeddings,
+  documentShares,
+  documents,
+  user,
+  workspaceMembers,
+} from "@/db/schema";
 import type { Visibility } from "@/lib/access";
 import { normalizeEmails } from "@/lib/access";
 import { defaultTitle, documentText, readDiagram, type DocumentType } from "@/lib/content";
@@ -8,7 +26,13 @@ import type { DiagramPatch } from "@/lib/diagram-patch";
 import { embedText, excerpt } from "@/lib/embeddings";
 import { applyDocumentWrite } from "@/lib/document-write";
 import { HttpError } from "@/lib/http";
-import { currentPlan, documentRoom } from "@/lib/plans";
+import {
+  documentsInSpace,
+  isWorkspaceAdmin,
+  PERSONAL_SPACE_ID,
+  workspaceLibraryId,
+} from "@/lib/library-spaces";
+import { currentPlan, currentWorkspacePlan, documentRoom } from "@/lib/plans";
 import { hashPassword } from "@/lib/passwords";
 import { agentTokenStatus, createAgentToken, hashAgentToken } from "@/lib/tokens";
 
@@ -17,6 +41,27 @@ export async function listDocuments(ownerId: string) {
     .select()
     .from(documents)
     .where(eq(documents.ownerId, ownerId))
+    .orderBy(asc(documents.sortIndex), asc(documents.createdAt));
+}
+
+function agentDocumentWhere(userId: string) {
+  const membership = getDb()
+    .select({ id: workspaceMembers.id })
+    .from(workspaceMembers)
+    .where(
+      and(
+        eq(workspaceMembers.workspaceId, documents.workspaceId),
+        eq(workspaceMembers.userId, userId),
+      ),
+    );
+  return or(and(eq(documents.ownerId, userId), isNull(documents.workspaceId)), exists(membership));
+}
+
+export async function listAgentDocuments(userId: string) {
+  return getDb()
+    .select()
+    .from(documents)
+    .where(agentDocumentWhere(userId))
     .orderBy(asc(documents.sortIndex), asc(documents.createdAt));
 }
 
@@ -42,13 +87,71 @@ export async function listLibraryDocuments(ownerId: string) {
     version: row.version,
     hasPassword: Boolean(row.passwordHash),
     emails: emails.get(row.id) ?? [],
+    workspaceId: row.workspaceId,
   }));
+}
+
+function createdLibraryId(workspaceId: string) {
+  try {
+    return workspaceLibraryId(workspaceId);
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "A document library needs a created workspace";
+    throw new HttpError(400, message);
+  }
+}
+
+async function memberLibraryId(ownerId: string, workspaceId: string) {
+  const libraryId = createdLibraryId(workspaceId);
+  const [member] = await getDb()
+    .select({ workspaceId: workspaceMembers.workspaceId })
+    .from(workspaceMembers)
+    .where(and(eq(workspaceMembers.workspaceId, libraryId), eq(workspaceMembers.userId, ownerId)));
+  if (!member) throw new HttpError(404, "Workspace not found");
+  return libraryId;
+}
+
+export async function placeDocumentInWorkspace(
+  ownerId: string,
+  documentId: string,
+  workspaceId: string,
+) {
+  const libraryId = await memberLibraryId(ownerId, workspaceId);
+  const db = getDb();
+  const [current] = await db
+    .select({ id: documents.id, workspaceId: documents.workspaceId })
+    .from(documents)
+    .where(and(eq(documents.id, documentId), eq(documents.ownerId, ownerId)));
+  if (!current) throw new HttpError(404, "Document not found");
+  if (current.workspaceId !== libraryId) {
+    const [tally] = await db
+      .select({ total: count() })
+      .from(documents)
+      .where(eq(documents.workspaceId, libraryId));
+    const room = documentRoom(Number(tally?.total ?? 0), currentWorkspacePlan());
+    if (room) throw new HttpError(403, room);
+  }
+  const [updated] = await db
+    .update(documents)
+    .set({ workspaceId: libraryId })
+    .where(and(eq(documents.id, documentId), eq(documents.ownerId, ownerId)))
+    .returning({ id: documents.id, workspaceId: documents.workspaceId });
+  if (!updated?.workspaceId) throw new HttpError(404, "Document not found");
+  return { id: updated.id, workspaceId: updated.workspaceId };
+}
+
+export async function listSpaceDocuments(ownerId: string, workspaceId: string) {
+  const rows = await listLibraryDocuments(ownerId);
+  if (workspaceId === PERSONAL_SPACE_ID) return documentsInSpace(PERSONAL_SPACE_ID, rows);
+  const libraryId = await memberLibraryId(ownerId, workspaceId);
+  return documentsInSpace(libraryId, rows, [{ id: libraryId, name: "Workspace" }]);
 }
 
 export async function createDocument(ownerId: string, type: DocumentType, title?: string) {
   const db = getDb();
   const existing = await listDocuments(ownerId);
-  const room = documentRoom(existing.length, currentPlan());
+  const personal = existing.filter((document) => !document.workspaceId);
+  const room = documentRoom(personal.length, currentPlan());
   if (room) throw new HttpError(403, room);
   const id = crypto.randomUUID();
   const content = type === "note" ? "" : JSON.stringify({ nodes: [], relations: [] });
@@ -63,6 +166,7 @@ export async function createDocument(ownerId: string, type: DocumentType, title?
       content,
       version: 1,
       sortIndex: existing.length,
+      workspaceId: null,
     })
     .returning();
   await upsertEmbedding(created);
@@ -77,6 +181,31 @@ export async function getOwnedDocument(ownerId: string, id: string) {
   return document ?? null;
 }
 
+export async function getAgentDocument(userId: string, id: string) {
+  const [document] = await getDb()
+    .select()
+    .from(documents)
+    .where(and(eq(documents.id, id), agentDocumentWhere(userId)));
+  return document ?? null;
+}
+
+export async function isDocumentWorkspaceMember(userId: string, workspaceId: string | null) {
+  if (!workspaceId) return false;
+  const [member] = await getDb()
+    .select({ id: workspaceMembers.id })
+    .from(workspaceMembers)
+    .where(and(eq(workspaceMembers.workspaceId, workspaceId), eq(workspaceMembers.userId, userId)));
+  return Boolean(member);
+}
+
+export async function getEditableDocument(userId: string, id: string) {
+  const [document] = await getDb().select().from(documents).where(eq(documents.id, id));
+  if (!document) return null;
+  if (document.ownerId === userId) return document;
+  if (await isDocumentWorkspaceMember(userId, document.workspaceId)) return document;
+  return null;
+}
+
 export async function getDocumentBundle(id: string) {
   const db = getDb();
   const [document] = await db.select().from(documents).where(eq(documents.id, id));
@@ -86,18 +215,18 @@ export async function getDocumentBundle(id: string) {
 }
 
 export async function updateDocumentContent(
-  ownerId: string,
+  userId: string,
   id: string,
   input: { title?: string; content?: unknown; patch?: DiagramPatch },
 ) {
   const db = getDb();
   const updated = await db.transaction(async (tx) => {
-    const [current] = await tx
-      .select()
-      .from(documents)
-      .where(and(eq(documents.id, id), eq(documents.ownerId, ownerId)))
-      .for("update");
+    const [current] = await tx.select().from(documents).where(eq(documents.id, id)).for("update");
     if (!current) throw new HttpError(404, "Document not found");
+    const workspaceMember = await isDocumentWorkspaceMember(userId, current.workspaceId);
+    if (current.ownerId !== userId && !workspaceMember) {
+      throw new HttpError(404, "Document not found");
+    }
     const title = input.title?.trim() || current.title;
     if (title.length > 160) throw new HttpError(400, "Title is too long");
     let written;
@@ -150,10 +279,49 @@ export async function reorderDocuments(ownerId: string, ids: string[]) {
   );
 }
 
+async function adminLibraryId(ownerId: string, workspaceId: string) {
+  const libraryId = createdLibraryId(workspaceId);
+  const [member] = await getDb()
+    .select({ role: workspaceMembers.role })
+    .from(workspaceMembers)
+    .where(and(eq(workspaceMembers.workspaceId, libraryId), eq(workspaceMembers.userId, ownerId)));
+  if (!isWorkspaceAdmin(member?.role)) {
+    throw new HttpError(403, "Only an admin can choose this workspace");
+  }
+  return libraryId;
+}
+
+async function applyDocumentWorkspace(
+  ownerId: string,
+  documentId: string,
+  currentWorkspaceId: string | null,
+  workspaceId: string | null,
+) {
+  if (workspaceId === currentWorkspaceId) return currentWorkspaceId;
+  if (currentWorkspaceId) await adminLibraryId(ownerId, currentWorkspaceId);
+  if (workspaceId === null) {
+    const [updated] = await getDb()
+      .update(documents)
+      .set({ workspaceId: null })
+      .where(and(eq(documents.id, documentId), eq(documents.ownerId, ownerId)))
+      .returning({ id: documents.id });
+    if (!updated) throw new HttpError(404, "Document not found");
+    return null;
+  }
+  await adminLibraryId(ownerId, workspaceId);
+  const placed = await placeDocumentInWorkspace(ownerId, documentId, workspaceId);
+  return placed.workspaceId;
+}
+
 export async function updateShare(
   ownerId: string,
   id: string,
-  input: { visibility: Visibility; password?: string; emails?: string[] },
+  input: {
+    visibility: Visibility;
+    password?: string;
+    emails?: string[];
+    workspaceId?: string | null;
+  },
 ) {
   const current = await getOwnedDocument(ownerId, id);
   if (!current) throw new HttpError(404, "Document not found");
@@ -172,6 +340,11 @@ export async function updateShare(
     }
   }
 
+  const workspaceId =
+    input.workspaceId === undefined
+      ? current.workspaceId
+      : await applyDocumentWorkspace(ownerId, id, current.workspaceId, input.workspaceId);
+
   const db = getDb();
   await db
     .update(documents)
@@ -187,7 +360,12 @@ export async function updateShare(
       })),
     );
   }
-  return { visibility: input.visibility, emails, hasPassword: Boolean(passwordHash) };
+  return {
+    visibility: input.visibility,
+    emails,
+    hasPassword: Boolean(passwordHash),
+    workspaceId,
+  };
 }
 
 async function upsertEmbedding(document: {
@@ -208,9 +386,10 @@ async function upsertEmbedding(document: {
     });
 }
 
-export async function searchDocuments(ownerId: string, query: string, limit: number) {
+export async function searchDocuments(userId: string, query: string, limit: number) {
   const db = getDb();
   const embedding = embedText(query);
+  const visible = agentDocumentWhere(userId);
   try {
     const distance = cosineDistance(documentEmbeddings.embedding, embedding);
     const rows = await db
@@ -225,7 +404,7 @@ export async function searchDocuments(ownerId: string, query: string, limit: num
       })
       .from(documentEmbeddings)
       .innerJoin(documents, eq(documents.id, documentEmbeddings.documentId))
-      .where(eq(documents.ownerId, ownerId))
+      .where(visible)
       .orderBy(distance)
       .limit(limit);
     return rows.map((row) => ({
@@ -238,12 +417,7 @@ export async function searchDocuments(ownerId: string, query: string, limit: num
     const rows = await db
       .select()
       .from(documents)
-      .where(
-        and(
-          eq(documents.ownerId, ownerId),
-          or(ilike(documents.title, pattern), ilike(documents.content, pattern)),
-        ),
-      )
+      .where(and(visible, or(ilike(documents.title, pattern), ilike(documents.content, pattern))))
       .limit(limit);
     return rows.map((row) => ({ ...row, score: 0, distance: null }));
   }

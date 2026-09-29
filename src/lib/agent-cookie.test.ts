@@ -121,8 +121,9 @@ describe("library cookie wiring", () => {
     expect(read("src/app/login/page.tsx")).toMatch(/getLibrarySession\(/);
     expect(read("src/app/login/page.tsx")).toMatch(/if \(result\.session\) redirect\(nextPath\)/);
     expect(read("src/app/workspace/page.tsx")).toMatch(
-      /if \(!result\.session\) redirect\("\/login\?next=\/workspace"\)/,
+      /if \(!result\.session\) redirect\(`\/login\?next=\$\{encodeURIComponent\(nextPath\)\}`\)/,
     );
+    expect(read("src/app/workspace/page.tsx")).toMatch(/workspaceInvitePath\(inviteId\)/);
 
     for (const path of [
       "src/app/api/documents/route.ts",

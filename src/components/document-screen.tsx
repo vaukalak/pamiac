@@ -24,14 +24,28 @@ interface Properties {
   visibility: Visibility;
   emails: string[];
   hasPassword: boolean;
+  workspaceId: string | null;
   canEdit: boolean;
+  isOwner: boolean;
 }
 
 export function DocumentScreen(props: Properties) {
-  const { id, type, title, content, version, visibility, emails, hasPassword, canEdit } = props;
+  const {
+    id,
+    type,
+    title,
+    content,
+    version,
+    visibility,
+    emails,
+    hasPassword,
+    workspaceId,
+    canEdit,
+    isOwner,
+  } = props;
   const router = useRouter();
   const [sharing, setSharing] = useState(false);
-  const [shareState, setShareState] = useState({ visibility, emails, hasPassword });
+  const [shareState, setShareState] = useState({ visibility, emails, hasPassword, workspaceId });
   const wide = type === "diagram";
 
   return (
@@ -46,7 +60,7 @@ export function DocumentScreen(props: Properties) {
         )}
         <div className="topbar-tools">
           <SaveState canEdit={canEdit} id={id} />
-          {canEdit ? (
+          {isOwner ? (
             <DocumentOwnerActions id={id} onShare={() => setSharing(true)} />
           ) : (
             <span className="badge">{shareState.visibility}</span>
@@ -77,6 +91,7 @@ export function DocumentScreen(props: Properties) {
           }}
           onSaved={(share) => setShareState(share)}
           visibility={shareState.visibility}
+          workspaceId={shareState.workspaceId}
         />
       ) : null}
     </>

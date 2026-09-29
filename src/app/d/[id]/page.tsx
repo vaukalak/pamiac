@@ -6,7 +6,7 @@ import { LockedDocument } from "@/components/locked-document";
 import { SetupScreen } from "@/components/setup-screen";
 import { resolveAccess, type Visibility } from "@/lib/access";
 import { appSecret } from "@/lib/config";
-import { getDocumentBundle } from "@/lib/documents";
+import { getDocumentBundle, isDocumentWorkspaceMember } from "@/lib/documents";
 import { unlockCookieName, unlockMatches } from "@/lib/passwords";
 import { getLibrarySession } from "@/lib/session";
 
@@ -37,12 +37,16 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
         appSecret(),
       )
     : false;
+  const workspaceMember = user
+    ? await isDocumentWorkspaceMember(user.id, bundle.document.workspaceId)
+    : false;
   const access = resolveAccess({
     isOwner: user?.id === bundle.document.ownerId,
     visibility: bundle.document.visibility as Visibility,
     viewerEmail: user?.email ?? null,
     allowedEmails: bundle.emails,
     passwordOk,
+    workspaceMember,
   });
 
   if (access.level === "none") notFound();
@@ -60,10 +64,12 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
           emails={bundle.emails}
           hasPassword={Boolean(bundle.document.passwordHash)}
           id={bundle.document.id}
+          isOwner={access.level === "edit" && access.reason === "owner"}
           title={bundle.document.title}
           type={bundle.document.type === "diagram" ? "diagram" : "note"}
           version={bundle.document.version}
           visibility={bundle.document.visibility as Visibility}
+          workspaceId={bundle.document.workspaceId}
         />
       )}
     </>

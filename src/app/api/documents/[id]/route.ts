@@ -3,7 +3,7 @@ import {
   presentDocumentWrite,
   requireLibraryUser,
   updateDocumentContent,
-  getOwnedDocument,
+  getEditableDocument,
 } from "@/lib/documents";
 import { documentUpdateSchema } from "@/lib/document-write";
 import { errorResponse, json, readJson } from "@/lib/http";
@@ -16,7 +16,7 @@ export async function GET(_request: Request, context: Context) {
   try {
     const user = await requireLibraryUser();
     const { id } = await context.params;
-    const document = await getOwnedDocument(user.id, id);
+    const document = await getEditableDocument(user.id, id);
     if (!document) return json({ error: "Document not found" }, 404);
     const type = document.type as DocumentType;
     return json({
