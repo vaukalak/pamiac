@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
-import { createWorkspace, fetchWorkspaces } from "./library-workspaces.ts";
+import { addWorkspacePerson, createWorkspace, fetchWorkspaces } from "./library-workspaces.ts";
 
 describe("saved workspaces", () => {
   it("loads the account's named workspaces", async () => {
@@ -48,6 +48,44 @@ describe("saved workspaces", () => {
     globalThis.fetch = async () => Response.json({ error: "Name the workspace" }, { status: 400 });
     try {
       await assert.rejects(createWorkspace("   "), /Name the workspace/);
+    } finally {
+      globalThis.fetch = original;
+    }
+  });
+
+  it("posts an email to the workspace members route", async () => {
+    const original = globalThis.fetch;
+    let url = "";
+    let body = "";
+    globalThis.fetch = async (input, init) => {
+      url = String(input);
+      body = String(init?.body ?? "");
+      return Response.json({
+        person: { status: "pending", workspaceId: "ws-1", email: "ada@example.com" },
+      });
+    };
+    try {
+      assert.deepEqual(await addWorkspacePerson("ws 1", "ada@example.com"), {
+        status: "pending",
+        workspaceId: "ws-1",
+        email: "ada@example.com",
+      });
+      assert.equal(url, "/api/workspaces/ws%201/members");
+      assert.deepEqual(JSON.parse(body), { email: "ada@example.com" });
+    } finally {
+      globalThis.fetch = original;
+    }
+  });
+
+  it("shows the server refusal when a person cannot be added", async () => {
+    const original = globalThis.fetch;
+    globalThis.fetch = async () =>
+      Response.json({ error: "Personal space cannot receive members" }, { status: 400 });
+    try {
+      await assert.rejects(
+        addWorkspacePerson("personal", "ada@example.com"),
+        /Personal space cannot receive members/,
+      );
     } finally {
       globalThis.fetch = original;
     }

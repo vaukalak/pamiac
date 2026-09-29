@@ -9,6 +9,7 @@ import {
   PERSONAL_SPACE_ID,
   placeDocument,
   workspaceName,
+  workspacePerson,
 } from "./library-spaces.ts";
 
 describe("library personal space", () => {
@@ -90,6 +91,43 @@ describe("library personal space", () => {
       workspaceId: "ws-1",
       userId: "user-1",
     });
+  });
+
+  it("refuses to add a person to the personal space", () => {
+    assert.throws(
+      () => workspacePerson(PERSONAL_SPACE_ID, "ada@example.com", "user-2"),
+      /cannot receive members/,
+    );
+    assert.throws(
+      () => workspacePerson(PERSONAL_SPACE_ID, "ada@example.com", null),
+      /cannot receive members/,
+    );
+  });
+
+  it("adds an existing account as a member and keeps a missing account pending", () => {
+    assert.deepEqual(workspacePerson("ws-1", "  Ada@Example.com ", "user-2"), {
+      status: "member",
+      workspaceId: "ws-1",
+      userId: "user-2",
+    });
+    assert.deepEqual(workspacePerson("ws-1", "  Ada@Example.com ", null), {
+      status: "pending",
+      workspaceId: "ws-1",
+      email: "ada@example.com",
+    });
+    assert.equal(
+      Object.hasOwn(workspacePerson("ws-1", "ada@example.com", "user-2"), "role"),
+      false,
+    );
+  });
+
+  it("rejects a blank or invalid email when adding a person", () => {
+    assert.throws(() => workspacePerson("ws-1", "   ", null), /Add an email address/);
+    assert.throws(() => workspacePerson("ws-1", "not-an-email", "user-2"), /Invalid email/);
+    assert.throws(
+      () => workspacePerson("", "ada@example.com", "user-2"),
+      /workspace and an account/,
+    );
   });
 
   it("trims a workspace name and rejects a blank or oversized one", () => {

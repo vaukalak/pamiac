@@ -96,6 +96,19 @@ export const workspaceMembers = pgTable(
   ],
 );
 
+export const workspaceInvites = pgTable(
+  "workspace_invite",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    email: text("email").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [uniqueIndex("workspace_invite_email_idx").on(table.workspaceId, table.email)],
+);
+
 export const documents = pgTable(
   "document",
   {

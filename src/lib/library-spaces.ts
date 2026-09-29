@@ -1,3 +1,5 @@
+import { normalizeEmails } from "./access.ts";
+
 export const PERSONAL_SPACE_ID = "personal";
 
 const WORKSPACE_NAME_MAX = 80;
@@ -41,6 +43,30 @@ export function firstMember(workspaceId: string, userId: string): WorkspaceMembe
     throw new Error("A workspace member needs a workspace and an account");
   }
   return { workspaceId, userId };
+}
+
+export type WorkspacePerson =
+  | { status: "member"; workspaceId: string; userId: string }
+  | { status: "pending"; workspaceId: string; email: string };
+
+export function workspacePerson(
+  workspaceId: string,
+  email: string,
+  accountUserId: string | null,
+): WorkspacePerson {
+  if (workspaceId === PERSONAL_SPACE_ID) {
+    throw new Error("Personal space cannot receive members");
+  }
+  if (!workspaceId) {
+    throw new Error("A workspace member needs a workspace and an account");
+  }
+  const [address] = normalizeEmails([email]);
+  if (!address) throw new Error("Add an email address");
+  if (accountUserId) {
+    const member = firstMember(workspaceId, accountUserId);
+    return { status: "member", workspaceId: member.workspaceId, userId: member.userId };
+  }
+  return { status: "pending", workspaceId, email: address };
 }
 
 export function openLibraryId(

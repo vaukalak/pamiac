@@ -1253,7 +1253,8 @@ code {
   grid-column: 2;
   grid-row: 2;
 }
-.workspace-create .error {
+.workspace-create .error,
+.workspace-create .hint {
   grid-column: 1 / -1;
   grid-row: 3;
   margin: 0;
@@ -1263,14 +1264,16 @@ code {
     grid-template-columns: 1fr;
   }
   .workspace-create button,
-  .workspace-create .error {
+  .workspace-create .error,
+  .workspace-create .hint {
     grid-column: 1;
   }
   .workspace-create button {
     grid-row: 3;
     justify-self: start;
   }
-  .workspace-create .error {
+  .workspace-create .error,
+  .workspace-create .hint {
     grid-row: 4;
   }
 }

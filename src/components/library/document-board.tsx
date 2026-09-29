@@ -14,6 +14,7 @@ import { LibraryEmpty } from "@/components/library/library-empty";
 import { LibraryFilters } from "@/components/library/library-filters";
 import { ViewToggle } from "@/components/library/view-toggle";
 import { WorkspaceCreate } from "@/components/library/workspace-create";
+import { WorkspaceMemberAdd } from "@/components/library/workspace-member-add";
 import { WorkspaceSelector } from "@/components/library/workspace-selector";
 import { libraryItemsQueryKey, libraryItemsQueryOptions } from "@/lib/library-items";
 import {
@@ -126,6 +127,7 @@ export function DocumentBoard(props: Properties) {
             selectedId={workspaceId}
           />
           <WorkspaceCreate onCreated={chooseWorkspace} />
+          <WorkspaceMemberAdd key={workspaceId} workspaceId={workspaceId} />
           <h1>Library</h1>
           <p className="lede">Notes and diagrams.</p>
         </div>
