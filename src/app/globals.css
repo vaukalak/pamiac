@@ -1287,6 +1287,16 @@ code {
     grid-row: 4;
   }
 }
+.workspace-leave {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 0 0 16px;
+}
+.workspace-leave .error {
+  margin: 0;
+}
 .workspace-selector button {
   border: none;
   background: transparent;

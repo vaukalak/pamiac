@@ -1,9 +1,11 @@
-import { asc, eq } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { workspaceMembers, workspaces } from "@/db/schema";
 import { HttpError } from "@/lib/http";
 import {
   firstMember,
+  isWorkspaceAdmin,
+  PERSONAL_SPACE_ID,
   workspaceName,
   workspaceRole,
   type NamedWorkspace,
@@ -48,4 +50,19 @@ export async function createNamedWorkspace(userId: string, name: string): Promis
     });
   });
   return { id, name: label, role };
+}
+
+export async function leaveWorkspace(userId: string, workspaceId: string) {
+  if (workspaceId === PERSONAL_SPACE_ID) {
+    throw new HttpError(400, "Personal space has no members");
+  }
+  const [membership] = await getDb()
+    .select({ id: workspaceMembers.id, role: workspaceMembers.role })
+    .from(workspaceMembers)
+    .where(and(eq(workspaceMembers.workspaceId, workspaceId), eq(workspaceMembers.userId, userId)));
+  if (!membership) throw new HttpError(404, "Workspace not found");
+  if (!isWorkspaceAdmin(membership.role)) {
+    throw new HttpError(403, "Only an admin can leave");
+  }
+  await getDb().delete(workspaceMembers).where(eq(workspaceMembers.id, membership.id));
 }

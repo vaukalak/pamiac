@@ -47,3 +47,12 @@ export async function addWorkspacePerson(
   }
   return body.person;
 }
+
+export async function leaveWorkspace(workspaceId: string): Promise<void> {
+  const response = await fetch(`/api/workspaces/${encodeURIComponent(workspaceId)}/leave`, {
+    method: "POST",
+  });
+  if (response.ok) return;
+  const body = (await response.json()) as { error?: string };
+  throw new Error(body.error ?? "Could not leave the workspace");
+}
