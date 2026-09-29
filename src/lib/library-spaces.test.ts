@@ -1,7 +1,13 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
-import { documentsInSpace, librarySpaces, PERSONAL_SPACE_ID } from "./library-spaces.ts";
+import {
+  documentsInSpace,
+  firstMember,
+  librarySpaces,
+  PERSONAL_SPACE_ID,
+  workspaceName,
+} from "./library-spaces.ts";
 
 describe("library personal space", () => {
   it("lists one personal space and not an organization", () => {
@@ -42,7 +48,67 @@ describe("library personal space", () => {
       new URL("../components/library/document-board.tsx", import.meta.url),
       "utf8",
     );
+    const create = readFileSync(
+      new URL("../components/library/workspace-create.tsx", import.meta.url),
+      "utf8",
+    );
     assert.equal(/invite/i.test(selector), false);
     assert.equal(/invite/i.test(board), false);
+    assert.equal(/invite/i.test(create), false);
+  });
+
+  it("lists named workspaces after the personal space", () => {
+    const spaces = librarySpaces([
+      { id: "ws-1", name: "Atlas" },
+      { id: "ws-2", name: "Field notes" },
+    ]);
+    assert.deepEqual(
+      spaces.map((space) => space.id),
+      [PERSONAL_SPACE_ID, "ws-1", "ws-2"],
+    );
+    assert.deepEqual(
+      spaces.map((space) => space.label),
+      ["Personal space", "Atlas", "Field notes"],
+    );
+    assert.equal(Object.hasOwn(spaces[1] ?? {}, "invite"), false);
+  });
+
+  it("drops a created row that reuses the personal id", () => {
+    const spaces = librarySpaces([{ id: PERSONAL_SPACE_ID, name: "Sneaky" }]);
+    assert.equal(spaces.length, 1);
+    assert.equal(spaces[0]?.label, "Personal space");
+  });
+
+  it("refuses members on the personal space", () => {
+    assert.throws(() => firstMember(PERSONAL_SPACE_ID, "user-1"), /cannot receive members/);
+  });
+
+  it("records the creator as the first member of a named workspace", () => {
+    assert.deepEqual(firstMember("ws-1", "user-1"), {
+      workspaceId: "ws-1",
+      userId: "user-1",
+    });
+  });
+
+  it("trims a workspace name and rejects a blank or oversized one", () => {
+    assert.equal(workspaceName("  Atlas  "), "Atlas");
+    assert.throws(() => workspaceName("   "), /Name the workspace/);
+    assert.throws(() => workspaceName("a".repeat(81)), /Name is too long/);
+  });
+
+  it("keeps today's documents when the personal space is chosen beside other workspaces", () => {
+    const documents = [{ id: "note-1" }, { id: "diagram-2" }];
+    const created = [{ id: "ws-1", name: "Atlas" }];
+    assert.equal(documentsInSpace(PERSONAL_SPACE_ID, documents, created), documents);
+  });
+
+  it("does not attach personal documents to a created workspace", () => {
+    const documents = [{ id: "note-1" }];
+    const created = [{ id: "ws-1", name: "Atlas" }];
+    documentsInSpace("ws-1", documents, created);
+    assert.deepEqual(created, [{ id: "ws-1", name: "Atlas" }]);
+    assert.deepEqual(documents, [{ id: "note-1" }]);
+    const space = librarySpaces(created).find((item) => item.id === "ws-1");
+    assert.equal(Object.hasOwn(space ?? {}, "documents"), false);
   });
 });

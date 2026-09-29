@@ -1222,6 +1222,7 @@ code {
 
 .workspace-selector {
   display: flex;
+  flex-wrap: wrap;
   width: fit-content;
   gap: 4px;
   margin: 0 0 12px;
@@ -1229,6 +1230,49 @@ code {
   border: 1px solid var(--line);
   border-radius: 999px;
   background: var(--card);
+}
+.workspace-create {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) auto;
+  gap: 6px 10px;
+  align-items: center;
+  max-width: 520px;
+  margin: 0 0 16px;
+}
+.workspace-create label {
+  grid-column: 1;
+  grid-row: 1;
+  margin: 0;
+}
+.workspace-create input {
+  grid-column: 1;
+  grid-row: 2;
+  width: 100%;
+}
+.workspace-create button {
+  grid-column: 2;
+  grid-row: 2;
+}
+.workspace-create .error {
+  grid-column: 1 / -1;
+  grid-row: 3;
+  margin: 0;
+}
+@media (max-width: 520px) {
+  .workspace-create {
+    grid-template-columns: 1fr;
+  }
+  .workspace-create button,
+  .workspace-create .error {
+    grid-column: 1;
+  }
+  .workspace-create button {
+    grid-row: 3;
+    justify-self: start;
+  }
+  .workspace-create .error {
+    grid-row: 4;
+  }
 }
 .workspace-selector button {
   border: none;

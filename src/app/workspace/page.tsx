@@ -7,6 +7,7 @@ import type { Visibility } from "@/lib/access";
 import type { DocumentType } from "@/lib/content";
 import { listLibraryDocuments } from "@/lib/documents";
 import { getSession } from "@/lib/session";
+import { listMemberWorkspaces } from "@/lib/workspaces";
 
 export const dynamic = "force-dynamic";
 
@@ -25,8 +26,10 @@ export default async function WorkspacePage() {
   if (!result.session) redirect("/login?next=/workspace");
 
   let rows;
+  let workspaces;
   try {
     rows = await listLibraryDocuments(result.session.user.id);
+    workspaces = await listMemberWorkspaces(result.session.user.id);
   } catch (error) {
     return <SetupScreen detail={setupDetail(error)} />;
   }
@@ -47,7 +50,7 @@ export default async function WorkspacePage() {
       <AppHeader email={result.session.user.email} />
       <main className="workspace">
         <QueryProvider>
-          <DocumentBoard documents={documents} />
+          <DocumentBoard documents={documents} workspaces={workspaces} />
         </QueryProvider>
       </main>
     </>

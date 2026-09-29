@@ -13,36 +13,48 @@ import { LibraryCreate } from "@/components/library/library-create";
 import { LibraryEmpty } from "@/components/library/library-empty";
 import { LibraryFilters } from "@/components/library/library-filters";
 import { ViewToggle } from "@/components/library/view-toggle";
+import { WorkspaceCreate } from "@/components/library/workspace-create";
 import { WorkspaceSelector } from "@/components/library/workspace-selector";
 import { libraryItemsQueryKey, libraryItemsQueryOptions } from "@/lib/library-items";
-import { documentsInSpace, librarySpaces, PERSONAL_SPACE_ID } from "@/lib/library-spaces";
+import {
+  documentsInSpace,
+  librarySpaces,
+  PERSONAL_SPACE_ID,
+  type NamedWorkspace,
+} from "@/lib/library-spaces";
+import { workspacesQueryKey, workspacesQueryOptions } from "@/lib/library-workspaces";
 
 export type { BoardDocument };
 
 interface Properties {
   documents: BoardDocument[];
+  workspaces: NamedWorkspace[];
 }
 
 const VIEW_KEY = "pamiac-library-view";
 
 export function DocumentBoard(props: Properties) {
-  const { documents } = props;
+  const { documents, workspaces } = props;
   const queryClient = useQueryClient();
   const itemsQuery = useQuery({
     ...libraryItemsQueryOptions(),
     initialData: documents,
+  });
+  const spacesQuery = useQuery({
+    ...workspacesQueryOptions(),
+    initialData: workspaces,
   });
   const items = itemsQuery.data;
   const [filter, setFilter] = useState<LibraryFilter>("all");
   const [view, setView] = useState<LibraryView>("grid");
   const [dragging, setDragging] = useState<string | null>(null);
   const [workspaceId, setWorkspaceId] = useState(PERSONAL_SPACE_ID);
-  const library = documentsInSpace(workspaceId, items);
+  const library = documentsInSpace(workspaceId, items, spacesQuery.data);
   const visible = useMemo(
     () => library.filter((item) => filter === "all" || item.type === filter),
     [library, filter],
   );
-  const reorder = view === "grid" && filter === "all";
+  const reorder = view === "grid" && filter === "all" && workspaceId === PERSONAL_SPACE_ID;
 
   useEffect(() => {
     const stored = window.localStorage.getItem(VIEW_KEY);
@@ -55,7 +67,9 @@ export function DocumentBoard(props: Properties) {
   }
 
   function chooseWorkspace(nextId: string) {
-    const known = librarySpaces().some((space) => space.id === nextId);
+    const stored =
+      queryClient.getQueryData<NamedWorkspace[]>(workspacesQueryKey) ?? spacesQuery.data;
+    const known = librarySpaces(stored).some((space) => space.id === nextId);
     if (!known) return;
     setWorkspaceId(nextId);
   }
@@ -98,7 +112,12 @@ export function DocumentBoard(props: Properties) {
     <div>
       <div className="workspace-head">
         <div>
-          <WorkspaceSelector onSelect={chooseWorkspace} selectedId={workspaceId} />
+          <WorkspaceSelector
+            initialWorkspaces={workspaces}
+            onSelect={chooseWorkspace}
+            selectedId={workspaceId}
+          />
+          <WorkspaceCreate onCreated={chooseWorkspace} />
           <h1>Library</h1>
           <p className="lede">Notes and diagrams.</p>
         </div>
