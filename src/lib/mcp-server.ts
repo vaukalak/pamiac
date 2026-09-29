@@ -21,48 +21,18 @@ import {
   presentReadableDocument,
   presentSearchHit,
 } from "@/lib/mcp-documents";
+import {
+  createAnnotations,
+  diagramDocumentOutput,
+  listDocumentsOutput,
+  noteDocumentOutput,
+  profileOutput,
+  readAnnotations,
+  readableDocumentOutput,
+  searchDocumentsOutput,
+  updateAnnotations,
+} from "@/lib/mcp-output";
 import { profileContent } from "@/lib/mcp-profile";
-
-const readAnnotations = {
-  readOnlyHint: true,
-  destructiveHint: false,
-  openWorldHint: false,
-} as const;
-
-const writeAnnotations = {
-  readOnlyHint: false,
-  destructiveHint: false,
-  openWorldHint: false,
-} as const;
-
-const profileOutput = z
-  .object({
-    id: z.string().min(1),
-    name: z.string().optional(),
-    email: z.string().optional(),
-  })
-  .strict();
-
-const searchHit = z
-  .object({
-    id: z.string(),
-    type: z.string(),
-    title: z.string(),
-    url: z.string(),
-    score: z.number(),
-    excerpt: z.string(),
-  })
-  .strict();
-
-const listedDocument = z
-  .object({
-    id: z.string(),
-    type: z.string(),
-    title: z.string(),
-    url: z.string(),
-    updatedAt: z.string(),
-  })
-  .strict();
 
 const documentId = z.string().min(1).max(200);
 const titleField = z.string().max(160).optional();
@@ -203,7 +173,7 @@ export function createPamiacMcpServer(userId: string, origin: string) {
     {
       description: "Search this account's notes and diagrams. Use it before creating a duplicate.",
       inputSchema: searchInput,
-      outputSchema: z.object({ results: z.array(searchHit) }).strict(),
+      outputSchema: searchDocumentsOutput,
       annotations: readAnnotations,
     },
     async ({ query, limit }) => {
@@ -224,7 +194,7 @@ export function createPamiacMcpServer(userId: string, origin: string) {
     {
       description: "List this account's notes and diagrams.",
       inputSchema: listInput,
-      outputSchema: z.object({ documents: z.array(listedDocument) }).strict(),
+      outputSchema: listDocumentsOutput,
       annotations: readAnnotations,
     },
     async ({ type }) => {
@@ -246,6 +216,7 @@ export function createPamiacMcpServer(userId: string, origin: string) {
     {
       description: "Read one note or diagram owned by this account.",
       inputSchema: readInput,
+      outputSchema: readableDocumentOutput,
       annotations: readAnnotations,
     },
     async ({ id }) => {
@@ -265,7 +236,8 @@ export function createPamiacMcpServer(userId: string, origin: string) {
     {
       description: "Create a markdown note in this account.",
       inputSchema: createNoteInput,
-      annotations: writeAnnotations,
+      outputSchema: noteDocumentOutput,
+      annotations: createAnnotations,
     },
     async ({ title, content }) => {
       if (!userId) return errorResult("Sign-in required");
@@ -285,7 +257,8 @@ export function createPamiacMcpServer(userId: string, origin: string) {
       description:
         "Create a UML diagram. Nodes use kind, name, attributes, and methods. Relations use type.",
       inputSchema: createDiagramInput,
-      annotations: writeAnnotations,
+      outputSchema: diagramDocumentOutput,
+      annotations: createAnnotations,
     },
     async ({ title, nodes, relations }) => {
       if (!userId) return errorResult("Sign-in required");
@@ -306,7 +279,8 @@ export function createPamiacMcpServer(userId: string, origin: string) {
     {
       description: "Replace a note with the full markdown content.",
       inputSchema: updateNoteInput,
-      annotations: writeAnnotations,
+      outputSchema: noteDocumentOutput,
+      annotations: updateAnnotations,
     },
     async ({ id, title, content }) => {
       if (!userId) return errorResult("Sign-in required");
@@ -324,7 +298,8 @@ export function createPamiacMcpServer(userId: string, origin: string) {
     {
       description: UPDATE_DIAGRAM_DESCRIPTION,
       inputSchema: updateDiagramInput,
-      annotations: writeAnnotations,
+      outputSchema: diagramDocumentOutput,
+      annotations: updateAnnotations,
     },
     async ({ id, title, nodes, deleteNodes, relations, deleteRelations }) => {
       if (!userId) return errorResult("Sign-in required");
