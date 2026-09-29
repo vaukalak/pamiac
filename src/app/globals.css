@@ -493,15 +493,35 @@ select:focus {
   width: min(1120px, calc(100% - 32px));
   align-items: center;
 }
-.title-input {
+.document-heading {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2px;
+}
+.document-heading .hint {
+  display: block;
+}
+input.title-input {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   font-family: var(--serif);
   font-size: 32px;
+  line-height: 1.2;
   border: none;
   background: transparent;
   padding: 0;
+  margin: 0;
   border-radius: 0;
+  box-shadow: none;
 }
-.title-input:focus {
+input.title-input:focus {
+  border: none;
+  outline: none;
   box-shadow: none;
 }
 .save-state {
@@ -662,6 +682,33 @@ select:focus {
 .uml-card.kind-actor.is-selected {
   outline: 2px solid var(--teal);
   border-radius: 12px;
+}
+.uml-card.kind-participant header {
+  border-bottom: none;
+}
+.uml-card.kind-activation {
+  width: 22px;
+  min-width: 22px;
+  max-width: 22px;
+  min-height: 48px;
+  background: var(--uml-ink);
+  color: var(--uml-fill);
+  box-shadow: none;
+}
+.uml-card.kind-activation header {
+  border-bottom: none;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  padding: 8px 0;
+}
+.uml-card.kind-activation .name {
+  font-size: 11px;
+  font-weight: 560;
+  letter-spacing: 0.04em;
+}
+.uml-card.kind-activation.is-selected {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
 }
 .uml-card .react-flow__handle {
   width: 8px;

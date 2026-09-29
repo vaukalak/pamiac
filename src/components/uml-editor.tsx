@@ -32,6 +32,8 @@ const KIND_LABEL: Record<UmlKind, string> = {
   class: "Class",
   interface: "Interface",
   actor: "Actor",
+  participant: "Participant",
+  activation: "Activation",
   usecase: "Use case",
   package: "Package",
   component: "Component",

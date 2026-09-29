@@ -37,7 +37,7 @@ export async function GET(request: Request) {
       diagram: {
         nodes: {
           id: "optional, otherwise generated from name",
-          kind: "class | interface | actor | usecase | package | component | note",
+          kind: "class | interface | actor | participant | activation | usecase | package | component | note",
           name: "string",
           attributes: ["visibility name: type"],
           methods: ["visibility name(): type"],

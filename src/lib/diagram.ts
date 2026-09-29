@@ -4,6 +4,8 @@ export const UML_KINDS = [
   "class",
   "interface",
   "actor",
+  "participant",
+  "activation",
   "usecase",
   "package",
   "component",

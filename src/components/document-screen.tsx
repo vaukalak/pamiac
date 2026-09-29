@@ -57,7 +57,7 @@ export function DocumentScreen(props: Properties) {
   return (
     <>
       <div className={wide ? "topbar wide" : "topbar"}>
-        <div style={{ flex: 1 }}>
+        <div className="document-heading">
           <Link className="hint" href="/workspace">
             Library
           </Link>
