@@ -2,7 +2,10 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 
-const login = readFileSync(new URL("../app/login/page.tsx", import.meta.url), "utf8");
+const login = readFileSync(
+  new URL("../components/login/login-sign-in-copy.tsx", import.meta.url),
+  "utf8",
+);
 const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8");
 
 function expect(actual: string) {

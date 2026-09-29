@@ -3,6 +3,7 @@
 import { useLayoutEffect, useState } from "react";
 import { LoginLinkSent } from "@/components/login/login-link-sent";
 import { LoginSendFailure } from "@/components/login/login-send-failure";
+import { LoginSignInCopy } from "@/components/login/login-sign-in-copy";
 import { authClient } from "@/lib/auth-client";
 import { loginAnnouncement } from "@/lib/login-announcement";
 import { loginSendFailureSentence } from "@/lib/login-send-failure";
@@ -93,6 +94,7 @@ export function LoginForm(props: Properties) {
 
   return (
     <>
+      {status !== "sent" ? <LoginSignInCopy /> : null}
       <div aria-atomic="true" aria-live="polite" className="login-announcement">
         {announcement}
       </div>

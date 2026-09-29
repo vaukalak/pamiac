@@ -3,6 +3,11 @@ import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 
 const login = readFileSync(new URL("../app/login/page.tsx", import.meta.url), "utf8");
+const copy = readFileSync(
+  new URL("../components/login/login-sign-in-copy.tsx", import.meta.url),
+  "utf8",
+);
+const form = readFileSync(new URL("../components/login-form.tsx", import.meta.url), "utf8");
 const home = readFileSync(new URL("../app/page.tsx", import.meta.url), "utf8");
 const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8");
 
@@ -43,10 +48,12 @@ describe("login eyebrow", () => {
     expect(eyebrowText(login)).toBe(eyebrowText(home));
     expect(eyebrowText(login)).toBe("Notes, UML, and agents");
     expect(card).not.toMatch(/>Account</);
-    expect(card).toMatch(/<h1>Sign in or register<\/h1>/);
-    expect(card).toMatch(
-      /We email you a link\. There is no password\. If the address is new, opening the link\s+creates the account\./,
+    expect(card).not.toMatch(/<h1>Sign in or register<\/h1>/);
+    expect(copy).toMatch(/<h1>Sign in or register<\/h1>/);
+    expect(copy).toMatch(
+      /We email you a link\. There is no password\. If the address is new, opening the link\s+creates\s+the account\./,
     );
+    expect(form).toMatch(/status !== "sent" \? <LoginSignInCopy \/> : null/);
     expect(card).toMatch(/<LoginForm nextPath=\{formNext\} \/>/);
     expect(login).toMatch(/<AppHeader \/>/);
     expect(login).toMatch(/className="auth-ground"/);

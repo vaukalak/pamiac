@@ -436,7 +436,7 @@ select:focus {
   color: var(--ink-soft);
   font-size: 14px;
 }
-.login-sent h2 {
+.auth-door .auth-card .login-sent h1 {
   margin: 0;
   font-size: 22px;
   line-height: 1.25;
