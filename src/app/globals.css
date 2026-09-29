@@ -1144,6 +1144,7 @@ code {
 .icon-button:focus-visible,
 .filters button:focus-visible,
 .view-toggle button:focus-visible,
+.workspace-selector button:focus-visible,
 .menu-item:focus-visible {
   outline: 2px solid var(--teal);
   outline-offset: 2px;
@@ -1216,6 +1217,34 @@ code {
 }
 .view-toggle button[aria-pressed="true"] {
   background: var(--ink);
+  color: var(--on-ink);
+}
+
+.workspace-selector {
+  display: flex;
+  width: fit-content;
+  gap: 4px;
+  margin: 0 0 12px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--card);
+}
+.workspace-selector button {
+  border: none;
+  background: transparent;
+  border-radius: 999px;
+  padding: 6px 12px;
+  color: var(--ink-soft);
+}
+.workspace-selector button:hover {
+  color: var(--ink);
+}
+.workspace-selector button[aria-pressed="true"] {
+  background: var(--ink);
+  color: var(--on-ink);
+}
+.workspace-selector button[aria-pressed="true"]:hover {
   color: var(--on-ink);
 }
 

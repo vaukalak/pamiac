@@ -13,7 +13,9 @@ import { LibraryCreate } from "@/components/library/library-create";
 import { LibraryEmpty } from "@/components/library/library-empty";
 import { LibraryFilters } from "@/components/library/library-filters";
 import { ViewToggle } from "@/components/library/view-toggle";
+import { WorkspaceSelector } from "@/components/library/workspace-selector";
 import { libraryItemsQueryKey, libraryItemsQueryOptions } from "@/lib/library-items";
+import { documentsInSpace, librarySpaces, PERSONAL_SPACE_ID } from "@/lib/library-spaces";
 
 export type { BoardDocument };
 
@@ -34,9 +36,11 @@ export function DocumentBoard(props: Properties) {
   const [filter, setFilter] = useState<LibraryFilter>("all");
   const [view, setView] = useState<LibraryView>("grid");
   const [dragging, setDragging] = useState<string | null>(null);
+  const [workspaceId, setWorkspaceId] = useState(PERSONAL_SPACE_ID);
+  const library = documentsInSpace(workspaceId, items);
   const visible = useMemo(
-    () => items.filter((item) => filter === "all" || item.type === filter),
-    [items, filter],
+    () => library.filter((item) => filter === "all" || item.type === filter),
+    [library, filter],
   );
   const reorder = view === "grid" && filter === "all";
 
@@ -48,6 +52,12 @@ export function DocumentBoard(props: Properties) {
   function chooseView(next: LibraryView) {
     setView(next);
     window.localStorage.setItem(VIEW_KEY, next);
+  }
+
+  function chooseWorkspace(nextId: string) {
+    const known = librarySpaces().some((space) => space.id === nextId);
+    if (!known) return;
+    setWorkspaceId(nextId);
   }
 
   function apply(change: BoardChange) {
@@ -69,7 +79,7 @@ export function DocumentBoard(props: Properties) {
 
   async function dropOn(targetId: string) {
     if (!dragging || dragging === targetId || !reorder) return;
-    const next = [...items];
+    const next = [...library];
     const from = next.findIndex((item) => item.id === dragging);
     const to = next.findIndex((item) => item.id === targetId);
     if (from < 0 || to < 0) return;
@@ -88,6 +98,7 @@ export function DocumentBoard(props: Properties) {
     <div>
       <div className="workspace-head">
         <div>
+          <WorkspaceSelector onSelect={chooseWorkspace} selectedId={workspaceId} />
           <h1>Library</h1>
           <p className="lede">Notes and diagrams.</p>
         </div>
@@ -115,7 +126,7 @@ export function DocumentBoard(props: Properties) {
           ))}
         </div>
       )}
-      {reorder && items.length > 1 ? (
+      {reorder && library.length > 1 ? (
         <p className="hint">Drag cards to reorder the library.</p>
       ) : null}
     </div>
