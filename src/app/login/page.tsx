@@ -27,12 +27,62 @@ export default async function LoginPage({
   return (
     <>
       <AppHeader />
-      <main className="auth-wrap">
+      <main className="auth-wrap auth-door">
+        <div className="auth-ground" aria-hidden="true">
+          <svg className="auth-ground-note" viewBox="0 0 220 150" focusable="false">
+            <path d="M11 11 H135 L167 43 V139 H11 Z" fill="var(--uml-note-shadow)" />
+            <path
+              d="M8 8 H132 L164 40 V136 H8 Z"
+              fill="var(--uml-note)"
+              stroke="var(--uml-note-edge)"
+              strokeWidth="1.5"
+            />
+            <path
+              d="M132 8 L164 40 H132 Z"
+              fill="var(--paper-deep)"
+              stroke="var(--uml-note-edge)"
+              strokeWidth="1.5"
+            />
+            <path
+              d="M24 62 H108 M24 82 H86 M24 102 H100"
+              fill="none"
+              stroke="var(--uml-note-edge)"
+              strokeWidth="1.25"
+              strokeLinecap="round"
+            />
+          </svg>
+          <svg className="auth-ground-diagram" viewBox="0 0 280 200" focusable="false">
+            <defs>
+              <pattern id="auth-ground-grid" width="24" height="24" patternUnits="userSpaceOnUse">
+                <path d="M24 0 H0 V24" fill="none" stroke="var(--canvas-grid)" strokeWidth="1" />
+              </pattern>
+            </defs>
+            <rect width="280" height="200" fill="var(--canvas)" />
+            <rect width="280" height="200" fill="url(#auth-ground-grid)" />
+            <rect x="43" y="55" width="250" height="118" fill="var(--uml-ink)" />
+            <rect
+              x="40"
+              y="52"
+              width="250"
+              height="118"
+              fill="var(--uml-fill)"
+              stroke="var(--uml-ink)"
+              strokeWidth="1.5"
+            />
+            <path
+              d="M40 88 H290 M40 124 H290"
+              fill="none"
+              stroke="var(--uml-ink)"
+              strokeWidth="1.25"
+            />
+          </svg>
+        </div>
         <section className="auth-card">
-          <p className="eyebrow">Account</p>
+          <p className="eyebrow">Notes, UML, and agents</p>
           <h1>Sign in or register</h1>
           <p>
-            We email you a magic link. If the address is new, opening the link creates the account.
+            We email you a link. There is no password. If the address is new, opening the link
+            creates the account.
           </p>
           <LoginForm nextPath={formNext} />
         </section>

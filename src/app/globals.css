@@ -31,9 +31,9 @@
   --scrim: rgba(26, 24, 20, 0.35);
   --secret-bg: #14211f;
   --secret-ink: #e7f6f3;
-  --serif: var(--font-serif), "Iowan Old Style", Georgia, serif;
-  --sans: var(--font-sans), "Avenir Next", sans-serif;
-  --mono: var(--font-mono), ui-monospace, monospace;
+  --serif: var(--font-serif, "Iowan Old Style", Georgia, serif);
+  --sans: var(--font-sans, "Avenir Next", sans-serif);
+  --mono: var(--font-mono, ui-monospace, monospace);
   color-scheme: light;
 }
 
@@ -163,6 +163,10 @@ button {
   font-size: 22px;
   font-weight: 560;
   letter-spacing: -0.03em;
+}
+.brand:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
 }
 
 .brand-mark {
@@ -311,16 +315,68 @@ h3 {
   padding: 24px 0 64px;
 }
 .auth-card {
-  width: min(460px, 100%);
+  width: min(460px, calc(100% - 32px));
   padding: 28px;
 }
 .auth-card h1 {
   margin: 0 0 8px;
   font-size: 40px;
 }
+.auth-door .auth-card h1 {
+  font-size: 24px;
+  line-height: 1.2;
+}
 .auth-card p {
   color: var(--ink-soft);
   margin-top: 0;
+}
+.auth-door .auth-card .eyebrow {
+  color: var(--teal);
+}
+
+.auth-door {
+  position: relative;
+  overflow: hidden;
+}
+.auth-door .auth-card {
+  position: relative;
+  z-index: 1;
+}
+.auth-ground {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  user-select: none;
+}
+.auth-ground-note,
+.auth-ground-diagram {
+  position: absolute;
+  display: block;
+}
+.auth-ground-note {
+  left: -36px;
+  bottom: -44px;
+  width: 210px;
+  height: 104px;
+}
+.auth-ground-diagram {
+  display: none;
+}
+@media (min-width: 1180px) {
+  .auth-ground-note {
+    left: -24px;
+    bottom: -32px;
+    width: min(280px, calc(50% - 290px));
+    height: 168px;
+  }
+  .auth-ground-diagram {
+    display: block;
+    top: -12px;
+    right: -140px;
+    width: 340px;
+    height: 228px;
+  }
 }
 
 label {
@@ -341,6 +397,26 @@ select {
   padding: 11px 12px;
   outline: none;
 }
+.auth-door .auth-card input[type="email"] {
+  background: var(--card);
+}
+.auth-door .auth-card input[type="email"][aria-invalid="true"],
+.auth-door .auth-card input[type="email"][aria-invalid="true"]:focus {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 28%, transparent);
+}
+.auth-door .auth-card p.login-email-error {
+  color: var(--danger);
+  font-size: 14px;
+  line-height: 1.4;
+  margin: 8px 0 0;
+}
+.auth-door .auth-card p.error {
+  color: var(--danger);
+  font-size: 14px;
+  line-height: 1.4;
+  margin: 0;
+}
 textarea {
   min-height: 96px;
   resize: vertical;
@@ -359,6 +435,29 @@ select:focus {
 .hint {
   color: var(--ink-soft);
   font-size: 14px;
+}
+.login-sent h2 {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.25;
+}
+.login-sent .hint {
+  overflow-wrap: anywhere;
+}
+.login-sent .btn.ghost {
+  justify-self: start;
+}
+.login-announcement {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
 .error {
   color: var(--danger);
