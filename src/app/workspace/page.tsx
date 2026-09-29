@@ -7,7 +7,7 @@ import { SetupScreen } from "@/components/setup-screen";
 import type { Visibility } from "@/lib/access";
 import type { DocumentType } from "@/lib/content";
 import { listLibraryDocuments } from "@/lib/documents";
-import { getSession } from "@/lib/session";
+import { getLibrarySession } from "@/lib/session";
 import { workspaceInvitePath } from "@/lib/workspace-invite-link";
 import { listMemberWorkspaces } from "@/lib/workspaces";
 
@@ -34,7 +34,7 @@ export default async function WorkspacePage(props: Properties) {
   const { searchParams } = props;
   const params = await searchParams;
   const inviteId = inviteIdFromQuery(params.invite);
-  const result = await getSession();
+  const result = await getLibrarySession();
   if (result.status === "setup") return <SetupScreen />;
   if (result.status === "error") return <SetupScreen detail={result.message} />;
   const nextPath = inviteId ? workspaceInvitePath(inviteId) : "/workspace";

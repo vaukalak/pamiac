@@ -16,6 +16,7 @@ import {
   documentEmbeddings,
   documentShares,
   documents,
+  user,
   workspaceMembers,
 } from "@/db/schema";
 import type { Visibility } from "@/lib/access";
@@ -33,7 +34,7 @@ import {
 } from "@/lib/library-spaces";
 import { currentPlan, currentWorkspacePlan, documentRoom } from "@/lib/plans";
 import { hashPassword } from "@/lib/passwords";
-import { createAgentToken, hashAgentToken, tokenHashesMatch } from "@/lib/tokens";
+import { agentTokenStatus, createAgentToken, hashAgentToken } from "@/lib/tokens";
 
 export async function listDocuments(ownerId: string) {
   return getDb()
@@ -462,26 +463,51 @@ export function presentDocumentWrite(document: {
   };
 }
 
-export async function requireAgentUser(request: Request) {
-  const header = request.headers.get("authorization") ?? "";
-  const token = header.startsWith("Bearer ") ? header.slice("Bearer ".length).trim() : "";
-  if (!token.startsWith("pam_")) throw new HttpError(401, "Missing agent token");
-  const tokenHash = hashAgentToken(token);
+export const PAMIAC_TOKEN_COOKIE = "pamiac_token";
+
+async function authenticateAgentToken(token: string) {
+  const value = token.trim();
+  if (!value.startsWith("pam_")) return { status: "missing" as const };
+  const tokenHash = hashAgentToken(value);
   const [row] = await getDb()
-    .select()
+    .select({
+      id: agentTokens.id,
+      userId: agentTokens.userId,
+      email: user.email,
+      tokenHash: agentTokens.tokenHash,
+      expiresAt: agentTokens.expiresAt,
+      revokedAt: agentTokens.revokedAt,
+    })
     .from(agentTokens)
+    .innerJoin(user, eq(user.id, agentTokens.userId))
     .where(and(eq(agentTokens.tokenHash, tokenHash), isNull(agentTokens.revokedAt)));
-  if (!row || !tokenHashesMatch(row.tokenHash, tokenHash)) {
-    throw new HttpError(401, "Invalid agent token");
-  }
-  if (row.expiresAt && row.expiresAt.getTime() <= Date.now()) {
-    throw new HttpError(401, "Expired agent token");
-  }
+  const status = agentTokenStatus(value, row ?? null);
+  if (status !== "ok") return { status };
+  if (!row) return { status: "invalid" as const };
   await getDb()
     .update(agentTokens)
     .set({ lastUsedAt: new Date() })
     .where(eq(agentTokens.id, row.id));
-  return row.userId;
+  return { status: "ok" as const, user: { id: row.userId, email: row.email } };
+}
+
+export async function requireAgentUser(request: Request) {
+  const header = request.headers.get("authorization") ?? "";
+  const token = header.startsWith("Bearer ") ? header.slice("Bearer ".length).trim() : "";
+  const result = await authenticateAgentToken(token);
+  if (result.status === "ok") return result.user.id;
+  if (result.status === "expired") throw new HttpError(401, "Expired agent token");
+  if (result.status === "invalid") throw new HttpError(401, "Invalid agent token");
+  throw new HttpError(401, "Missing agent token");
+}
+
+export async function agentUserFromCookie() {
+  const { cookies } = await import("next/headers");
+  const jar = await cookies();
+  const token = jar.get(PAMIAC_TOKEN_COOKIE)?.value ?? "";
+  const result = await authenticateAgentToken(token);
+  if (result.status !== "ok") return null;
+  return result.user;
 }
 
 export async function listTokens(userId: string) {
@@ -532,6 +558,13 @@ export async function revokeToken(userId: string, id: string) {
 export async function requireUserId() {
   const { getSession } = await import("@/lib/session");
   const result = await getSession();
+  if (result.status !== "ok" || !result.session) throw new HttpError(401, "Sign in required");
+  return result.session.user;
+}
+
+export async function requireLibraryUser() {
+  const { getLibrarySession } = await import("@/lib/session");
+  const result = await getLibrarySession();
   if (result.status !== "ok" || !result.session) throw new HttpError(401, "Sign in required");
   return result.session.user;
 }
