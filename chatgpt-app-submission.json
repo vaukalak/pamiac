@@ -1,0 +1,176 @@
+{
+  "$schema": "https://developers.openai.com/apps-sdk/schemas/chatgpt-app-submission.v1.json",
+  "schema_version": 1,
+  "app_info": {
+    "display_name": "Pamiac",
+    "subtitle": "Notes and UML diagrams",
+    "description": "Pamiac keeps one person's notes and UML diagrams. ChatGPT can search that private library, open a document, create a note or diagram, and update what is already there.",
+    "category": "PRODUCTIVITY"
+  },
+  "tools": {
+    "get_profile": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Returns the signed-in account id and the name or email when the account has them, and does not change the account.",
+        "open_world_justification": "Reads only this private Pamiac account and does not post, send, or publish anything.",
+        "destructive_justification": "Does not delete, overwrite, or revoke anything."
+      }
+    },
+    "search_documents": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Searches this account's notes and diagrams and does not create or edit them.",
+        "open_world_justification": "Searches only this private library, not the public web or another service.",
+        "destructive_justification": "Does not delete, overwrite, or revoke anything."
+      }
+    },
+    "list_documents": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Lists this account's notes and diagrams and does not change them.",
+        "open_world_justification": "Lists only documents in this private account.",
+        "destructive_justification": "Does not delete, overwrite, or revoke anything."
+      }
+    },
+    "read_document": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Reads one note or diagram in this account and does not change it.",
+        "open_world_justification": "Reads only a document in this private account.",
+        "destructive_justification": "Does not delete, overwrite, or revoke anything."
+      }
+    },
+    "create_note": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Creates a new markdown note in this account.",
+        "open_world_justification": "Writes only inside this private account and does not publish the note.",
+        "destructive_justification": "Adds a new note and does not delete or overwrite an existing document."
+      }
+    },
+    "create_diagram": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Creates a new UML diagram in this account.",
+        "open_world_justification": "Writes only inside this private account and does not publish the diagram.",
+        "destructive_justification": "Adds a new diagram and does not delete or overwrite an existing document."
+      }
+    },
+    "update_note": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": true
+      },
+      "justifications": {
+        "read_only_justification": "Replaces the markdown of a note in this account.",
+        "open_world_justification": "Updates only a note in this private account and does not publish it.",
+        "destructive_justification": "Replaces the note's full markdown, and the previous text is not kept."
+      }
+    },
+    "update_diagram": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": true
+      },
+      "justifications": {
+        "read_only_justification": "Changes nodes and relations on a diagram in this account.",
+        "open_world_justification": "Updates only a diagram in this private account and does not publish it.",
+        "destructive_justification": "Can overwrite element fields and delete nodes or relations, and the previous diagram is not kept."
+      }
+    }
+  },
+  "test_cases": [
+    {
+      "description": "Search the private library for a topic.",
+      "user_prompt": "Find my notes about checkout payments.",
+      "file_attachment_urls": null,
+      "tools_triggered": "search_documents",
+      "expected_output": "Returns matching notes and diagrams with titles, links, and excerpts.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Open one document from the library.",
+      "user_prompt": "Open my Checkout note and show me the text.",
+      "file_attachment_urls": null,
+      "tools_triggered": "read_document",
+      "expected_output": "Returns that note's title, markdown, and link.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Save a new markdown note.",
+      "user_prompt": "Save a note titled Packing list with milk, bread, and eggs.",
+      "file_attachment_urls": null,
+      "tools_triggered": "create_note",
+      "expected_output": "Creates the note and returns its title, markdown, and link.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Create a UML class diagram.",
+      "user_prompt": "Draw a class diagram with Order and Payment, where Order charges Payment.",
+      "file_attachment_urls": null,
+      "tools_triggered": "create_diagram",
+      "expected_output": "Creates the diagram and returns its nodes, the charges relation, and a link.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Add a method on an existing diagram.",
+      "user_prompt": "On my Checkout diagram, add pay(): void to the Order class.",
+      "file_attachment_urls": null,
+      "tools_triggered": "update_diagram",
+      "expected_output": "Updates that class and returns the diagram with the new method.",
+      "expected_output_url": null
+    }
+  ],
+  "negative_test_cases": [
+    {
+      "description": "Do not send email.",
+      "user_prompt": "Email my Checkout note to the finance team.",
+      "file_attachment_urls": null,
+      "tools_triggered": null,
+      "expected_output": "The app should not be invoked because it cannot send email.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Do not search the public web.",
+      "user_prompt": "Search the web for UML composition examples.",
+      "file_attachment_urls": null,
+      "tools_triggered": null,
+      "expected_output": "The app should not be invoked because it only searches this private library.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Do not answer calendar questions.",
+      "user_prompt": "What meetings do I have tomorrow?",
+      "file_attachment_urls": null,
+      "tools_triggered": null,
+      "expected_output": "The app should not be invoked because it does not read a calendar.",
+      "expected_output_url": null
+    }
+  ]
+}
