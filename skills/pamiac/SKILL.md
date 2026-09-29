@@ -5,7 +5,7 @@ description: Search, read, and edit the signed-in user's Pamiac notes and UML di
 
 # Pamiac
 
-Pamiac is the signed-in user's library of markdown notes and UML diagrams. Use the Pamiac tools on that account. Do not ask for an API token, and do not invent a document id.
+Pamiac is the signed-in user's library of markdown notes and UML diagrams. The tools come from the Pamiac MCP server at `https://pamiac.com/api/mcp`. Use those tools on that account. Do not ask for an API token, and do not invent a document id. If the tools are missing, ask the user to connect that server and stop.
 
 ## Before you write
 

@@ -7,3 +7,10 @@ policy:
     - CHAT
     - CODEX
   allow_implicit_invocation: true
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "pamiac"
+      description: "Pamiac notes and UML diagrams for the signed-in account"
+      transport: "streamable_http"
+      url: "https://pamiac.com/api/mcp"

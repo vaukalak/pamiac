@@ -26,10 +26,10 @@ test("the ChatGPT skill is a flat front matter file the portal can import", () =
     assert.equal(file.digest, `sha256:${createHash("sha256").update(bytes).digest("hex")}`);
     assert.match(file.digest, /^sha256:[0-9a-f]{64}$/);
   }
-  assert.equal(
-    files.some((file) => file.uri.endsWith("/agents/openai.yaml")),
-    true,
-  );
+  const agent = files.find((file) => file.uri.endsWith("/agents/openai.yaml"));
+  assert.ok(agent);
+  assert.match(agent.text, /type: "mcp"/);
+  assert.match(agent.text, /url: "https:\/\/pamiac.com\/api\/mcp"/);
 });
 
 test("starter prompts fit the directory form", () => {
