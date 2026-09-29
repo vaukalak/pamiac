@@ -81,6 +81,24 @@ test("token page copies and downloads the skill", () => {
   assert.match(page, /download = "SKILL\.md"/);
 });
 
+test("copy instructions name save paths and append the skill after frontmatter", () => {
+  const page = readFileSync(join(root, "src/components/tokens/token-manager.tsx"), "utf8");
+  const skill = page.match(/const SKILL = `([\s\S]*?)`;/)?.[1] ?? "";
+  const template = page.match(/const INSTRUCTIONS = `([\s\S]*?)`;/)?.[1] ?? "";
+  const instructions = template.replaceAll("${SKILL}", skill);
+  const copyInstructions = page.match(/async function copyInstructions\(\) \{[\s\S]*?\n  \}/)?.[0] ?? "";
+
+  assert.match(instructions, /~\/\.cursor\/skills\/pamiac\/SKILL\.md/);
+  assert.match(instructions, /(?<!~\/)\.cursor\/skills\/pamiac\/SKILL\.md/);
+  assert.match(instructions, /~\/\.claude\/skills\/pamiac\/SKILL\.md/);
+  assert.match(instructions, /(?<!~\/)\.claude\/skills\/pamiac\/SKILL\.md/);
+  assert.match(instructions, /Claude in the browser:[\s\S]*skill named pamiac/);
+  assert.match(instructions, /name: pamiac[\s\S]*App: https:\/\/pamiac\.com/);
+  assert.doesNotMatch(instructions, /Set PAMIAC_TOKEN/);
+  assert.match(copyInstructions, /setSkillMessage\("Instructions copied\."\)/);
+  assert.match(copyInstructions, /setSkillMessage\("Could not copy the instructions\."\)/);
+});
+
 test("readme says the skill reads PAMIAC_TOKEN from the agent environment", () => {
   const readme = readFileSync(join(root, "README.md"), "utf8");
   const agents = readme.split("## Agents")[1] ?? "";
