@@ -1,5 +1,5 @@
 import {
-  getOwnedDocument,
+  getAgentDocument,
   presentDocument,
   requireAgentUser,
   updateDocumentContent,
@@ -22,7 +22,7 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
   try {
     const userId = await requireAgentUser(request);
     const { id } = await context.params;
-    const document = await getOwnedDocument(userId, id);
+    const document = await getAgentDocument(userId, id);
     if (!document) return agentJson({ error: "Document not found" }, 404);
     return agentJson(presentDocument(document, origin(request)));
   } catch (error) {
@@ -34,6 +34,8 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   try {
     const userId = await requireAgentUser(request);
     const { id } = await context.params;
+    const current = await getAgentDocument(userId, id);
+    if (!current) return agentJson({ error: "Document not found" }, 404);
     const input = documentUpdateSchema.parse(await readJson(request));
     const document = await updateDocumentContent(userId, id, {
       title: input.title,

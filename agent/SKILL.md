@@ -23,7 +23,7 @@ Base: `/api/agent/v1`
 { "query": "checkout payment classes", "limit": 8 }
 ```
 
-Search uses this user's document embeddings. Results include `id`, `type`, `title`, `url`, `score`, and `excerpt`.
+Search uses embeddings for this user's personal documents and the documents in workspaces where this user is a member. Results include `id`, `type`, `title`, `url`, `score`, and `excerpt`.
 
 ## List, read, create, update
 

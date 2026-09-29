@@ -1,4 +1,15 @@
-import { and, asc, count, cosineDistance, eq, ilike, inArray, isNull, or } from "drizzle-orm";
+import {
+  and,
+  asc,
+  count,
+  cosineDistance,
+  eq,
+  exists,
+  ilike,
+  inArray,
+  isNull,
+  or,
+} from "drizzle-orm";
 import { getDb } from "@/db";
 import {
   agentTokens,
@@ -29,6 +40,27 @@ export async function listDocuments(ownerId: string) {
     .select()
     .from(documents)
     .where(eq(documents.ownerId, ownerId))
+    .orderBy(asc(documents.sortIndex), asc(documents.createdAt));
+}
+
+function agentDocumentWhere(userId: string) {
+  const membership = getDb()
+    .select({ id: workspaceMembers.id })
+    .from(workspaceMembers)
+    .where(
+      and(
+        eq(workspaceMembers.workspaceId, documents.workspaceId),
+        eq(workspaceMembers.userId, userId),
+      ),
+    );
+  return or(and(eq(documents.ownerId, userId), isNull(documents.workspaceId)), exists(membership));
+}
+
+export async function listAgentDocuments(userId: string) {
+  return getDb()
+    .select()
+    .from(documents)
+    .where(agentDocumentWhere(userId))
     .orderBy(asc(documents.sortIndex), asc(documents.createdAt));
 }
 
@@ -145,6 +177,14 @@ export async function getOwnedDocument(ownerId: string, id: string) {
     .select()
     .from(documents)
     .where(and(eq(documents.id, id), eq(documents.ownerId, ownerId)));
+  return document ?? null;
+}
+
+export async function getAgentDocument(userId: string, id: string) {
+  const [document] = await getDb()
+    .select()
+    .from(documents)
+    .where(and(eq(documents.id, id), agentDocumentWhere(userId)));
   return document ?? null;
 }
 
@@ -345,9 +385,10 @@ async function upsertEmbedding(document: {
     });
 }
 
-export async function searchDocuments(ownerId: string, query: string, limit: number) {
+export async function searchDocuments(userId: string, query: string, limit: number) {
   const db = getDb();
   const embedding = embedText(query);
+  const visible = agentDocumentWhere(userId);
   try {
     const distance = cosineDistance(documentEmbeddings.embedding, embedding);
     const rows = await db
@@ -362,7 +403,7 @@ export async function searchDocuments(ownerId: string, query: string, limit: num
       })
       .from(documentEmbeddings)
       .innerJoin(documents, eq(documents.id, documentEmbeddings.documentId))
-      .where(eq(documents.ownerId, ownerId))
+      .where(visible)
       .orderBy(distance)
       .limit(limit);
     return rows.map((row) => ({
@@ -375,12 +416,7 @@ export async function searchDocuments(ownerId: string, query: string, limit: num
     const rows = await db
       .select()
       .from(documents)
-      .where(
-        and(
-          eq(documents.ownerId, ownerId),
-          or(ilike(documents.title, pattern), ilike(documents.content, pattern)),
-        ),
-      )
+      .where(and(visible, or(ilike(documents.title, pattern), ilike(documents.content, pattern))))
       .limit(limit);
     return rows.map((row) => ({ ...row, score: 0, distance: null }));
   }
