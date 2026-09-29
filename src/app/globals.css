@@ -515,16 +515,32 @@ select:focus {
 .diagram-heading {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2px;
 }
-.title-input {
+.diagram-heading .hint {
+  display: block;
+}
+input.title-input {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   font-family: var(--serif);
   font-size: 32px;
+  line-height: 1.2;
   border: none;
   background: transparent;
   padding: 0;
+  margin: 0;
   border-radius: 0;
+  box-shadow: none;
 }
-.title-input:focus {
+input.title-input:focus {
+  border: none;
+  outline: none;
   box-shadow: none;
 }
 .note-sheet {
@@ -1302,6 +1318,57 @@ code {
   gap: 6px;
 }
 
+.plan-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  align-items: stretch;
+}
+.plan-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  padding: 22px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+.plan-card.is-current {
+  border-color: var(--teal);
+}
+.plan-card.is-unavailable {
+  background: var(--paper-deep);
+  box-shadow: none;
+}
+.plan-card h2 {
+  margin: 0;
+  font-size: 32px;
+  font-variant-numeric: tabular-nums;
+}
+.plan-price {
+  margin: -6px 0 0;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+.plan-allowance {
+  margin: 0;
+  flex: 1;
+  font-variant-numeric: tabular-nums;
+}
+.plan-card .btn {
+  margin-top: auto;
+  width: 100%;
+}
+.plan-card.is-unavailable .btn:disabled {
+  opacity: 1;
+  cursor: not-allowed;
+  color: var(--ink-soft);
+  border-color: var(--line);
+  background: transparent;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .doc-card,
   .palette-group summary::before {
@@ -1312,7 +1379,8 @@ code {
 @media (max-width: 900px) {
   .hero,
   .feature-grid,
-  .uml-layout {
+  .uml-layout,
+  .plan-grid {
     grid-template-columns: 1fr;
   }
   .uml-layout {

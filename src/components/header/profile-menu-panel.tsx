@@ -32,13 +32,10 @@ export function ProfileMenuPanel(props: Properties) {
   return (
     <div className="profile-menu" id={id} role="menu">
       <p className="profile-email">{email}</p>
-      <Link
-        className="menu-item"
-        href="/workspace/tokens"
-        onClick={onClose}
-        ref={firstRef}
-        role="menuitem"
-      >
+      <Link className="menu-item" href="/profile" onClick={onClose} ref={firstRef} role="menuitem">
+        Plan
+      </Link>
+      <Link className="menu-item" href="/workspace/tokens" onClick={onClose} role="menuitem">
         API keys
       </Link>
       <button className="menu-item" onClick={logOut} role="menuitem" type="button">
