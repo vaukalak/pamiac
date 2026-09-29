@@ -1053,6 +1053,16 @@ input.title-input:focus {
   margin: 0;
   font-size: 32px;
 }
+.workspace-invite-name {
+  margin: 4px 0 0;
+  font-family: var(--serif);
+  font-size: 28px;
+  line-height: 1.2;
+}
+.workspace-invite-error {
+  flex-basis: 100%;
+  margin: 0;
+}
 .share-modes {
   border: none;
   margin: 12px 0 0;

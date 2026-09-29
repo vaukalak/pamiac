@@ -1,12 +1,14 @@
 import { redirect } from "next/navigation";
 import { AppHeader } from "@/components/header/app-header";
 import { DocumentBoard, type BoardDocument } from "@/components/library/document-board";
+import { WorkspaceInviteDialog } from "@/components/library/workspace-invite-dialog";
 import { QueryProvider } from "@/components/query-provider";
 import { SetupScreen } from "@/components/setup-screen";
 import type { Visibility } from "@/lib/access";
 import type { DocumentType } from "@/lib/content";
 import { listLibraryDocuments } from "@/lib/documents";
 import { getSession } from "@/lib/session";
+import { workspaceInvitePath } from "@/lib/workspace-invite-link";
 import { listMemberWorkspaces } from "@/lib/workspaces";
 
 export const dynamic = "force-dynamic";
@@ -19,11 +21,24 @@ function setupDetail(error: unknown) {
   return message;
 }
 
-export default async function WorkspacePage() {
+function inviteIdFromQuery(value: string | string[] | undefined) {
+  const raw = Array.isArray(value) ? value[0] : value;
+  return raw?.trim() ?? "";
+}
+
+interface Properties {
+  searchParams: Promise<{ invite?: string | string[] }>;
+}
+
+export default async function WorkspacePage(props: Properties) {
+  const { searchParams } = props;
+  const params = await searchParams;
+  const inviteId = inviteIdFromQuery(params.invite);
   const result = await getSession();
   if (result.status === "setup") return <SetupScreen />;
   if (result.status === "error") return <SetupScreen detail={result.message} />;
-  if (!result.session) redirect("/login?next=/workspace");
+  const nextPath = inviteId ? workspaceInvitePath(inviteId) : "/workspace";
+  if (!result.session) redirect(`/login?next=${encodeURIComponent(nextPath)}`);
 
   let rows;
   let workspaces;
@@ -52,6 +67,7 @@ export default async function WorkspacePage() {
       <main className="workspace">
         <QueryProvider>
           <DocumentBoard documents={documents} workspaces={workspaces} />
+          {inviteId ? <WorkspaceInviteDialog inviteId={inviteId} /> : null}
         </QueryProvider>
       </main>
     </>

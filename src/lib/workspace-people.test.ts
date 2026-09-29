@@ -23,19 +23,26 @@ describe("adding a person to a workspace", () => {
     assert.equal(/role/i.test(add), false);
   });
 
-  it("stores a member row or a pending invite and does not send mail", () => {
+  it("stores a member row or emails a pending invite", () => {
     const people = readFileSync(new URL("./workspace-people.ts", import.meta.url), "utf8");
     const route = readFileSync(
       new URL("../app/api/workspaces/[id]/members/route.ts", import.meta.url),
       "utf8",
     );
     const schema = readFileSync(new URL("../db/schema.ts", import.meta.url), "utf8");
+    const member = people.slice(
+      people.indexOf('person.status === "member"'),
+      people.indexOf("insert(workspaceInvites)"),
+    );
+    const pending = people.slice(people.indexOf("insert(workspaceInvites)"));
     assert.match(people, /workspaceMembers/);
     assert.match(people, /workspaceInvites/);
     assert.match(people, /actorId/);
     assert.match(people, /Workspace not found/);
     assert.match(people, /onConflictDoNothing/);
-    assert.equal(/sendMagicLink|sendMail|nodemailer/i.test(people), false);
+    assert.equal(/sendWorkspaceInvite/.test(member), false);
+    assert.match(pending, /sendWorkspaceInvite/);
+    assert.match(pending, /workspaceInvitePath/);
     assert.equal(/role/i.test(schema.slice(schema.indexOf("workspace_invite"))), false);
     assert.match(route, /addWorkspacePerson/);
     assert.equal(/invite/i.test(route), false);

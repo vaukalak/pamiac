@@ -1,9 +1,12 @@
 import { and, count, eq, sql } from "drizzle-orm";
 import { getDb } from "@/db";
-import { user, workspaceInvites, workspaceMembers } from "@/db/schema";
+import { user, workspaceInvites, workspaceMembers, workspaces } from "@/db/schema";
+import { appBaseUrl } from "@/lib/config";
 import { HttpError } from "@/lib/http";
 import { PERSONAL_SPACE_ID, workspacePerson, type WorkspacePerson } from "@/lib/library-spaces";
+import { sendWorkspaceInvite } from "@/lib/mail";
 import { currentWorkspacePlan, memberRoom } from "@/lib/plans";
+import { workspaceInvitePath } from "@/lib/workspace-invite-link";
 
 function clientError(error: unknown): HttpError {
   if (error instanceof HttpError) return error;
@@ -123,5 +126,30 @@ export async function addWorkspacePerson(
     .onConflictDoNothing({
       target: [workspaceInvites.workspaceId, workspaceInvites.email],
     });
+  const [stored] = await db
+    .select({ id: workspaceInvites.id })
+    .from(workspaceInvites)
+    .where(
+      and(
+        eq(workspaceInvites.workspaceId, person.workspaceId),
+        eq(workspaceInvites.email, person.email),
+      ),
+    );
+  if (!stored) throw new HttpError(500, "Could not store the invitation");
+  const [workspace] = await db
+    .select({ name: workspaces.name })
+    .from(workspaces)
+    .where(eq(workspaces.id, person.workspaceId));
+  if (!workspace) throw new HttpError(404, "Workspace not found");
+  try {
+    await sendWorkspaceInvite({
+      email: person.email,
+      workspaceName: workspace.name,
+      url: `${appBaseUrl()}${workspaceInvitePath(stored.id)}`,
+    });
+  } catch (error) {
+    console.error(error);
+    throw new HttpError(502, "Could not send the invitation email");
+  }
   return person;
 }
