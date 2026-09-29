@@ -101,7 +101,7 @@ export function DocumentBoard(props: Properties) {
 
   async function dropOn(targetId: string) {
     if (!dragging || dragging === targetId || !reorder) return;
-    const next = [...library];
+    const next = [...items];
     const from = next.findIndex((item) => item.id === dragging);
     const to = next.findIndex((item) => item.id === targetId);
     if (from < 0 || to < 0) return;

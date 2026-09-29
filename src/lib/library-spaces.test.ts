@@ -7,6 +7,7 @@ import {
   librarySpaces,
   openLibraryId,
   PERSONAL_SPACE_ID,
+  placeDocument,
   workspaceName,
 } from "./library-spaces.ts";
 
@@ -150,18 +151,109 @@ describe("library personal space", () => {
     assert.equal(documentsInSpace(open, [{ id: "note-1" }], created).length, 1);
   });
 
-  it("writes the open library into this browser and leaves documents unplaced", () => {
+  it("remembers the open library and leaves a new document in the personal library", () => {
     const board = readFileSync(
       new URL("../components/library/document-board.tsx", import.meta.url),
       "utf8",
     );
     const schema = readFileSync(new URL("../db/schema.ts", import.meta.url), "utf8");
+    const store = readFileSync(new URL("./documents.ts", import.meta.url), "utf8");
     const documentTable = schema.slice(
       schema.indexOf("export const documents"),
       schema.indexOf("export const documentShares"),
     );
+    const create = store.slice(
+      store.indexOf("export async function createDocument"),
+      store.indexOf("export async function getOwnedDocument"),
+    );
     assert.match(board, /pamiac-open-library/);
     assert.match(board, /openLibraryId/);
-    assert.equal(documentTable.includes("workspace"), false);
+    assert.match(board, /documentsInSpace/);
+    assert.match(documentTable, /workspace_id/);
+    assert.equal(/workspaceId:[^,\n]*notNull/.test(documentTable), false);
+    assert.match(create, /workspaceId: null/);
+  });
+
+  it("places a document in one workspace library and reads it back from there only", () => {
+    const documents = [
+      { id: "note-1", workspaceId: null },
+      { id: "diagram-2", workspaceId: null },
+    ];
+    const created = [
+      { id: "ws-1", name: "Atlas" },
+      { id: "ws-2", name: "Field notes" },
+    ];
+    const placed = placeDocument(documents, "note-1", "ws-1");
+    assert.deepEqual(
+      documentsInSpace("ws-1", placed, created).map((document) => document.id),
+      ["note-1"],
+    );
+    assert.deepEqual(
+      documentsInSpace("ws-2", placed, created).map((document) => document.id),
+      [],
+    );
+    assert.deepEqual(
+      documentsInSpace(PERSONAL_SPACE_ID, placed, created).map((document) => document.id),
+      ["diagram-2"],
+    );
+    assert.equal(documents[0]?.workspaceId, null);
+  });
+
+  it("moves a document into the latest workspace library", () => {
+    const created = [
+      { id: "ws-1", name: "Atlas" },
+      { id: "ws-2", name: "Field notes" },
+    ];
+    const once = placeDocument([{ id: "note-1", workspaceId: null }], "note-1", "ws-1");
+    const twice = placeDocument(once, "note-1", "ws-2");
+    assert.deepEqual(documentsInSpace("ws-1", twice, created), []);
+    assert.deepEqual(
+      documentsInSpace("ws-2", twice, created).map((document) => document.id),
+      ["note-1"],
+    );
+    assert.deepEqual(documentsInSpace(PERSONAL_SPACE_ID, twice, created), []);
+  });
+
+  it("refuses to place a document in the personal library or a missing document", () => {
+    const documents = [{ id: "note-1", workspaceId: null }];
+    assert.throws(() => placeDocument(documents, "note-1", PERSONAL_SPACE_ID), /created workspace/);
+    assert.throws(() => placeDocument(documents, "note-1", ""), /created workspace/);
+    assert.throws(() => placeDocument(documents, "missing", "ws-1"), /Document not found/);
+    assert.equal(documents[0]?.workspaceId, null);
+  });
+
+  it("keeps a workspace document out of the personal library when the id is unknown", () => {
+    const documents = [
+      { id: "note-1", workspaceId: null },
+      { id: "diagram-2", workspaceId: "ws-1" },
+    ];
+    const created = [{ id: "ws-1", name: "Atlas" }];
+    assert.deepEqual(
+      documentsInSpace("missing", documents, created).map((document) => document.id),
+      ["note-1"],
+    );
+  });
+
+  it("stores the workspace link on the owned document and lists that library", () => {
+    const store = readFileSync(new URL("./documents.ts", import.meta.url), "utf8");
+    const place = store.slice(
+      store.indexOf("export async function placeDocumentInWorkspace"),
+      store.indexOf("export async function listSpaceDocuments"),
+    );
+    const read = store.slice(
+      store.indexOf("export async function listSpaceDocuments"),
+      store.indexOf("export async function createDocument"),
+    );
+    const board = readFileSync(
+      new URL("../components/library/document-board.tsx", import.meta.url),
+      "utf8",
+    );
+    const drop = board.slice(board.indexOf("async function dropOn"), board.indexOf("return ("));
+    assert.match(place, /set\(\{ workspaceId: libraryId \}\)/);
+    assert.match(place, /documents\.ownerId/);
+    assert.match(place, /memberLibraryId/);
+    assert.match(read, /documentsInSpace/);
+    assert.match(drop, /\[\.\.\.items\]/);
+    assert.equal(drop.includes("[...library]"), false);
   });
 });

@@ -43,6 +43,7 @@ export default async function WorkspacePage() {
     version: row.version,
     hasPassword: row.hasPassword,
     emails: row.emails,
+    workspaceId: row.workspaceId,
   }));
 
   return (

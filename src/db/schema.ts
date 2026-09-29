@@ -110,12 +110,16 @@ export const documents = pgTable(
       .notNull()
       .default("private"),
     passwordHash: text("password_hash"),
+    workspaceId: text("workspace_id").references(() => workspaces.id, { onDelete: "set null" }),
     sortIndex: integer("sort_index").notNull().default(0),
     version: integer("version").notNull().default(1),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => [index("document_owner_idx").on(table.ownerId, table.sortIndex)],
+  (table) => [
+    index("document_owner_idx").on(table.ownerId, table.sortIndex),
+    index("document_workspace_idx").on(table.workspaceId),
+  ],
 );
 
 export const documentShares = pgTable(

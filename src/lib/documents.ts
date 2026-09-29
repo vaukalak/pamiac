@@ -1,6 +1,12 @@
 import { and, asc, cosineDistance, eq, ilike, inArray, isNull, or } from "drizzle-orm";
 import { getDb } from "@/db";
-import { agentTokens, documentEmbeddings, documentShares, documents } from "@/db/schema";
+import {
+  agentTokens,
+  documentEmbeddings,
+  documentShares,
+  documents,
+  workspaceMembers,
+} from "@/db/schema";
 import type { Visibility } from "@/lib/access";
 import { normalizeEmails } from "@/lib/access";
 import { defaultTitle, documentText, readDiagram, type DocumentType } from "@/lib/content";
@@ -8,6 +14,7 @@ import type { DiagramPatch } from "@/lib/diagram-patch";
 import { embedText, excerpt } from "@/lib/embeddings";
 import { applyDocumentWrite } from "@/lib/document-write";
 import { HttpError } from "@/lib/http";
+import { documentsInSpace, PERSONAL_SPACE_ID, workspaceLibraryId } from "@/lib/library-spaces";
 import { currentPlan, documentRoom } from "@/lib/plans";
 import { hashPassword } from "@/lib/passwords";
 import { createAgentToken, hashAgentToken, tokenHashesMatch } from "@/lib/tokens";
@@ -42,7 +49,50 @@ export async function listLibraryDocuments(ownerId: string) {
     version: row.version,
     hasPassword: Boolean(row.passwordHash),
     emails: emails.get(row.id) ?? [],
+    workspaceId: row.workspaceId,
   }));
+}
+
+function createdLibraryId(workspaceId: string) {
+  try {
+    return workspaceLibraryId(workspaceId);
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "A document library needs a created workspace";
+    throw new HttpError(400, message);
+  }
+}
+
+async function memberLibraryId(ownerId: string, workspaceId: string) {
+  const libraryId = createdLibraryId(workspaceId);
+  const [member] = await getDb()
+    .select({ workspaceId: workspaceMembers.workspaceId })
+    .from(workspaceMembers)
+    .where(and(eq(workspaceMembers.workspaceId, libraryId), eq(workspaceMembers.userId, ownerId)));
+  if (!member) throw new HttpError(404, "Workspace not found");
+  return libraryId;
+}
+
+export async function placeDocumentInWorkspace(
+  ownerId: string,
+  documentId: string,
+  workspaceId: string,
+) {
+  const libraryId = await memberLibraryId(ownerId, workspaceId);
+  const [updated] = await getDb()
+    .update(documents)
+    .set({ workspaceId: libraryId })
+    .where(and(eq(documents.id, documentId), eq(documents.ownerId, ownerId)))
+    .returning({ id: documents.id, workspaceId: documents.workspaceId });
+  if (!updated?.workspaceId) throw new HttpError(404, "Document not found");
+  return { id: updated.id, workspaceId: updated.workspaceId };
+}
+
+export async function listSpaceDocuments(ownerId: string, workspaceId: string) {
+  const rows = await listLibraryDocuments(ownerId);
+  if (workspaceId === PERSONAL_SPACE_ID) return documentsInSpace(PERSONAL_SPACE_ID, rows);
+  const libraryId = await memberLibraryId(ownerId, workspaceId);
+  return documentsInSpace(libraryId, rows, [{ id: libraryId, name: "Workspace" }]);
 }
 
 export async function createDocument(ownerId: string, type: DocumentType, title?: string) {
@@ -63,6 +113,7 @@ export async function createDocument(ownerId: string, type: DocumentType, title?
       content,
       version: 1,
       sortIndex: existing.length,
+      workspaceId: null,
     })
     .returning();
   await upsertEmbedding(created);

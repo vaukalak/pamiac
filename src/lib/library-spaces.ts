@@ -52,13 +52,41 @@ export function openLibraryId(
   return PERSONAL_SPACE_ID;
 }
 
-export function documentsInSpace<Document>(
+export function workspaceLibraryId(workspaceId: string) {
+  if (!workspaceId || workspaceId === PERSONAL_SPACE_ID) {
+    throw new Error("A document library needs a created workspace");
+  }
+  return workspaceId;
+}
+
+export function placeDocument<Document extends { id: string; workspaceId?: string | null }>(
+  documents: readonly Document[],
+  documentId: string,
+  workspaceId: string,
+): Document[] {
+  const libraryId = workspaceLibraryId(workspaceId);
+  if (!documents.some((document) => document.id === documentId)) {
+    throw new Error("Document not found");
+  }
+  return documents.map((document) =>
+    document.id === documentId ? { ...document, workspaceId: libraryId } : document,
+  );
+}
+
+export function documentsInSpace<Document extends { workspaceId?: string | null }>(
   workspaceId: string,
   documents: readonly Document[],
   created: readonly NamedWorkspace[] = [],
 ): readonly Document[] {
   const spaces = librarySpaces(created);
   const selected = spaces.find((space) => space.id === workspaceId) ?? spaces[0];
-  if (selected?.id === PERSONAL_SPACE_ID) return documents;
-  return [];
+  if (!selected || selected.id === PERSONAL_SPACE_ID) return personalDocuments(documents);
+  return documents.filter((document) => document.workspaceId === selected.id);
+}
+
+function personalDocuments<Document extends { workspaceId?: string | null }>(
+  documents: readonly Document[],
+): readonly Document[] {
+  const personal = documents.filter((document) => !document.workspaceId);
+  return personal.length === documents.length ? documents : personal;
 }
