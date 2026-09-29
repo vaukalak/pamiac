@@ -1,4 +1,4 @@
-import { requireAgentUser } from "@/lib/documents";
+import { PAMIAC_TOKEN_COOKIE, requireAgentUser } from "@/lib/documents";
 import { UML_KINDS } from "@/lib/diagram";
 import { agentJson, corsHeaders, errorResponse } from "@/lib/http";
 
@@ -14,6 +14,7 @@ export async function GET(request: Request) {
       auth: "Authorization: Bearer <PAMIAC_TOKEN>",
       token:
         "Read PAMIAC_TOKEN from the agent environment. Do not ask the user to paste the token. If PAMIAC_TOKEN is missing, say so and stop.",
+      cookie: `To browse the library in a browser, set a cookie on the app origin: name \`${PAMIAC_TOKEN_COOKIE}\`, value the PAMIAC_TOKEN value, path \`/\`. Then open \`/workspace\`. A document is \`/d/<id>\`. Do not print the token. \`/workspace/tokens\` still requires the magic-link session.`,
       app: "The origin the user is using. Ask for the app URL if you do not already know it.",
       endpoints: {
         search: {

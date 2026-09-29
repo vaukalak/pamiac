@@ -1,0 +1,9 @@
+interface:
+  display_name: Pamiac
+  short_description: Notes and UML diagrams
+  default_prompt: Find my notes about checkout and summarize what they say.
+policy:
+  products:
+    - CHAT
+    - CODEX
+  allow_implicit_invocation: true

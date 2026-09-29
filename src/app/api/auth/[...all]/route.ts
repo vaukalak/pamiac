@@ -1,13 +1,9 @@
-import { getAuth } from "@/lib/auth";
-import { toNextJsHandler } from "better-auth/next-js";
+import { handleAuthRequest } from "@/lib/auth-request";
 
-async function handle(request: Request) {
-  if (!process.env.DATABASE_URL) {
-    return Response.json({ error: "DATABASE_URL is not set" }, { status: 500 });
-  }
-  const handlers = toNextJsHandler(getAuth());
-  return request.method === "POST" ? handlers.POST(request) : handlers.GET(request);
+export function GET(request: Request) {
+  return handleAuthRequest(request);
 }
 
-export const GET = handle;
-export const POST = handle;
+export function POST(request: Request) {
+  return handleAuthRequest(request);
+}

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import type { AgentToken } from "@/components/tokens/agent-token";
 import { TokenForm } from "@/components/tokens/token-form";
 import { TokenList } from "@/components/tokens/token-list";
+import { ChatGptConnect } from "@/components/tokens/chatgpt-connect";
 import { TokenSecret } from "@/components/tokens/token-secret";
 
 const SKILL = `Read PAMIAC_TOKEN from the agent environment and send Authorization: Bearer <PAMIAC_TOKEN> on every request. Do not ask the user to paste the token. If PAMIAC_TOKEN is missing, say so and stop.
@@ -22,7 +23,9 @@ POST /documents
 PATCH /documents/:id
 { "content": "# updated markdown" }
 
-Search uses this user's document embeddings. Diagram relations can refer to an element by id or by name.`;
+Search uses this user's document embeddings. Diagram relations can refer to an element by id or by name.
+
+To browse the library in a browser, set a cookie on the app origin: name pamiac_token, value the PAMIAC_TOKEN value, path /. Then open /workspace. A document is /d/<id>. Do not print the token. /workspace/tokens still requires the magic-link session.`;
 
 const INSTRUCTIONS = `Save the Pamiac skill so later chats can use it. Write the file below and do not change its text. The user sets PAMIAC_TOKEN. Do not ask the user to paste the token.
 
@@ -107,6 +110,7 @@ export function TokenManager() {
         Create a key, choose when it expires, and set PAMIAC_TOKEN in the cloud agent's environment
         to the token you just created. The agent can search, read, and edit your notes and diagrams.
       </p>
+      <ChatGptConnect endpoint="/api/mcp" />
       <TokenForm
         onCreated={(value) => {
           setSecret(value);

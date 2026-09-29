@@ -8,17 +8,10 @@ import {
   type LibraryFilter,
   type LibraryView,
 } from "@/components/library/board-document";
-import { DocumentCard } from "@/components/library/document-card";
-import { LibraryCreate } from "@/components/library/library-create";
-import { LibraryEmpty } from "@/components/library/library-empty";
-import { LibraryFilters } from "@/components/library/library-filters";
-import { ViewToggle } from "@/components/library/view-toggle";
-import { WorkspaceCreate } from "@/components/library/workspace-create";
-import { WorkspaceDelete } from "@/components/library/workspace-delete";
-import { WorkspaceLeave } from "@/components/library/workspace-leave";
-import { WorkspaceMemberAdd } from "@/components/library/workspace-member-add";
-import { WorkspaceSelector } from "@/components/library/workspace-selector";
-import { WorkspacePaywall } from "@/components/plan/workspace-paywall";
+import { LibraryDashboard } from "@/components/library/library-dashboard";
+import { LibraryManage } from "@/components/library/library-manage";
+import { LibrarySidebar } from "@/components/library/library-sidebar";
+import { LibrarySwitcher, type LibraryPanel } from "@/components/library/library-switcher";
 import { libraryItemsQueryKey, libraryItemsQueryOptions } from "@/lib/library-items";
 import {
   documentsInSpace,
@@ -55,6 +48,7 @@ export function DocumentBoard(props: Properties) {
   const [filter, setFilter] = useState<LibraryFilter>("all");
   const [view, setView] = useState<LibraryView>("grid");
   const [dragging, setDragging] = useState<string | null>(null);
+  const [panel, setPanel] = useState<LibraryPanel>("dashboard");
   const [workspaceId, setWorkspaceId] = useState(PERSONAL_SPACE_ID);
   const library = documentsInSpace(workspaceId, items, spacesQuery.data);
   const managing = managesWorkspace(workspaceId, spacesQuery.data);
@@ -124,49 +118,31 @@ export function DocumentBoard(props: Properties) {
   }
 
   return (
-    <div>
-      <div className="workspace-head">
-        <div>
-          <WorkspaceSelector
-            initialWorkspaces={workspaces}
-            onSelect={chooseWorkspace}
-            selectedId={workspaceId}
+    <div className="library-shell">
+      <LibrarySidebar onSelect={chooseWorkspace} selectedId={workspaceId} workspaces={workspaces} />
+      <div className="library-main">
+        <LibrarySwitcher mode={panel} onMode={setPanel} />
+        {panel === "dashboard" ? (
+          <LibraryDashboard
+            dragging={dragging}
+            filter={filter}
+            libraryCount={library.length}
+            onChange={apply}
+            onDragStart={setDragging}
+            onDrop={(id) => {
+              void dropOn(id);
+            }}
+            onFilter={setFilter}
+            onView={chooseView}
+            reorder={reorder}
+            view={view}
+            visible={visible}
+            workspaceId={workspaceId}
           />
-          <WorkspaceCreate onCreated={chooseWorkspace} />
-          {managing ? <WorkspaceMemberAdd key={workspaceId} workspaceId={workspaceId} /> : null}
-          <WorkspaceLeave key={workspaceId} workspaceId={workspaceId} />
-          {managing ? <WorkspaceDelete key={workspaceId} workspaceId={workspaceId} /> : null}
-          <h1>Library</h1>
-          <p className="lede">Notes and diagrams.</p>
-        </div>
-        <LibraryCreate />
+        ) : (
+          <LibraryManage managing={managing} workspaceId={workspaceId} />
+        )}
       </div>
-      {managing ? <WorkspacePaywall workspaceId={workspaceId} /> : null}
-      <div className="library-tools">
-        <LibraryFilters filter={filter} onChange={setFilter} />
-        <ViewToggle onChange={chooseView} view={view} />
-      </div>
-      {visible.length === 0 ? (
-        <LibraryEmpty filter={filter} />
-      ) : (
-        <div className={view === "grid" ? "doc-grid" : "doc-list"}>
-          {visible.map((document) => (
-            <DocumentCard
-              document={document}
-              dragging={dragging === document.id}
-              key={document.id}
-              layout={view}
-              onChange={apply}
-              onDragStart={setDragging}
-              onDrop={(id) => void dropOn(id)}
-              reorder={reorder}
-            />
-          ))}
-        </div>
-      )}
-      {reorder && library.length > 1 ? (
-        <p className="hint">Drag cards to reorder the library.</p>
-      ) : null}
     </div>
   );
 }

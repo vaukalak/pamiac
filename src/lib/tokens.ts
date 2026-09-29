@@ -20,6 +20,25 @@ export function tokenHashesMatch(left: string, right: string) {
   return timingSafeEqual(a, b);
 }
 
+export type AgentTokenRecord = {
+  tokenHash: string;
+  expiresAt: Date | null;
+  revokedAt: Date | null;
+};
+
+export function agentTokenStatus(
+  token: string,
+  row: AgentTokenRecord | null,
+  now = Date.now(),
+): "missing" | "invalid" | "expired" | "ok" {
+  const value = token.trim();
+  if (!value.startsWith("pam_")) return "missing";
+  if (!row || row.revokedAt) return "invalid";
+  if (!tokenHashesMatch(row.tokenHash, hashAgentToken(value))) return "invalid";
+  if (row.expiresAt && row.expiresAt.getTime() <= now) return "expired";
+  return "ok";
+}
+
 const PRESET_DAYS = {
   "7d": 7,
   "30d": 30,

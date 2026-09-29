@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { VISIBILITIES } from "@/lib/access";
-import { requireUserId, updateShare } from "@/lib/documents";
+import { requireLibraryUser, updateShare } from "@/lib/documents";
 import { errorResponse, json, readJson } from "@/lib/http";
 
 const shareSchema = z.object({
@@ -12,7 +12,7 @@ const shareSchema = z.object({
 
 export async function PUT(request: Request, context: { params: Promise<{ id: string }> }) {
   try {
-    const user = await requireUserId();
+    const user = await requireLibraryUser();
     const { id } = await context.params;
     const input = shareSchema.parse(await readJson(request));
     const share = await updateShare(user.id, id, input);
