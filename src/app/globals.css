@@ -1430,8 +1430,17 @@ code {
 }
 .plan-allowance {
   margin: 0;
-  flex: 1;
   font-variant-numeric: tabular-nums;
+}
+.plan-card > .plan-allowance:last-of-type {
+  flex: 1;
+}
+.workspace-plan {
+  margin: 8px 0 28px;
+}
+.workspace-plan > h2 {
+  margin: 0;
+  font-size: 32px;
 }
 .plan-card .btn {
   margin-top: auto;

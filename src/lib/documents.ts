@@ -1,4 +1,4 @@
-import { and, asc, cosineDistance, eq, ilike, inArray, isNull, or } from "drizzle-orm";
+import { and, asc, count, cosineDistance, eq, ilike, inArray, isNull, or } from "drizzle-orm";
 import { getDb } from "@/db";
 import {
   agentTokens,
@@ -15,7 +15,7 @@ import { embedText, excerpt } from "@/lib/embeddings";
 import { applyDocumentWrite } from "@/lib/document-write";
 import { HttpError } from "@/lib/http";
 import { documentsInSpace, PERSONAL_SPACE_ID, workspaceLibraryId } from "@/lib/library-spaces";
-import { currentPlan, documentRoom } from "@/lib/plans";
+import { currentPlan, currentWorkspacePlan, documentRoom } from "@/lib/plans";
 import { hashPassword } from "@/lib/passwords";
 import { createAgentToken, hashAgentToken, tokenHashesMatch } from "@/lib/tokens";
 
@@ -79,7 +79,21 @@ export async function placeDocumentInWorkspace(
   workspaceId: string,
 ) {
   const libraryId = await memberLibraryId(ownerId, workspaceId);
-  const [updated] = await getDb()
+  const db = getDb();
+  const [current] = await db
+    .select({ id: documents.id, workspaceId: documents.workspaceId })
+    .from(documents)
+    .where(and(eq(documents.id, documentId), eq(documents.ownerId, ownerId)));
+  if (!current) throw new HttpError(404, "Document not found");
+  if (current.workspaceId !== libraryId) {
+    const [tally] = await db
+      .select({ total: count() })
+      .from(documents)
+      .where(eq(documents.workspaceId, libraryId));
+    const room = documentRoom(Number(tally?.total ?? 0), currentWorkspacePlan());
+    if (room) throw new HttpError(403, room);
+  }
+  const [updated] = await db
     .update(documents)
     .set({ workspaceId: libraryId })
     .where(and(eq(documents.id, documentId), eq(documents.ownerId, ownerId)))
@@ -98,7 +112,8 @@ export async function listSpaceDocuments(ownerId: string, workspaceId: string) {
 export async function createDocument(ownerId: string, type: DocumentType, title?: string) {
   const db = getDb();
   const existing = await listDocuments(ownerId);
-  const room = documentRoom(existing.length, currentPlan());
+  const personal = existing.filter((document) => !document.workspaceId);
+  const room = documentRoom(personal.length, currentPlan());
   if (room) throw new HttpError(403, room);
   const id = crypto.randomUUID();
   const content = type === "note" ? "" : JSON.stringify({ nodes: [], relations: [] });

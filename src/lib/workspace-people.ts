@@ -1,13 +1,53 @@
-import { and, eq, sql } from "drizzle-orm";
+import { and, count, eq, sql } from "drizzle-orm";
 import { getDb } from "@/db";
 import { user, workspaceInvites, workspaceMembers } from "@/db/schema";
 import { HttpError } from "@/lib/http";
 import { PERSONAL_SPACE_ID, workspacePerson, type WorkspacePerson } from "@/lib/library-spaces";
+import { currentWorkspacePlan, memberRoom } from "@/lib/plans";
 
 function clientError(error: unknown): HttpError {
   if (error instanceof HttpError) return error;
   if (error instanceof Error) return new HttpError(400, error.message);
   return new HttpError(400, "Could not add that person");
+}
+
+function asCount(value: unknown) {
+  const total = Number(value ?? 0);
+  return Number.isFinite(total) ? total : 0;
+}
+
+async function workspacePeopleCount(workspaceId: string) {
+  const db = getDb();
+  const [members] = await db
+    .select({ total: count() })
+    .from(workspaceMembers)
+    .where(eq(workspaceMembers.workspaceId, workspaceId));
+  const [invites] = await db
+    .select({ total: count() })
+    .from(workspaceInvites)
+    .where(eq(workspaceInvites.workspaceId, workspaceId));
+  return asCount(members?.total) + asCount(invites?.total);
+}
+
+async function personAlreadyCounted(workspaceId: string, person: WorkspacePerson, email: string) {
+  const db = getDb();
+  if (person.status === "member") {
+    const [member] = await db
+      .select({ id: workspaceMembers.id })
+      .from(workspaceMembers)
+      .where(
+        and(
+          eq(workspaceMembers.workspaceId, workspaceId),
+          eq(workspaceMembers.userId, person.userId),
+        ),
+      );
+    if (member) return true;
+  }
+  const [invite] = await db
+    .select({ id: workspaceInvites.id })
+    .from(workspaceInvites)
+    .where(and(eq(workspaceInvites.workspaceId, workspaceId), eq(workspaceInvites.email, email)));
+  return Boolean(invite);
 }
 
 async function accountIdForEmail(email: string) {
@@ -44,6 +84,12 @@ export async function addWorkspacePerson(
   if (pending.status !== "pending") throw new HttpError(400, "Add an email address");
   const accountId = await accountIdForEmail(pending.email);
   const person = accountId ? workspacePerson(workspaceId, email, accountId) : pending;
+  const counted = await personAlreadyCounted(person.workspaceId, person, pending.email);
+  if (!counted) {
+    const people = await workspacePeopleCount(person.workspaceId);
+    const room = memberRoom(people, currentWorkspacePlan());
+    if (room) throw new HttpError(403, room);
+  }
 
   if (person.status === "member") {
     await db
@@ -56,6 +102,14 @@ export async function addWorkspacePerson(
       .onConflictDoNothing({
         target: [workspaceMembers.workspaceId, workspaceMembers.userId],
       });
+    await db
+      .delete(workspaceInvites)
+      .where(
+        and(
+          eq(workspaceInvites.workspaceId, person.workspaceId),
+          eq(workspaceInvites.email, pending.email),
+        ),
+      );
     return person;
   }
 

@@ -16,6 +16,7 @@ import { ViewToggle } from "@/components/library/view-toggle";
 import { WorkspaceCreate } from "@/components/library/workspace-create";
 import { WorkspaceMemberAdd } from "@/components/library/workspace-member-add";
 import { WorkspaceSelector } from "@/components/library/workspace-selector";
+import { WorkspacePaywall } from "@/components/plan/workspace-paywall";
 import { libraryItemsQueryKey, libraryItemsQueryOptions } from "@/lib/library-items";
 import {
   documentsInSpace,
@@ -133,6 +134,7 @@ export function DocumentBoard(props: Properties) {
         </div>
         <LibraryCreate />
       </div>
+      <WorkspacePaywall workspaceId={workspaceId} />
       <div className="library-tools">
         <LibraryFilters filter={filter} onChange={setFilter} />
         <ViewToggle onChange={chooseView} view={view} />

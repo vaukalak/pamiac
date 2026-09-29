@@ -5,6 +5,7 @@ export interface Plan {
   documents: number;
   enabled: boolean;
   action: string;
+  members?: number;
 }
 
 export const plans: readonly Plan[] = [
@@ -34,9 +35,23 @@ export const plans: readonly Plan[] = [
   },
 ];
 
+const workspaceMemberLimits = [3, 10, 50] as const;
+
+export const workspacePlans: readonly (Plan & { members: number })[] = plans.map((plan, index) => {
+  const members = workspaceMemberLimits[index];
+  if (members == null) throw new Error("No current workspace plan");
+  return { ...plan, members };
+});
+
 export function currentPlan() {
   const plan = plans.find((item) => item.enabled);
   if (!plan) throw new Error("No current plan");
+  return plan;
+}
+
+export function currentWorkspacePlan() {
+  const plan = workspacePlans.find((item) => item.enabled);
+  if (!plan) throw new Error("No current workspace plan");
   return plan;
 }
 
@@ -48,7 +63,16 @@ export function documentLabel(plan: Plan) {
   return `${formatCount(plan.documents)} documents`;
 }
 
+export function memberLabel(members: number) {
+  return `${formatCount(members)} people`;
+}
+
 export function documentRoom(count: number, plan: Plan) {
   if (count < plan.documents) return null;
   return `The ${plan.name} plan holds ${formatCount(plan.documents)} documents.`;
+}
+
+export function memberRoom(count: number, plan: Plan & { members: number }) {
+  if (count < plan.members) return null;
+  return `The ${plan.name} plan holds ${formatCount(plan.members)} people.`;
 }
