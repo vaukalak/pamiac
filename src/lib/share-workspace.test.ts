@@ -105,6 +105,96 @@ describe("share workspace choice", () => {
     assert.equal(/applyDocumentWorkspace/.test(create), false);
   });
 
+  it("leaves a new note or diagram unshared until the share dialog assigns a workspace", () => {
+    const store = readFileSync(new URL("./documents.ts", import.meta.url), "utf8");
+    const createRoute = readFileSync(
+      new URL("../app/api/documents/route.ts", import.meta.url),
+      "utf8",
+    );
+    const agentRoute = readFileSync(
+      new URL("../app/api/agent/v1/documents/route.ts", import.meta.url),
+      "utf8",
+    );
+    const libraryCreate = readFileSync(
+      new URL("../components/library/library-create.tsx", import.meta.url),
+      "utf8",
+    );
+    const board = readFileSync(
+      new URL("../components/library/document-board.tsx", import.meta.url),
+      "utf8",
+    );
+    const create = store.slice(
+      store.indexOf("export async function createDocument"),
+      store.indexOf("export async function getOwnedDocument"),
+    );
+    const insert = create.slice(create.indexOf(".values({"), create.indexOf(".returning()"));
+    const apply = store.slice(
+      store.indexOf("async function applyDocumentWorkspace"),
+      store.indexOf("export async function updateShare"),
+    );
+    const update = store.slice(
+      store.indexOf("export async function updateShare"),
+      store.indexOf("async function upsertEmbedding"),
+    );
+    const createSchema = createRoute.slice(
+      createRoute.indexOf("const createSchema"),
+      createRoute.indexOf("export async function GET"),
+    );
+    const agentSchema = agentRoute.slice(
+      agentRoute.indexOf("const createSchema"),
+      agentRoute.indexOf("export async function POST"),
+    );
+
+    assert.match(
+      store,
+      /export async function createDocument\(ownerId: string, type: DocumentType, title\?: string\)/,
+    );
+    assert.match(insert, /workspaceId:\s*null\b/);
+    assert.equal((insert.match(/workspaceId/g) ?? []).length, 1);
+    assert.equal(create.includes("placeDocumentInWorkspace"), false);
+    assert.equal(create.includes("applyDocumentWorkspace"), false);
+    assert.equal(createSchema.includes("workspaceId"), false);
+    assert.match(createRoute, /createDocument\(user\.id, input\.type, input\.title\)/);
+    assert.equal(agentSchema.includes("workspaceId"), false);
+    assert.match(agentRoute, /createDocument\(userId, input\.type, input\.title\)/);
+    assert.equal(libraryCreate.includes("workspaceId"), false);
+    assert.match(libraryCreate, /JSON\.stringify\(\{ type \}\)/);
+    assert.match(board, /<LibraryCreate \/>/);
+    assert.equal(/<LibraryCreate[^/]*workspace/i.test(board), false);
+    assert.equal((store.match(/placeDocumentInWorkspace\(/g) ?? []).length, 2);
+    assert.match(apply, /placeDocumentInWorkspace\(/);
+    assert.equal((store.match(/applyDocumentWorkspace\(/g) ?? []).length, 2);
+    assert.match(update, /applyDocumentWorkspace\(/);
+  });
+
+  it("keeps create routes and a later content write from placing the document", () => {
+    const store = readFileSync(new URL("./documents.ts", import.meta.url), "utf8");
+    const createRoute = readFileSync(
+      new URL("../app/api/documents/route.ts", import.meta.url),
+      "utf8",
+    );
+    const agentRoute = readFileSync(
+      new URL("../app/api/agent/v1/documents/route.ts", import.meta.url),
+      "utf8",
+    );
+    const write = store.slice(
+      store.indexOf("export async function updateDocumentContent"),
+      store.indexOf("export async function deleteDocument"),
+    );
+    const saved = write.slice(
+      write.indexOf(".set({"),
+      write.indexOf(".where(eq(documents.id, id))"),
+    );
+
+    assert.equal(createRoute.includes("workspaceId"), false);
+    assert.equal(createRoute.includes("placeDocumentInWorkspace"), false);
+    assert.equal(createRoute.includes("updateShare"), false);
+    assert.equal(agentRoute.includes("workspaceId"), false);
+    assert.equal(agentRoute.includes("placeDocumentInWorkspace"), false);
+    assert.equal(agentRoute.includes("updateShare"), false);
+    assert.equal(saved.includes("workspaceId"), false);
+  });
+
   it("moves the open library card when the saved workspace changes", () => {
     const board = readFileSync(
       new URL("../components/library/document-board.tsx", import.meta.url),
