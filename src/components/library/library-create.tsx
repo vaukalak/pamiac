@@ -1,7 +1,9 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import { LibraryPlusIcon } from "@/components/library/library-plus-icon";
 import type { DocumentType } from "@/lib/content";
 
 interface Properties {
@@ -11,6 +13,7 @@ interface Properties {
 export function LibraryCreate(props: Properties) {
   const { workspaceId } = props;
   const router = useRouter();
+  const detailsRef = useRef<HTMLDetailsElement>(null);
   const mutation = useMutation({
     mutationFn: async (type: DocumentType) => {
       const response = await fetch("/api/documents", {
@@ -35,23 +38,37 @@ export function LibraryCreate(props: Properties) {
   const creating = mutation.isPending && mutation.variables ? mutation.variables : null;
   const message = mutation.error instanceof Error ? mutation.error.message : "";
 
+  useEffect(() => {
+    function onPointer(event: PointerEvent) {
+      const details = detailsRef.current;
+      if (!details?.open) return;
+      if (details.contains(event.target as Node)) return;
+      details.open = false;
+    }
+
+    function onKey(event: KeyboardEvent) {
+      if (event.key !== "Escape") return;
+      const details = detailsRef.current;
+      if (!details?.open) return;
+      event.preventDefault();
+      details.open = false;
+      const summary = details.querySelector("summary");
+      if (summary instanceof HTMLElement) summary.focus();
+    }
+
+    document.addEventListener("pointerdown", onPointer);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onPointer);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, []);
+
   return (
     <div className="library-create">
-      <details>
+      <details ref={detailsRef}>
         <summary aria-label="New document" className="library-plus">
-          <svg
-            aria-hidden="true"
-            fill="none"
-            height="16"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeWidth="1.75"
-            viewBox="0 0 16 16"
-            width="16"
-          >
-            <path d="M8 3v10" />
-            <path d="M3 8h10" />
-          </svg>
+          <LibraryPlusIcon />
         </summary>
         <div className="menu-panel">
           {message ? <p className="error">{message}</p> : null}

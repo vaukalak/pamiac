@@ -1,7 +1,10 @@
-import { WorkspaceDelete } from "@/components/library/workspace-delete";
-import { WorkspaceLeave } from "@/components/library/workspace-leave";
+"use client";
+
+import { useQuery } from "@tanstack/react-query";
+import { LibraryManageDanger } from "@/components/library/library-manage-danger";
 import { WorkspaceMemberAdd } from "@/components/library/workspace-member-add";
-import { PERSONAL_SPACE_ID } from "@/lib/library-spaces";
+import { openWorkspaceName, PERSONAL_SPACE_ID } from "@/lib/library-spaces";
+import { workspacesQueryOptions } from "@/lib/library-workspaces";
 
 interface Properties {
   managing: boolean;
@@ -10,15 +13,17 @@ interface Properties {
 
 export function LibraryManage(props: Properties) {
   const { managing, workspaceId } = props;
+  const spaces = useQuery(workspacesQueryOptions());
+  const name = openWorkspaceName(workspaceId, spaces.data);
 
   return (
     <div className="library-manage">
+      {name ? <h2 className="library-manage-name">{name}</h2> : null}
       {workspaceId === PERSONAL_SPACE_ID ? (
         <p className="hint">Personal space has no shared members.</p>
       ) : null}
       {managing ? <WorkspaceMemberAdd key={workspaceId} workspaceId={workspaceId} /> : null}
-      <WorkspaceLeave key={workspaceId} workspaceId={workspaceId} />
-      {managing ? <WorkspaceDelete key={workspaceId} workspaceId={workspaceId} /> : null}
+      <LibraryManageDanger managing={managing} workspaceId={workspaceId} />
     </div>
   );
 }

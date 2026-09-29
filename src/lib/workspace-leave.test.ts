@@ -75,6 +75,10 @@ describe("member leaving a workspace", () => {
       new URL("../components/library/library-manage.tsx", import.meta.url),
       "utf8",
     );
+    const danger = readFileSync(
+      new URL("../components/library/library-manage-danger.tsx", import.meta.url),
+      "utf8",
+    );
     const leave = readFileSync(
       new URL("../components/library/workspace-leave.tsx", import.meta.url),
       "utf8",
@@ -95,8 +99,9 @@ describe("member leaving a workspace", () => {
       ["personal-note"],
     );
     assert.equal(documents[0]?.workspaceId, "ws-1");
-    assert.match(manage, /<WorkspaceLeave key=\{workspaceId\} workspaceId=\{workspaceId\} \/>/);
-    assert.equal(/\{managing \? <WorkspaceLeave/.test(manage), false);
+    assert.match(manage, /<LibraryManageDanger/);
+    assert.match(danger, /<WorkspaceLeave key=\{workspaceId\} workspaceId=\{workspaceId\} \/>/);
+    assert.equal(/\{managing \? <WorkspaceLeave/.test(danger), false);
     assert.match(leave, /workspacesQueryKey/);
     assert.match(leave, /workspace\.id !== workspaceId/);
     assert.match(leave, /PERSONAL_SPACE_ID/);

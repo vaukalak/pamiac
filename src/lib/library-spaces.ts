@@ -49,6 +49,18 @@ export function librarySpaces(created: readonly NamedWorkspace[] = []): LibraryS
   ];
 }
 
+export function spaceInitial(label: string) {
+  const visible = Array.from(label).find((character) => character.trim() !== "");
+  return (visible ?? "").toLocaleUpperCase("en");
+}
+
+export function openWorkspaceName(
+  workspaceId: string,
+  workspaces: readonly NamedWorkspace[] | undefined,
+) {
+  return workspaces?.find((workspace) => workspace.id === workspaceId)?.name?.trim() ?? "";
+}
+
 export function workspaceName(input: string) {
   const name = input.trim();
   if (!name) throw new Error("Name the workspace");

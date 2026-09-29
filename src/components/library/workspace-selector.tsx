@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { FilterChip } from "@/components/library/filter-chip";
+import { WorkspaceSpace } from "@/components/library/workspace-space";
 import { librarySpaces, type NamedWorkspace } from "@/lib/library-spaces";
 import { workspacesQueryOptions } from "@/lib/library-workspaces";
 
@@ -22,7 +22,7 @@ export function WorkspaceSelector(props: Properties) {
   return (
     <div aria-label="Spaces" className="workspace-selector" role="group">
       {spaces.map((space) => (
-        <FilterChip
+        <WorkspaceSpace
           key={space.id}
           label={space.label}
           onSelect={() => onSelect(space.id)}
