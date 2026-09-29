@@ -21,6 +21,7 @@ import { libraryItemsQueryKey, libraryItemsQueryOptions } from "@/lib/library-it
 import {
   documentsInSpace,
   librarySpaces,
+  managesWorkspace,
   openLibraryId,
   PERSONAL_SPACE_ID,
   type NamedWorkspace,
@@ -54,6 +55,7 @@ export function DocumentBoard(props: Properties) {
   const [dragging, setDragging] = useState<string | null>(null);
   const [workspaceId, setWorkspaceId] = useState(PERSONAL_SPACE_ID);
   const library = documentsInSpace(workspaceId, items, spacesQuery.data);
+  const managing = managesWorkspace(workspaceId, spacesQuery.data);
   const visible = useMemo(
     () => library.filter((item) => filter === "all" || item.type === filter),
     [library, filter],
@@ -128,13 +130,13 @@ export function DocumentBoard(props: Properties) {
             selectedId={workspaceId}
           />
           <WorkspaceCreate onCreated={chooseWorkspace} />
-          <WorkspaceMemberAdd key={workspaceId} workspaceId={workspaceId} />
+          {managing ? <WorkspaceMemberAdd key={workspaceId} workspaceId={workspaceId} /> : null}
           <h1>Library</h1>
           <p className="lede">Notes and diagrams.</p>
         </div>
         <LibraryCreate />
       </div>
-      <WorkspacePaywall workspaceId={workspaceId} />
+      {managing ? <WorkspacePaywall workspaceId={workspaceId} /> : null}
       <div className="library-tools">
         <LibraryFilters filter={filter} onChange={setFilter} />
         <ViewToggle onChange={chooseView} view={view} />

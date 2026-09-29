@@ -9,14 +9,35 @@ export interface LibrarySpace {
   label: string;
 }
 
+export type WorkspaceRole = "admin" | "editor";
+
 export interface NamedWorkspace {
   id: string;
   name: string;
+  role?: WorkspaceRole;
 }
 
 export interface WorkspaceMember {
   workspaceId: string;
   userId: string;
+}
+
+export function workspaceRole(source: "creator" | "added"): WorkspaceRole {
+  if (source === "creator") return "admin";
+  return "editor";
+}
+
+export function isWorkspaceAdmin(role: string | null | undefined): boolean {
+  return role === "admin";
+}
+
+export function managesWorkspace(
+  workspaceId: string,
+  workspaces: readonly NamedWorkspace[],
+): boolean {
+  if (workspaceId === PERSONAL_SPACE_ID) return false;
+  const open = workspaces.find((workspace) => workspace.id === workspaceId);
+  return isWorkspaceAdmin(open?.role);
 }
 
 export function librarySpaces(created: readonly NamedWorkspace[] = []): LibrarySpace[] {

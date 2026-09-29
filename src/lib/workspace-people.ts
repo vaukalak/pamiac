@@ -3,7 +3,13 @@ import { getDb } from "@/db";
 import { user, workspaceInvites, workspaceMembers, workspaces } from "@/db/schema";
 import { appBaseUrl } from "@/lib/config";
 import { HttpError } from "@/lib/http";
-import { PERSONAL_SPACE_ID, workspacePerson, type WorkspacePerson } from "@/lib/library-spaces";
+import {
+  isWorkspaceAdmin,
+  PERSONAL_SPACE_ID,
+  workspacePerson,
+  workspaceRole,
+  type WorkspacePerson,
+} from "@/lib/library-spaces";
 import { sendWorkspaceInvite } from "@/lib/mail";
 import { currentWorkspacePlan, memberRoom } from "@/lib/plans";
 import { workspaceInvitePath } from "@/lib/workspace-invite-link";
@@ -71,12 +77,15 @@ export async function addWorkspacePerson(
   }
   const db = getDb();
   const [membership] = await db
-    .select({ workspaceId: workspaceMembers.workspaceId })
+    .select({ role: workspaceMembers.role })
     .from(workspaceMembers)
     .where(
       and(eq(workspaceMembers.workspaceId, workspaceId), eq(workspaceMembers.userId, actorId)),
     );
   if (!membership) throw new HttpError(404, "Workspace not found");
+  if (!isWorkspaceAdmin(membership.role)) {
+    throw new HttpError(403, "Only an admin can add people");
+  }
 
   let pending: WorkspacePerson;
   try {
@@ -101,6 +110,7 @@ export async function addWorkspacePerson(
         id: crypto.randomUUID(),
         workspaceId: person.workspaceId,
         userId: person.userId,
+        role: workspaceRole("added"),
       })
       .onConflictDoNothing({
         target: [workspaceMembers.workspaceId, workspaceMembers.userId],

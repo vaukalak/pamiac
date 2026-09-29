@@ -2,7 +2,12 @@ import { asc, eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { workspaceMembers, workspaces } from "@/db/schema";
 import { HttpError } from "@/lib/http";
-import { firstMember, workspaceName, type NamedWorkspace } from "@/lib/library-spaces";
+import {
+  firstMember,
+  workspaceName,
+  workspaceRole,
+  type NamedWorkspace,
+} from "@/lib/library-spaces";
 
 function workspaceClientError(error: unknown): HttpError {
   if (error instanceof Error) return new HttpError(400, error.message);
@@ -11,7 +16,11 @@ function workspaceClientError(error: unknown): HttpError {
 
 export async function listMemberWorkspaces(userId: string): Promise<NamedWorkspace[]> {
   return getDb()
-    .select({ id: workspaces.id, name: workspaces.name })
+    .select({
+      id: workspaces.id,
+      name: workspaces.name,
+      role: workspaceMembers.role,
+    })
     .from(workspaceMembers)
     .innerJoin(workspaces, eq(workspaces.id, workspaceMembers.workspaceId))
     .where(eq(workspaceMembers.userId, userId))
@@ -20,6 +29,7 @@ export async function listMemberWorkspaces(userId: string): Promise<NamedWorkspa
 
 export async function createNamedWorkspace(userId: string, name: string): Promise<NamedWorkspace> {
   const id = crypto.randomUUID();
+  const role = workspaceRole("creator");
   let label: string;
   let member: ReturnType<typeof firstMember>;
   try {
@@ -34,7 +44,8 @@ export async function createNamedWorkspace(userId: string, name: string): Promis
       id: crypto.randomUUID(),
       workspaceId: member.workspaceId,
       userId: member.userId,
+      role,
     });
   });
-  return { id, name: label };
+  return { id, name: label, role };
 }

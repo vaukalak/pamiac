@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { workspaceInvites, workspaceMembers, workspaces } from "@/db/schema";
 import { HttpError } from "@/lib/http";
+import { workspaceRole } from "@/lib/library-spaces";
 import { sameInviteEmail } from "@/lib/workspace-invite-link";
 
 async function loadInvite(inviteId: string) {
@@ -46,6 +47,7 @@ export async function acceptWorkspaceInvite(userId: string, email: string, invit
       id: crypto.randomUUID(),
       workspaceId: allowed.workspaceId,
       userId,
+      role: workspaceRole("added"),
     })
     .onConflictDoNothing({
       target: [workspaceMembers.workspaceId, workspaceMembers.userId],
