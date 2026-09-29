@@ -35,7 +35,14 @@ export async function GET(request: Request) {
         update: {
           method: "PATCH",
           path: "/api/agent/v1/documents/:id",
-          body: { title: "optional", content: "optional" },
+          body: {
+            title: "optional",
+            content:
+              "optional full replace. Notes are markdown. Diagram content replaces the whole diagram.",
+            patch:
+              "optional diagram merge. GET the document in the same turn, then send only the nodes you change, with ids from that GET. Omit other nodes. Omit position to keep layout.",
+            version: "optional. The server merges even when this is behind.",
+          },
         },
       },
       diagram: {

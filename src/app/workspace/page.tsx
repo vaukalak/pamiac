@@ -36,6 +36,7 @@ export default async function WorkspacePage() {
     content: row.content,
     visibility: row.visibility as Visibility,
     updatedAt: row.updatedAt,
+    version: row.version,
     hasPassword: row.hasPassword,
     emails: row.emails,
   }));

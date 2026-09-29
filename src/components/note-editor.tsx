@@ -7,7 +7,8 @@ import "@blocknote/mantine/style.css";
 import "@blocknote/core/fonts/inter.css";
 
 interface Properties {
-  initial: string;
+  markdown: string;
+  version: number;
   editable: boolean;
   onChange: (markdown: string) => void;
 }
@@ -27,9 +28,12 @@ function colorSchemeServerSnapshot() {
 }
 
 export function NoteEditor(props: Properties) {
-  const { initial, editable, onChange } = props;
+  const { markdown, version, editable, onChange } = props;
   const editor = useCreateBlockNote();
   const ready = useRef(false);
+  const applying = useRef(false);
+  const appliedVersion = useRef<number | null>(null);
+  const baseline = useRef("");
   const dark = useSyncExternalStore(
     subscribeToColorScheme,
     colorSchemeSnapshot,
@@ -37,15 +41,21 @@ export function NoteEditor(props: Properties) {
   );
 
   useEffect(() => {
-    if (ready.current) return;
-    const blocks = editor.tryParseMarkdownToBlocks(initial || "");
+    if (appliedVersion.current === version) return;
+    applying.current = true;
+    const blocks = editor.tryParseMarkdownToBlocks(markdown || "");
     editor.replaceBlocks(editor.document, blocks);
+    baseline.current = editor.blocksToMarkdownLossy(editor.document);
+    appliedVersion.current = version;
     ready.current = true;
-  }, [editor, initial]);
+    applying.current = false;
+  }, [editor, markdown, version]);
 
   function handleChange() {
-    if (!ready.current || !editable) return;
-    onChange(editor.blocksToMarkdownLossy(editor.document));
+    if (applying.current || !ready.current || !editable) return;
+    const next = editor.blocksToMarkdownLossy(editor.document);
+    if (next === baseline.current) return;
+    onChange(next);
   }
 
   return (

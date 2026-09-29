@@ -1,5 +1,5 @@
-import { diagramToText, emptyDiagram, parseDiagram, type DiagramContent } from "@/lib/diagram";
-import { excerpt } from "@/lib/embeddings";
+import { diagramToText, emptyDiagram, parseDiagram, type DiagramContent } from "./diagram.ts";
+import { excerpt } from "./embeddings.ts";
 
 export type DocumentType = "note" | "diagram";
 
