@@ -121,8 +121,8 @@ describe("share workspace choice", () => {
       new URL("../components/library/library-create.tsx", import.meta.url),
       "utf8",
     );
-    const header = readFileSync(
-      new URL("../components/library/library-header.tsx", import.meta.url),
+    const tools = readFileSync(
+      new URL("../components/library/library-tools.tsx", import.meta.url),
       "utf8",
     );
     const create = store.slice(
@@ -169,7 +169,7 @@ describe("share workspace choice", () => {
       false,
     );
     assert.match(libraryCreate, /JSON\.stringify\(\{ type, workspaceId \}\)/);
-    assert.match(header, /<LibraryCreate workspaceId=\{selectedId\} \/>/);
+    assert.match(tools, /<LibraryCreate workspaceId=\{workspaceId\} \/>/);
     assert.equal((store.match(/placeDocumentInWorkspace\(/g) ?? []).length, 2);
     assert.match(apply, /placeDocumentInWorkspace\(/);
     assert.equal((store.match(/applyDocumentWorkspace\(/g) ?? []).length, 2);

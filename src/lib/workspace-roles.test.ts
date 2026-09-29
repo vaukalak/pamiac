@@ -105,8 +105,12 @@ describe("workspace roles", () => {
       new URL("../components/library/library-manage.tsx", import.meta.url),
       "utf8",
     );
-    const header = readFileSync(
-      new URL("../components/library/library-header.tsx", import.meta.url),
+    const sidebar = readFileSync(
+      new URL("../components/library/library-sidebar.tsx", import.meta.url),
+      "utf8",
+    );
+    const switcher = readFileSync(
+      new URL("../components/library/library-switcher.tsx", import.meta.url),
       "utf8",
     );
     const documents = readFileSync(new URL("./documents.ts", import.meta.url), "utf8");
@@ -118,8 +122,11 @@ describe("workspace roles", () => {
     assert.match(manage, /\{managing \? <WorkspaceMemberAdd/);
     assert.equal(/WorkspacePaywall/.test(board), false);
     assert.equal(/WorkspacePaywall/.test(manage), false);
-    assert.match(header, /<WorkspaceSelector/);
-    assert.match(header, /<h1>Library<\/h1>/);
+    assert.match(sidebar, /<WorkspaceSelector/);
+    assert.match(board, /<LibrarySwitcher/);
+    assert.match(switcher, />\s*Dashboard\s*</);
+    assert.match(switcher, />\s*Workspace management\s*</);
+    assert.equal(/managing \?/.test(switcher), false);
     assert.equal(/viewer/.test(board), false);
     assert.equal(/admin|editor|role/.test(gate), false);
   });
