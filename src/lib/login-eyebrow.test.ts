@@ -47,7 +47,7 @@ describe("login eyebrow", () => {
     expect(card).toMatch(
       /We email you a link\. There is no password\. If the address is new, opening the link\s+creates the account\./,
     );
-    expect(card).toMatch(/<LoginForm nextPath=\{nextPath\} \/>/);
+    expect(card).toMatch(/<LoginForm nextPath=\{formNext\} \/>/);
     expect(login).toMatch(/<AppHeader \/>/);
     expect(login).toMatch(/className="auth-ground"/);
   });

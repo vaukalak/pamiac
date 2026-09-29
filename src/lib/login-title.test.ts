@@ -48,6 +48,6 @@ describe("login title", () => {
     expect(shared).toMatch(/font-size:\s*40px/);
     expect(shared).not.toMatch(/line-height:/);
     expect(block(css, ".hero h1 {")).toMatch(/font-size:\s*clamp\(46px/);
-    expect(block(css, ".workspace h1 {")).toMatch(/font-size:\s*48px/);
+    expect(block(css, ".note-title {")).toMatch(/font-size:\s*48px/);
   });
 });

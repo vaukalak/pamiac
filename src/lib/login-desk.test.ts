@@ -41,7 +41,7 @@ describe("login desk", () => {
     expect(marks).toMatch(/var\(--canvas\)/);
     expect(marks).not.toMatch(/#[0-9a-fA-F]{3,8}/);
     expect(marks).not.toMatch(/<a\b|<button\b|<input\b|href=|tabIndex|tabindex/);
-    expect(page).toMatch(/<LoginForm nextPath=\{nextPath\} \/>/);
+    expect(page).toMatch(/<LoginForm nextPath=\{formNext\} \/>/);
   });
 
   it("keeps the marks from taking clicks, focus, or the card", () => {

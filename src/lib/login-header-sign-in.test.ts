@@ -54,7 +54,7 @@ describe("login header sign-in", () => {
 
   it("leaves the home card action and the login form in place", () => {
     expect(home).toMatch(/<Link className="btn" href="\/login">\s*Email me a link\s*<\/Link>/);
-    expect(login).toMatch(/<LoginForm nextPath=\{nextPath\} \/>/);
+    expect(login).toMatch(/<LoginForm nextPath=\{formNext\} \/>/);
     expect(login).not.toMatch(/href="\/login"/);
   });
 });
