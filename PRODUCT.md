@@ -26,11 +26,11 @@ The app runs in the browser, signed in with a magic link. The library is at `/wo
 
 The signed-in account menu has a Plan entry. It opens `/profile`, three columns:
 
-- Free, $0. This is the current plan. The action is enabled and labeled Current plan.
-- $5 per month. Disabled. The action says Coming soon.
-- $20 per month. Disabled. The action says Coming soon.
+- Free, $0, 30 documents. This is the current plan. The action is enabled and labeled Current plan. Creating a document past 30 is refused.
+- $5 per month, 200 documents. Disabled. The action says Coming soon.
+- $20 per month, 1,500 documents. Disabled. The action says Coming soon.
 
-The paywall does not list document caps, editors, retention, or version counts. Those limits were discussed and are not enforced in the app yet.
+Editors, retention, and version history are not on the paywall and are not enforced.
 
 Inferred: viewers of a shared link stay on the free side of sharing. Prices are US dollars per month and are not charged yet.
 

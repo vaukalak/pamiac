@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { plans } from "./plans.ts";
+import { currentPlan, documentLabel, documentRoom, plans } from "./plans.ts";
 
 test("there are exactly three plans", () => {
   assert.equal(plans.length, 3);
@@ -32,4 +32,19 @@ test("prices are free, five dollars, and twenty dollars", () => {
     plans.map((plan) => plan.name),
     ["Free", "$5", "$20"],
   );
+});
+
+test("document allowances are 30, 200, and 1500", () => {
+  assert.deepEqual(
+    plans.map((plan) => plan.documents),
+    [30, 200, 1500],
+  );
+  assert.deepEqual(plans.map(documentLabel), ["30 documents", "200 documents", "1,500 documents"]);
+});
+
+test("the current plan refuses a library that is already full", () => {
+  const plan = currentPlan();
+  assert.equal(plan.name, "Free");
+  assert.equal(documentRoom(plan.documents - 1, plan), null);
+  assert.equal(documentRoom(plan.documents, plan), "The Free plan holds 30 documents.");
 });

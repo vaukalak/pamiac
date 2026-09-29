@@ -996,7 +996,11 @@ code {
   margin: -6px 0 0;
   color: var(--ink-soft);
   font-variant-numeric: tabular-nums;
+}
+.plan-allowance {
+  margin: 0;
   flex: 1;
+  font-variant-numeric: tabular-nums;
 }
 .plan-card .btn {
   margin-top: auto;
