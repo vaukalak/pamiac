@@ -11,7 +11,7 @@ Read `PAMIAC_TOKEN` from the process environment (the agent environment). Send `
 
 Do not print the token.
 
-App: the origin the user is using. Ask for the app URL if you do not already know it.
+App: https://pamiac.com
 
 Base: `/api/agent/v1`
 
