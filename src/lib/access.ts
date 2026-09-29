@@ -2,7 +2,7 @@ export const VISIBILITIES = ["private", "public", "password", "emails"] as const
 export type Visibility = (typeof VISIBILITIES)[number];
 
 export type Access =
-  | { level: "edit"; reason: "owner" }
+  | { level: "edit"; reason: "owner" | "member" }
   | { level: "view"; reason: "public" | "password" | "email" }
   | { level: "locked"; reason: "password" | "login" | "email" }
   | { level: "none" };
@@ -13,8 +13,10 @@ export function resolveAccess(input: {
   viewerEmail: string | null;
   allowedEmails: string[];
   passwordOk: boolean;
+  workspaceMember?: boolean;
 }): Access {
   if (input.isOwner) return { level: "edit", reason: "owner" };
+  if (input.workspaceMember) return { level: "edit", reason: "member" };
   if (input.visibility === "public") return { level: "view", reason: "public" };
   if (input.visibility === "password") {
     return input.passwordOk

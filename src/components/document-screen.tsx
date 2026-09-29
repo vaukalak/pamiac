@@ -26,6 +26,7 @@ interface Properties {
   hasPassword: boolean;
   workspaceId: string | null;
   canEdit: boolean;
+  isOwner: boolean;
 }
 
 export function DocumentScreen(props: Properties) {
@@ -40,6 +41,7 @@ export function DocumentScreen(props: Properties) {
     hasPassword,
     workspaceId,
     canEdit,
+    isOwner,
   } = props;
   const router = useRouter();
   const [sharing, setSharing] = useState(false);
@@ -58,7 +60,7 @@ export function DocumentScreen(props: Properties) {
         )}
         <div className="topbar-tools">
           <SaveState canEdit={canEdit} id={id} />
-          {canEdit ? (
+          {isOwner ? (
             <DocumentOwnerActions id={id} onShare={() => setSharing(true)} />
           ) : (
             <span className="badge">{shareState.visibility}</span>

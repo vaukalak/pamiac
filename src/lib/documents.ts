@@ -148,6 +148,23 @@ export async function getOwnedDocument(ownerId: string, id: string) {
   return document ?? null;
 }
 
+export async function isDocumentWorkspaceMember(userId: string, workspaceId: string | null) {
+  if (!workspaceId) return false;
+  const [member] = await getDb()
+    .select({ id: workspaceMembers.id })
+    .from(workspaceMembers)
+    .where(and(eq(workspaceMembers.workspaceId, workspaceId), eq(workspaceMembers.userId, userId)));
+  return Boolean(member);
+}
+
+export async function getEditableDocument(userId: string, id: string) {
+  const [document] = await getDb().select().from(documents).where(eq(documents.id, id));
+  if (!document) return null;
+  if (document.ownerId === userId) return document;
+  if (await isDocumentWorkspaceMember(userId, document.workspaceId)) return document;
+  return null;
+}
+
 export async function getDocumentBundle(id: string) {
   const db = getDb();
   const [document] = await db.select().from(documents).where(eq(documents.id, id));
@@ -157,18 +174,18 @@ export async function getDocumentBundle(id: string) {
 }
 
 export async function updateDocumentContent(
-  ownerId: string,
+  userId: string,
   id: string,
   input: { title?: string; content?: unknown; patch?: DiagramPatch },
 ) {
   const db = getDb();
   const updated = await db.transaction(async (tx) => {
-    const [current] = await tx
-      .select()
-      .from(documents)
-      .where(and(eq(documents.id, id), eq(documents.ownerId, ownerId)))
-      .for("update");
+    const [current] = await tx.select().from(documents).where(eq(documents.id, id)).for("update");
     if (!current) throw new HttpError(404, "Document not found");
+    const workspaceMember = await isDocumentWorkspaceMember(userId, current.workspaceId);
+    if (current.ownerId !== userId && !workspaceMember) {
+      throw new HttpError(404, "Document not found");
+    }
     const title = input.title?.trim() || current.title;
     if (title.length > 160) throw new HttpError(400, "Title is too long");
     let written;

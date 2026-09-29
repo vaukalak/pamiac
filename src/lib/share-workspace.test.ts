@@ -182,10 +182,8 @@ describe("share workspace choice", () => {
       store.indexOf("export async function updateDocumentContent"),
       store.indexOf("export async function deleteDocument"),
     );
-    const saved = write.slice(
-      write.indexOf(".set({"),
-      write.indexOf(".where(eq(documents.id, id))"),
-    );
+    const setAt = write.indexOf(".set({");
+    const saved = write.slice(setAt, write.indexOf(".where(eq(documents.id, id))", setAt));
 
     assert.equal(createRoute.includes("workspaceId"), false);
     assert.equal(createRoute.includes("placeDocumentInWorkspace"), false);
@@ -283,12 +281,18 @@ describe("share workspace choice", () => {
     assert.match(route, /workspaceId: z\.string\(\)\.min\(1\)\.nullable\(\)\.optional\(\)/);
     assert.equal(route.includes("workspaceIds"), false);
     assert.equal(/workspace|member/i.test(bundle), false);
-    assert.equal(/workspace|member/i.test(decision), false);
+    assert.match(decision, /workspaceMember/);
+    assert.match(page, /isDocumentWorkspaceMember\(user\.id, bundle\.document\.workspaceId\)/);
     assert.match(page, /if \(access\.level === "none"\) notFound\(\)/);
     assert.match(page, /canEdit=\{access\.level === "edit"\}/);
+    assert.match(page, /isOwner=\{access\.level === "edit" && access\.reason === "owner"\}/);
     assert.match(page, /workspaceId=\{bundle\.document\.workspaceId\}/);
-    assert.equal((resolve.match(/level: "edit"/g) ?? []).length, 1);
+    assert.equal((resolve.match(/level: "edit"/g) ?? []).length, 2);
     assert.match(resolve, /if \(input\.isOwner\) return \{ level: "edit", reason: "owner" \}/);
+    assert.match(
+      resolve,
+      /if \(input\.workspaceMember\) return \{ level: "edit", reason: "member" \}/,
+    );
     assert.match(modal, /<ShareModeList mode=\{mode\} onChange=\{setMode\} \/>/);
     assert.match(
       modal,
@@ -331,8 +335,25 @@ describe("share workspace choice", () => {
     );
     assert.equal(resolveAccess({ ...stranger, visibility: "private" }).level, "none");
     assert.equal(
+      resolveAccess({ ...stranger, visibility: "private", workspaceMember: true }).reason,
+      "member",
+    );
+    assert.equal(
+      resolveAccess({ ...stranger, visibility: "private", workspaceMember: false }).level,
+      "none",
+    );
+    assert.equal(
       resolveAccess({ ...stranger, isOwner: true, visibility: "private" }).level,
       "edit",
+    );
+    assert.equal(
+      resolveAccess({
+        ...stranger,
+        isOwner: true,
+        visibility: "private",
+        workspaceMember: true,
+      }).reason,
+      "owner",
     );
     assert.equal(resolveAccess({ ...stranger, isOwner: true, visibility: "public" }).level, "edit");
   });
