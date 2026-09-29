@@ -21,19 +21,10 @@ import {
   presentReadableDocument,
   presentSearchHit,
 } from "@/lib/mcp-documents";
+import { createAnnotations, readAnnotations, replaceAnnotations } from "@/lib/mcp-annotations";
 import { profileContent } from "@/lib/mcp-profile";
-
-const readAnnotations = {
-  readOnlyHint: true,
-  destructiveHint: false,
-  openWorldHint: false,
-} as const;
-
-const writeAnnotations = {
-  readOnlyHint: false,
-  destructiveHint: false,
-  openWorldHint: false,
-} as const;
+import { starterPrompts } from "@/lib/mcp-prompts";
+import { attachPamiacSkill } from "@/lib/mcp-skill";
 
 const profileOutput = z
   .object({
@@ -265,7 +256,7 @@ export function createPamiacMcpServer(userId: string, origin: string) {
     {
       description: "Create a markdown note in this account.",
       inputSchema: createNoteInput,
-      annotations: writeAnnotations,
+      annotations: createAnnotations,
     },
     async ({ title, content }) => {
       if (!userId) return errorResult("Sign-in required");
@@ -285,7 +276,7 @@ export function createPamiacMcpServer(userId: string, origin: string) {
       description:
         "Create a UML diagram. Nodes use kind, name, attributes, and methods. Relations use type.",
       inputSchema: createDiagramInput,
-      annotations: writeAnnotations,
+      annotations: createAnnotations,
     },
     async ({ title, nodes, relations }) => {
       if (!userId) return errorResult("Sign-in required");
@@ -306,7 +297,7 @@ export function createPamiacMcpServer(userId: string, origin: string) {
     {
       description: "Replace a note with the full markdown content.",
       inputSchema: updateNoteInput,
-      annotations: writeAnnotations,
+      annotations: replaceAnnotations,
     },
     async ({ id, title, content }) => {
       if (!userId) return errorResult("Sign-in required");
@@ -324,7 +315,7 @@ export function createPamiacMcpServer(userId: string, origin: string) {
     {
       description: UPDATE_DIAGRAM_DESCRIPTION,
       inputSchema: updateDiagramInput,
-      annotations: writeAnnotations,
+      annotations: replaceAnnotations,
     },
     async ({ id, title, nodes, deleteNodes, relations, deleteRelations }) => {
       if (!userId) return errorResult("Sign-in required");
@@ -339,6 +330,23 @@ export function createPamiacMcpServer(userId: string, origin: string) {
       }
     },
   );
+
+  for (const prompt of starterPrompts) {
+    server.registerPrompt(
+      prompt.name,
+      { title: prompt.title, description: prompt.description },
+      () => ({
+        messages: [
+          {
+            role: "user",
+            content: { type: "text", text: prompt.text },
+          },
+        ],
+      }),
+    );
+  }
+
+  attachPamiacSkill(server);
 
   return server;
 }
