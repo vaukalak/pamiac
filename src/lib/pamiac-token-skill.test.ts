@@ -86,7 +86,8 @@ test("copy instructions name save paths and append the skill after frontmatter",
   const skill = page.match(/const SKILL = `([\s\S]*?)`;/)?.[1] ?? "";
   const template = page.match(/const INSTRUCTIONS = `([\s\S]*?)`;/)?.[1] ?? "";
   const instructions = template.replaceAll("${SKILL}", skill);
-  const copyInstructions = page.match(/async function copyInstructions\(\) \{[\s\S]*?\n  \}/)?.[0] ?? "";
+  const copyInstructions =
+    page.match(/async function copyInstructions\(\) \{[\s\S]*?\n  \}/)?.[0] ?? "";
 
   assert.match(instructions, /~\/\.cursor\/skills\/pamiac\/SKILL\.md/);
   assert.match(instructions, /(?<!~\/)\.cursor\/skills\/pamiac\/SKILL\.md/);
