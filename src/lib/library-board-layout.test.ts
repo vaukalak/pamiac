@@ -29,6 +29,7 @@ describe("library board layout", () => {
     const board = read("../components/library/document-board.tsx");
     const dashboard = read("../components/library/library-dashboard.tsx");
     const manage = read("../components/library/library-manage.tsx");
+    const danger = read("../components/library/library-manage-danger.tsx");
     const tools = read("../components/library/library-tools.tsx");
     const create = read("../components/library/library-create.tsx");
     const switcher = read("../components/library/library-switcher.tsx");
@@ -36,7 +37,11 @@ describe("library board layout", () => {
     const actions = tools.slice(tools.indexOf("library-tool-actions"), tools.indexOf("</div>"));
 
     assert.match(board, /useState<LibraryPanel>\("dashboard"\)/);
-    assert.match(board, /<LibrarySwitcher mode=\{panel\} onMode=\{setPanel\} \/>/);
+    assert.match(
+      board,
+      /workspaceId === PERSONAL_SPACE_ID \? null : \(\s*<LibrarySwitcher mode=\{panel\} onMode=\{setPanel\} \/>/,
+    );
+    assert.match(board, /workspaceId !== PERSONAL_SPACE_ID && panel === "manage"/);
     assert.match(switcher, />\s*Dashboard\s*</);
     assert.match(switcher, />\s*Workspace management\s*</);
     assert.equal(/PERSONAL_SPACE_ID/.test(switcher), false);
@@ -56,9 +61,10 @@ describe("library board layout", () => {
     assert.equal(/Manage space/.test(manage), false);
     assert.equal(/WorkspaceCreate/.test(manage), false);
     assert.match(manage, /\{managing \? <WorkspaceMemberAdd/);
-    assert.match(manage, /<WorkspaceLeave key=\{workspaceId\} workspaceId=\{workspaceId\} \/>/);
+    assert.match(manage, /<LibraryManageDanger/);
+    assert.match(danger, /<WorkspaceLeave key=\{workspaceId\} workspaceId=\{workspaceId\} \/>/);
     assert.match(
-      manage,
+      danger,
       /\{managing \? <WorkspaceDelete key=\{workspaceId\} workspaceId=\{workspaceId\} \/> : null\}/,
     );
     assert.equal(/WorkspacePaywall|plan-grid/.test(board + manage + dashboard), false);

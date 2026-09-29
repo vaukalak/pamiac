@@ -395,7 +395,8 @@ select:focus {
 .library-sidebar {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  align-items: flex-start;
+  gap: 12px;
   min-width: 0;
   padding: 8px;
   border: 1px solid var(--line);
@@ -435,17 +436,42 @@ select:focus {
   color: var(--on-ink);
 }
 .library-manage {
-  display: grid;
-  justify-items: start;
-  gap: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 16px;
+  width: fit-content;
+  max-width: min(100%, 520px);
   margin: 8px 0 16px;
   padding: 16px;
   border: 1px solid var(--line);
   border-radius: 16px;
   background: var(--card);
 }
+.library-manage-name {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 28px;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+.library-manage-danger {
+  display: grid;
+  justify-items: start;
+  gap: 10px;
+  padding-top: 14px;
+  border-top: 1px solid var(--danger-line);
+}
 .library-manage .hint {
   margin: 0;
+}
+.library-manage .workspace-create,
+.library-manage .workspace-leave,
+.library-manage .workspace-delete {
+  margin: 0;
+}
+.library-manage .workspace-create {
+  grid-template-columns: minmax(12rem, max-content) auto;
 }
 .filters {
   display: flex;
@@ -1216,7 +1242,6 @@ code {
 .workspace-selector button:focus-visible,
 .library-switcher button:focus-visible,
 .library-plus:focus-visible,
-.library-space-add summary:focus-visible,
 .menu-item:focus-visible {
   outline: 2px solid var(--teal);
   outline-offset: 2px;
@@ -1331,45 +1356,11 @@ code {
 .workspace-selector {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  align-items: flex-start;
+  gap: 8px;
   width: 100%;
   min-width: 0;
   margin: 0;
-}
-.library-space-add summary {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  margin: 0;
-  padding: 8px 12px;
-  border-radius: 10px;
-  color: var(--ink);
-  font-weight: 650;
-  list-style: none;
-  cursor: pointer;
-}
-.library-space-add summary::-webkit-details-marker {
-  display: none;
-}
-.library-space-add summary::marker {
-  content: "";
-}
-.library-space-add summary:hover {
-  background: var(--paper-deep);
-}
-.library-space-plus {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 999px;
-  background: var(--teal);
-  color: var(--on-ink);
-  flex: none;
-  font-size: 16px;
-  line-height: 1;
 }
 .library-sidebar .workspace-create {
   grid-template-columns: 1fr;
@@ -1458,20 +1449,58 @@ code {
   margin: 0;
 }
 .workspace-selector button {
-  border: none;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 999px;
   background: transparent;
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 18px;
+  letter-spacing: -0.03em;
+  text-align: center;
+}
+.workspace-space-tip {
+  position: absolute;
+  left: calc(100% + 10px);
+  top: 50%;
+  z-index: 5;
+  max-width: 220px;
+  padding: 6px 10px;
   border-radius: 10px;
-  padding: 8px 12px;
-  color: var(--ink-soft);
+  background: var(--ink);
+  color: var(--on-ink);
+  font-family: var(--sans);
+  font-size: 14px;
+  letter-spacing: 0;
+  line-height: 1.3;
   text-align: left;
-  width: 100%;
+  white-space: normal;
   overflow-wrap: anywhere;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  box-shadow: var(--shadow);
+  transform: translateY(-50%);
+}
+.workspace-selector button:hover .workspace-space-tip,
+.workspace-selector button:focus .workspace-space-tip,
+.workspace-selector button:focus-visible .workspace-space-tip {
+  opacity: 1;
+  visibility: visible;
 }
 .workspace-selector button:hover {
+  background: var(--paper-deep);
   color: var(--ink);
 }
 .workspace-selector button[aria-pressed="true"] {
   background: var(--ink);
+  border-color: var(--ink);
   color: var(--on-ink);
 }
 .workspace-selector button[aria-pressed="true"]:hover {

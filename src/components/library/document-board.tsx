@@ -121,8 +121,12 @@ export function DocumentBoard(props: Properties) {
     <div className="library-shell">
       <LibrarySidebar onSelect={chooseWorkspace} selectedId={workspaceId} workspaces={workspaces} />
       <div className="library-main">
-        <LibrarySwitcher mode={panel} onMode={setPanel} />
-        {panel === "dashboard" ? (
+        {workspaceId === PERSONAL_SPACE_ID ? null : (
+          <LibrarySwitcher mode={panel} onMode={setPanel} />
+        )}
+        {workspaceId !== PERSONAL_SPACE_ID && panel === "manage" ? (
+          <LibraryManage managing={managing} workspaceId={workspaceId} />
+        ) : (
           <LibraryDashboard
             dragging={dragging}
             filter={filter}
@@ -139,8 +143,6 @@ export function DocumentBoard(props: Properties) {
             visible={visible}
             workspaceId={workspaceId}
           />
-        ) : (
-          <LibraryManage managing={managing} workspaceId={workspaceId} />
         )}
       </div>
     </div>
