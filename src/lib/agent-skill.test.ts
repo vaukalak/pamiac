@@ -13,13 +13,14 @@ const apiKeys = readFileSync(
 );
 
 const required = [
-  "Read `PAMIAC_TOKEN` from the agent environment",
+  "Read `PAMIAC_TOKEN` from the process environment (the agent environment)",
   "Authorization: Bearer <PAMIAC_TOKEN>",
   "Do not ask the user to paste the token.",
   "If `PAMIAC_TOKEN` is missing, say so and stop.",
+  "Do not invent a token.",
   "Ask for the app URL if you do not already know it.",
   "Base: `/api/agent/v1`",
-  "POST /search",
+  "POST /api/agent/v1/search",
   "checkout payment classes",
   "Diagram relations can refer to an element by id or by name.",
 ];

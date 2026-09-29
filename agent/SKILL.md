@@ -7,7 +7,7 @@ description: >-
 
 # Pamiac
 
-Read `PAMIAC_TOKEN` from the agent environment and send `Authorization: Bearer <PAMIAC_TOKEN>` on every request. Do not ask the user to paste the token. If `PAMIAC_TOKEN` is missing, say so and stop.
+Read `PAMIAC_TOKEN` from the process environment (the agent environment). Send `Authorization: Bearer <PAMIAC_TOKEN>` on every request, using that value. Do not ask the user to paste the token. If `PAMIAC_TOKEN` is missing, say so and stop. Do not invent a token.
 
 Do not print the token.
 
@@ -17,7 +17,7 @@ Base: `/api/agent/v1`
 
 ## Search by meaning
 
-`POST /search`
+`POST /api/agent/v1/search`
 
 ```json
 { "query": "checkout payment classes", "limit": 8 }
@@ -27,10 +27,11 @@ Search uses this user's document embeddings. Results include `id`, `type`, `titl
 
 ## List, read, create, update
 
-- `GET /documents`
-- `GET /documents/:id`
-- `POST /documents`
-- `PATCH /documents/:id`
+- `GET /api/agent/v1/documents`
+- `GET /api/agent/v1/documents?type=diagram`
+- `GET /api/agent/v1/documents/:id`
+- `POST /api/agent/v1/documents`
+- `PATCH /api/agent/v1/documents/:id`
 
 Create a diagram:
 
@@ -58,7 +59,7 @@ Update a note:
 { "content": "# updated markdown" }
 ```
 
-`GET /documents?type=note` or `GET /documents?type=diagram` filters the list.
+`GET /api/agent/v1/documents?type=note` or `GET /api/agent/v1/documents?type=diagram` filters the list.
 
 Notes store markdown in `content`. Diagrams store:
 

@@ -1,7 +1,10 @@
 "use client";
 
-import { Handle, Position, type Node, type NodeProps } from "@xyflow/react";
+import { Handle, Position, type Node } from "@xyflow/react";
+import { NodeCompartments } from "@/components/diagram/node-compartments";
+import { NodeHeading } from "@/components/diagram/node-heading";
 import type { UmlKind } from "@/lib/diagram";
+import { kindHasCompartments } from "@/lib/diagram-palette";
 
 export type UmlNodeData = {
   kind: UmlKind;
@@ -28,37 +31,22 @@ function ActorFigure() {
   );
 }
 
-export function UmlNodeView({ data, selected }: NodeProps<UmlFlowNode>) {
-  const showCompartments =
-    data.kind === "class" || data.kind === "interface" || data.kind === "component";
+interface Properties {
+  data: UmlNodeData;
+  selected?: boolean;
+}
+
+export function UmlNodeView(props: Properties) {
+  const { data, selected } = props;
+
   return (
     <div className={`uml-card kind-${data.kind}${selected ? " is-selected" : ""}`}>
       <Handle type="target" position={Position.Top} />
       <Handle type="target" position={Position.Left} id="left" />
       {data.kind === "actor" ? <ActorFigure /> : null}
-      <header>
-        {data.stereotype || data.kind === "interface" ? (
-          <span className="stereo">«{data.stereotype || data.kind}»</span>
-        ) : null}
-        <div className="name">{data.name}</div>
-      </header>
-      {showCompartments ? (
-        <>
-          <ul>
-            {data.attributes.length ? (
-              data.attributes.map((line) => <li key={line}>{line}</li>)
-            ) : (
-              <li>&nbsp;</li>
-            )}
-          </ul>
-          <ul>
-            {data.methods.length ? (
-              data.methods.map((line) => <li key={line}>{line}</li>)
-            ) : (
-              <li>&nbsp;</li>
-            )}
-          </ul>
-        </>
+      <NodeHeading kind={data.kind} name={data.name} stereotype={data.stereotype} />
+      {kindHasCompartments(data.kind) ? (
+        <NodeCompartments attributes={data.attributes} methods={data.methods} />
       ) : null}
       {data.kind === "note" && data.body ? <div className="body">{data.body}</div> : null}
       <Handle type="source" position={Position.Bottom} />

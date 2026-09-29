@@ -6,7 +6,7 @@ import { TokenForm } from "@/components/tokens/token-form";
 import { TokenList } from "@/components/tokens/token-list";
 import { TokenSecret } from "@/components/tokens/token-secret";
 
-const SKILL = `Read PAMIAC_TOKEN from the agent environment and send Authorization: Bearer <PAMIAC_TOKEN> on every request. Do not ask the user to paste the token. If PAMIAC_TOKEN is missing, say so and stop.
+const SKILL = `Set PAMIAC_TOKEN in the cloud agent's environment to the token you just created. Read PAMIAC_TOKEN from the agent environment and send Authorization: Bearer <PAMIAC_TOKEN> on every request. Do not ask the user to paste the token. If PAMIAC_TOKEN is missing, say so and stop.
 
 Authorization: Bearer <PAMIAC_TOKEN>
 App: the origin the user is using. Ask for the app URL if you do not already know it.
@@ -28,6 +28,7 @@ export function TokenManager() {
   const [tokens, setTokens] = useState<AgentToken[]>([]);
   const [secret, setSecret] = useState<string | null>(null);
   const [error, setError] = useState("");
+  const [skillMessage, setSkillMessage] = useState("");
 
   async function reload() {
     try {
@@ -44,6 +45,26 @@ export function TokenManager() {
     }
   }
 
+  async function copySkill() {
+    setSkillMessage("");
+    try {
+      await navigator.clipboard.writeText(SKILL);
+      setSkillMessage("Skill copied.");
+    } catch {
+      setSkillMessage("Could not copy the skill.");
+    }
+  }
+
+  function downloadSkill() {
+    const file = new Blob([SKILL], { type: "text/markdown;charset=utf-8" });
+    const url = URL.createObjectURL(file);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = "SKILL.md";
+    anchor.click();
+    URL.revokeObjectURL(url);
+  }
+
   useEffect(() => {
     void reload();
   }, []);
@@ -52,8 +73,8 @@ export function TokenManager() {
     <div>
       <h1>API keys</h1>
       <p className="lede">
-        Create a key, choose when it expires, and set it as PAMIAC_TOKEN in the agent environment.
-        The agent can search, read, and edit your notes and diagrams.
+        Create a key, choose when it expires, and set PAMIAC_TOKEN in the cloud agent's environment
+        to the token you just created. The agent can search, read, and edit your notes and diagrams.
       </p>
       <TokenForm
         onCreated={(value) => {
@@ -65,6 +86,15 @@ export function TokenManager() {
       {error ? <p className="error">{error}</p> : null}
       <TokenList tokens={tokens} onRevoked={() => void reload()} />
       <h2>What to give the agent</h2>
+      <div className="skill-actions">
+        <button className="btn secondary" onClick={() => void copySkill()} type="button">
+          copy skill
+        </button>
+        <button className="btn secondary" onClick={downloadSkill} type="button">
+          download skill
+        </button>
+      </div>
+      {skillMessage ? <p className="hint">{skillMessage}</p> : null}
       <pre className="skill">{SKILL}</pre>
     </div>
   );

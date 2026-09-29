@@ -1,5 +1,6 @@
-import { agentJson, corsHeaders, errorResponse } from "@/lib/http";
 import { requireAgentUser } from "@/lib/documents";
+import { UML_KINDS } from "@/lib/diagram";
+import { agentJson, corsHeaders, errorResponse } from "@/lib/http";
 
 export function OPTIONS() {
   return new Response(null, { status: 204, headers: corsHeaders() });
@@ -40,7 +41,7 @@ export async function GET(request: Request) {
       diagram: {
         nodes: {
           id: "optional, otherwise generated from name",
-          kind: "class | interface | actor | usecase | package | component | note",
+          kind: UML_KINDS.join(" | "),
           name: "string",
           attributes: ["visibility name: type"],
           methods: ["visibility name(): type"],
