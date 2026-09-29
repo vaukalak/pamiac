@@ -6,9 +6,10 @@ import { TokenForm } from "@/components/tokens/token-form";
 import { TokenList } from "@/components/tokens/token-list";
 import { TokenSecret } from "@/components/tokens/token-secret";
 
-const SKILL = `Use a Pamiac token to read and edit the user's notes and UML diagrams.
+const SKILL = `Read PAMIAC_TOKEN from the agent environment and send Authorization: Bearer <PAMIAC_TOKEN> on every request. Do not ask the user to paste the token. If PAMIAC_TOKEN is missing, say so and stop.
 
-Authorization: Bearer pam_...
+Authorization: Bearer <PAMIAC_TOKEN>
+App: the origin the user is using. Ask for the app URL if you do not already know it.
 Base: /api/agent/v1
 
 POST /search
@@ -51,8 +52,8 @@ export function TokenManager() {
     <div>
       <h1>API keys</h1>
       <p className="lede">
-        Create a key, choose when it expires, and give it to a cloud agent. The agent can search,
-        read, and edit your notes and diagrams.
+        Create a key, choose when it expires, and set it as PAMIAC_TOKEN in the agent environment.
+        The agent can search, read, and edit your notes and diagrams.
       </p>
       <TokenForm
         onCreated={(value) => {
