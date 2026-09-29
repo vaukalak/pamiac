@@ -73,6 +73,44 @@ export const verification = pgTable(
   (table) => [index("verification_identifier_idx").on(table.identifier)],
 );
 
+export const workspaces = pgTable("workspace", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const workspaceMembers = pgTable(
+  "workspace_member",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    role: text("role", { enum: ["admin", "editor"] }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("workspace_member_unique_idx").on(table.workspaceId, table.userId),
+    index("workspace_member_user_idx").on(table.userId),
+  ],
+);
+
+export const workspaceInvites = pgTable(
+  "workspace_invite",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    email: text("email").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [uniqueIndex("workspace_invite_email_idx").on(table.workspaceId, table.email)],
+);
+
 export const documents = pgTable(
   "document",
   {
@@ -87,12 +125,16 @@ export const documents = pgTable(
       .notNull()
       .default("private"),
     passwordHash: text("password_hash"),
+    workspaceId: text("workspace_id").references(() => workspaces.id, { onDelete: "cascade" }),
     sortIndex: integer("sort_index").notNull().default(0),
     version: integer("version").notNull().default(1),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => [index("document_owner_idx").on(table.ownerId, table.sortIndex)],
+  (table) => [
+    index("document_owner_idx").on(table.ownerId, table.sortIndex),
+    index("document_workspace_idx").on(table.workspaceId),
+  ],
 );
 
 export const documentShares = pgTable(

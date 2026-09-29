@@ -1,9 +1,9 @@
 import {
   deleteDocument,
   presentDocumentWrite,
-  requireUserId,
+  requireLibraryUser,
   updateDocumentContent,
-  getOwnedDocument,
+  getEditableDocument,
 } from "@/lib/documents";
 import { documentUpdateSchema } from "@/lib/document-write";
 import { errorResponse, json, readJson } from "@/lib/http";
@@ -14,9 +14,9 @@ type Context = { params: Promise<{ id: string }> };
 
 export async function GET(_request: Request, context: Context) {
   try {
-    const user = await requireUserId();
+    const user = await requireLibraryUser();
     const { id } = await context.params;
-    const document = await getOwnedDocument(user.id, id);
+    const document = await getEditableDocument(user.id, id);
     if (!document) return json({ error: "Document not found" }, 404);
     const type = document.type as DocumentType;
     return json({
@@ -34,7 +34,7 @@ export async function GET(_request: Request, context: Context) {
 
 export async function PATCH(request: Request, context: Context) {
   try {
-    const user = await requireUserId();
+    const user = await requireLibraryUser();
     const { id } = await context.params;
     const input = documentUpdateSchema.parse(await readJson(request));
     const document = await updateDocumentContent(user.id, id, {
@@ -50,7 +50,7 @@ export async function PATCH(request: Request, context: Context) {
 
 export async function DELETE(_request: Request, context: Context) {
   try {
-    const user = await requireUserId();
+    const user = await requireLibraryUser();
     const { id } = await context.params;
     await deleteDocument(user.id, id);
     return json({ ok: true });

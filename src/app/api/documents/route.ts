@@ -3,7 +3,7 @@ import {
   createDocument,
   listLibraryDocuments,
   reorderDocuments,
-  requireUserId,
+  requireLibraryUser,
 } from "@/lib/documents";
 import { errorResponse, json, readJson } from "@/lib/http";
 
@@ -14,7 +14,7 @@ const createSchema = z.object({
 
 export async function GET() {
   try {
-    const user = await requireUserId();
+    const user = await requireLibraryUser();
     const documents = await listLibraryDocuments(user.id);
     return json({ documents });
   } catch (error) {
@@ -24,7 +24,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const user = await requireUserId();
+    const user = await requireLibraryUser();
     const input = createSchema.parse(await readJson(request));
     const document = await createDocument(user.id, input.type, input.title);
     return json({ id: document.id }, 201);
@@ -37,7 +37,7 @@ const reorderSchema = z.object({ ids: z.array(z.string()).max(500) });
 
 export async function PUT(request: Request) {
   try {
-    const user = await requireUserId();
+    const user = await requireLibraryUser();
     const input = reorderSchema.parse(await readJson(request));
     await reorderDocuments(user.id, input.ids);
     return json({ ok: true });

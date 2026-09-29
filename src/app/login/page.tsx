@@ -4,7 +4,7 @@ import { LoginForm } from "@/components/login-form";
 import { SetupScreen } from "@/components/setup-screen";
 import { safeNext } from "@/lib/config";
 import { oauthAuthorizeResumePath, oauthLoginReturnPath, toSearchParams } from "@/lib/oauth-return";
-import { getSession } from "@/lib/session";
+import { getLibrarySession, getSession } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
@@ -16,11 +16,13 @@ export default async function LoginPage({
   const params = await searchParams;
   const query = toSearchParams(params);
   const next = typeof params.next === "string" ? params.next : null;
-  const nextPath = oauthLoginReturnPath(query) ?? safeNext(next);
-  const result = await getSession();
+  const oauthResume = oauthAuthorizeResumePath(query);
+  const nextPath = oauthResume ?? safeNext(next);
+  const formNext = oauthLoginReturnPath(query) ?? nextPath;
+  const result = oauthResume ? await getSession() : await getLibrarySession();
   if (result.status === "setup") return <SetupScreen />;
   if (result.status === "error") return <SetupScreen detail={result.message} />;
-  if (result.session) redirect(oauthAuthorizeResumePath(query) ?? safeNext(next));
+  if (result.session) redirect(nextPath);
 
   return (
     <>
@@ -32,7 +34,7 @@ export default async function LoginPage({
           <p>
             We email you a magic link. If the address is new, opening the link creates the account.
           </p>
-          <LoginForm nextPath={nextPath} />
+          <LoginForm nextPath={formNext} />
         </section>
       </main>
     </>
