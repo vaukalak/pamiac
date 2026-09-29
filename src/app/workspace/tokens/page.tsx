@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
-import { AppHeader } from "@/components/app-header";
+import { AppHeader } from "@/components/header/app-header";
 import { SetupScreen } from "@/components/setup-screen";
-import { TokenManager } from "@/components/token-manager";
+import { TokenManager } from "@/components/tokens/token-manager";
 import { getSession } from "@/lib/session";
 
 export const dynamic = "force-dynamic";

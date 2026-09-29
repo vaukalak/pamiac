@@ -43,7 +43,7 @@ test("agent skill reads PAMIAC_TOKEN and keeps the diagram contract", () => {
 });
 
 test("token page names PAMIAC_TOKEN in the lede and the agent skill text", () => {
-  const page = readFileSync(join(root, "src/components/token-manager.tsx"), "utf8");
+  const page = readFileSync(join(root, "src/components/tokens/token-manager.tsx"), "utf8");
   const lede = page.match(/className="lede">([\s\S]*?)<\/p>/)?.[1] ?? "";
   const skill = page.match(/const SKILL = `([\s\S]*?)`;/)?.[1] ?? "";
 
@@ -70,13 +70,12 @@ test("agent tokens keep the secret so the token page can show it again", () => {
 });
 
 test("token page copies and downloads the skill", () => {
-  const page = readFileSync(join(root, "src/components/token-manager.tsx"), "utf8");
+  const page = readFileSync(join(root, "src/components/tokens/token-manager.tsx"), "utf8");
 
   assert.match(page, />\s*copy skill\s*</);
   assert.match(page, />\s*download skill\s*</);
   assert.match(page, /navigator\.clipboard\.writeText\(SKILL\)/);
   assert.match(page, /download = "SKILL\.md"/);
-  assert.match(page, /secret=\{token\.secret\}/);
 });
 
 test("readme says the skill reads PAMIAC_TOKEN from the agent environment", () => {

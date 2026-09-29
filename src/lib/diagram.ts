@@ -162,7 +162,10 @@ export function ensureNodeIds(
       attributes: node.attributes ?? [],
       methods: node.methods ?? [],
       body: node.body,
-      position: node.position ?? previous?.nodes.find((item) => item.id === id)?.position ?? gridPosition(index),
+      position:
+        node.position ??
+        previous?.nodes.find((item) => item.id === id)?.position ??
+        gridPosition(index),
     };
   });
   const nameToId = new Map(nodes.map((node) => [node.name, node.id]));

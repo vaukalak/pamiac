@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { AppHeader } from "@/components/app-header";
+import { AppHeader } from "@/components/header/app-header";
 import { LoginForm } from "@/components/login-form";
 import { SetupScreen } from "@/components/setup-screen";
 import { safeNext } from "@/lib/config";
@@ -26,7 +26,9 @@ export default async function LoginPage({
         <section className="auth-card">
           <p className="eyebrow">Account</p>
           <h1>Sign in or register</h1>
-          <p>We email you a magic link. If the address is new, opening the link creates the account.</p>
+          <p>
+            We email you a magic link. If the address is new, opening the link creates the account.
+          </p>
           <LoginForm nextPath={nextPath} />
         </section>
       </main>
