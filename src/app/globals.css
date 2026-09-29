@@ -432,6 +432,13 @@ select:focus {
   display: grid;
   gap: 14px;
 }
+.login-sign-in-copy {
+  display: contents;
+}
+html[data-login-sent] .login-sign-in-copy,
+html[data-login-sent] .auth-door .auth-card form.form-stack {
+  display: none;
+}
 .hint {
   color: var(--ink-soft);
   font-size: 14px;
