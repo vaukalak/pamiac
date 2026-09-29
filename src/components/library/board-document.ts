@@ -11,6 +11,7 @@ export type BoardDocument = {
   version: number;
   hasPassword: boolean;
   emails: string[];
+  workspaceId: string | null;
 };
 
 export type LibraryView = "grid" | "list";
@@ -26,4 +27,5 @@ export type BoardChange =
       visibility: Visibility;
       emails: string[];
       hasPassword: boolean;
+      workspaceId: string | null;
     };

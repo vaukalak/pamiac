@@ -1,5 +1,5 @@
 import { PlanAction } from "@/components/plan/plan-action";
-import { documentLabel, type Plan } from "@/lib/plans";
+import { documentLabel, memberLabel, type Plan } from "@/lib/plans";
 
 interface Properties {
   plan: Plan;
@@ -8,12 +8,14 @@ interface Properties {
 export function PlanColumn(props: Properties) {
   const { plan } = props;
   const availability = plan.enabled ? "is-current" : "is-unavailable";
+  const members = plan.members;
 
   return (
     <article className={`plan-card ${availability}`}>
       <h2>{plan.name}</h2>
       <p className="plan-price">{plan.price}</p>
       <p className="plan-allowance">{documentLabel(plan)}</p>
+      {members != null ? <p className="plan-allowance">{memberLabel(members)}</p> : null}
       <PlanAction enabled={plan.enabled} label={plan.action} />
     </article>
   );

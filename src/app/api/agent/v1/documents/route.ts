@@ -1,7 +1,7 @@
 import { z } from "zod";
 import {
   createDocument,
-  listDocuments,
+  listAgentDocuments,
   presentDocument,
   requireAgentUser,
   updateDocumentContent,
@@ -23,7 +23,7 @@ export async function GET(request: Request) {
   try {
     const userId = await requireAgentUser(request);
     const type = new URL(request.url).searchParams.get("type");
-    const rows = await listDocuments(userId);
+    const rows = await listAgentDocuments(userId);
     const documents = rows
       .filter((row) => !type || row.type === type)
       .map((row) => presentDocument(row, origin(request)));

@@ -52,6 +52,28 @@ test("private documents are hidden from everyone else", () => {
   assert.equal(resolveAccess({ ...base, visibility: "private" }).level, "none");
 });
 
+test("a workspace member edits a private document without becoming the owner", () => {
+  assert.deepEqual(resolveAccess({ ...base, visibility: "private", workspaceMember: true }), {
+    level: "edit",
+    reason: "member",
+  });
+  assert.deepEqual(
+    resolveAccess({ ...base, isOwner: true, visibility: "private", workspaceMember: true }),
+    { level: "edit", reason: "owner" },
+  );
+});
+
+test("workspace membership does not open a document the viewer cannot see", () => {
+  assert.equal(
+    resolveAccess({ ...base, visibility: "private", workspaceMember: false }).level,
+    "none",
+  );
+  assert.equal(
+    resolveAccess({ ...base, visibility: "public", workspaceMember: false }).level,
+    "view",
+  );
+});
+
 test("email list is normalized", () => {
   assert.deepEqual(normalizeEmails([" Ada@Example.com ", "ada@example.com"]), ["ada@example.com"]);
   assert.throws(() => normalizeEmails(["not-an-email"]));

@@ -105,9 +105,11 @@ export function DocumentMenu(props: Properties) {
               visibility: share.visibility,
               emails: share.emails,
               hasPassword: share.hasPassword,
+              workspaceId: share.workspaceId,
             })
           }
           visibility={item.visibility}
+          workspaceId={item.workspaceId}
         />
       ) : null}
     </div>
