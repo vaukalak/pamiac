@@ -124,7 +124,7 @@ describe("agent documents in the user's workspaces", () => {
       /updateDocumentContent\(userId, id, \{\s*title: input\.title,\s*content: input\.content,\s*patch: input\.patch,\s*\}\)/,
     );
     assert.match(searchRoute, /searchDocuments\(userId, input\.query, input\.limit \?\? 8\)/);
-    assert.equal(/listAgentDocuments|getAgentDocument|workspaceId/.test(humanList), false);
+    assert.equal(/listAgentDocuments|getAgentDocument/.test(humanList), false);
     assert.match(humanId, /getEditableDocument\(user\.id, id\)/);
     assert.equal(/getAgentDocument/.test(humanId), false);
   });

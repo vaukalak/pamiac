@@ -189,7 +189,7 @@ describe("library personal space", () => {
     assert.equal(documentsInSpace(open, [{ id: "note-1" }], created).length, 1);
   });
 
-  it("remembers the open library and leaves a new document in the personal library", () => {
+  it("remembers the open library and stores a personal document without a workspace", () => {
     const board = readFileSync(
       new URL("../components/library/document-board.tsx", import.meta.url),
       "utf8",
@@ -209,7 +209,8 @@ describe("library personal space", () => {
     assert.match(board, /documentsInSpace/);
     assert.match(documentTable, /workspace_id/);
     assert.equal(/workspaceId:[^,\n]*notNull/.test(documentTable), false);
-    assert.match(create, /workspaceId: null/);
+    assert.match(create, /PERSONAL_SPACE_ID/);
+    assert.match(create, /workspaceId: libraryId \?\? null/);
   });
 
   it("places a document in one workspace library and reads it back from there only", () => {

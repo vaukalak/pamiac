@@ -376,7 +376,6 @@ select:focus {
 .workspace {
   padding: 12px 0 72px;
 }
-.workspace-head,
 .topbar {
   display: flex;
   justify-content: space-between;
@@ -384,9 +383,63 @@ select:focus {
   align-items: end;
   margin: 18px auto;
 }
-.workspace h1 {
+.workspace-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  margin: 12px auto 8px;
+}
+.workspace-head .workspace-selector {
   margin: 0;
-  font-size: 48px;
+}
+.workspace-head h1 {
+  margin: 0;
+  font-size: 28px;
+  line-height: 1.15;
+}
+.workspace-head .library-create {
+  margin-left: auto;
+}
+.library-manage {
+  margin: 0 0 4px;
+}
+.library-manage summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  margin: 0;
+  padding: 4px 0;
+  color: var(--ink-soft);
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+  list-style: none;
+}
+.library-manage summary::-webkit-details-marker {
+  display: none;
+}
+.library-manage summary::marker {
+  content: "";
+}
+.library-manage summary::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: translateY(-1px) rotate(-45deg);
+  flex: none;
+}
+.library-manage[open] summary::before {
+  transform: translateY(1px) rotate(45deg);
+}
+.library-manage[open] {
+  display: grid;
+  justify-items: start;
+  gap: 4px;
+  margin-bottom: 12px;
 }
 .filters {
   display: flex;
@@ -1155,6 +1208,7 @@ code {
 .filters button:focus-visible,
 .view-toggle button:focus-visible,
 .workspace-selector button:focus-visible,
+.library-manage summary:focus-visible,
 .menu-item:focus-visible {
   outline: 2px solid var(--teal);
   outline-offset: 2px;
@@ -1509,9 +1563,11 @@ code {
   .hero {
     margin-top: 28px;
   }
-  .workspace h1,
   .note-title {
     font-size: 38px;
+  }
+  .workspace-head .library-create {
+    margin-left: 0;
   }
   .topbar {
     flex-wrap: wrap;
