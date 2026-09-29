@@ -1,6 +1,6 @@
 # ChatGPT plugin submission
 
-Paste these into the portal after the skill is imported. Scan Tools on the MCP step imports the skill from `https://pamiac.com/api/mcp`. Uploading `skills/pamiac` is the same skill if the scan has not imported it yet.
+Paste these into the portal after the skill is imported. Scan Tools on the MCP step imports the skill from `https://pamiac.com/api/mcp`. On the Skills step, upload `chatgpt/pamiac-skill.zip`. The archive contains `pamiac/SKILL.md` and `pamiac/agents/openai.yaml`.
 
 ## Listing
 
