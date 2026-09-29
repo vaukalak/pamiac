@@ -1,5 +1,10 @@
 import { z } from "zod";
-import { createDocument, listDocuments, reorderDocuments, requireUserId } from "@/lib/documents";
+import {
+  createDocument,
+  listLibraryDocuments,
+  reorderDocuments,
+  requireUserId,
+} from "@/lib/documents";
 import { errorResponse, json, readJson } from "@/lib/http";
 
 const createSchema = z.object({
@@ -10,8 +15,8 @@ const createSchema = z.object({
 export async function GET() {
   try {
     const user = await requireUserId();
-    const rows = await listDocuments(user.id);
-    return json({ documents: rows });
+    const documents = await listLibraryDocuments(user.id);
+    return json({ documents });
   } catch (error) {
     return errorResponse(error);
   }

@@ -1,5 +1,6 @@
 "use client";
 
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import {
   type BoardChange,
@@ -12,6 +13,7 @@ import { LibraryCreate } from "@/components/library/library-create";
 import { LibraryEmpty } from "@/components/library/library-empty";
 import { LibraryFilters } from "@/components/library/library-filters";
 import { ViewToggle } from "@/components/library/view-toggle";
+import { libraryItemsQueryKey, libraryItemsQueryOptions } from "@/lib/library-items";
 
 export type { BoardDocument };
 
@@ -23,8 +25,13 @@ const VIEW_KEY = "pamiac-library-view";
 
 export function DocumentBoard(props: Properties) {
   const { documents } = props;
+  const queryClient = useQueryClient();
+  const itemsQuery = useQuery({
+    ...libraryItemsQueryOptions(),
+    initialData: documents,
+  });
+  const items = itemsQuery.data;
   const [filter, setFilter] = useState<LibraryFilter>("all");
-  const [items, setItems] = useState(documents);
   const [view, setView] = useState<LibraryView>("grid");
   const [dragging, setDragging] = useState<string | null>(null);
   const visible = useMemo(
@@ -44,9 +51,10 @@ export function DocumentBoard(props: Properties) {
   }
 
   function apply(change: BoardChange) {
-    setItems((current) => {
-      if (change.kind === "delete") return current.filter((item) => item.id !== change.id);
-      return current.map((item) => {
+    queryClient.setQueryData<BoardDocument[]>(libraryItemsQueryKey, (current) => {
+      const list = current ?? documents;
+      if (change.kind === "delete") return list.filter((item) => item.id !== change.id);
+      return list.map((item) => {
         if (item.id !== change.id) return item;
         if (change.kind === "rename") return { ...item, title: change.title };
         return {
@@ -67,7 +75,7 @@ export function DocumentBoard(props: Properties) {
     if (from < 0 || to < 0) return;
     const [moved] = next.splice(from, 1);
     next.splice(to, 0, moved);
-    setItems(next);
+    queryClient.setQueryData(libraryItemsQueryKey, next);
     setDragging(null);
     await fetch("/api/documents", {
       method: "PUT",
