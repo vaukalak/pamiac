@@ -1,21 +1,48 @@
-import { z } from "zod";
-import { deleteDocument, requireUserId, updateDocumentContent } from "@/lib/documents";
+import {
+  deleteDocument,
+  presentDocumentWrite,
+  requireUserId,
+  updateDocumentContent,
+  getOwnedDocument,
+} from "@/lib/documents";
+import { documentUpdateSchema } from "@/lib/document-write";
 import { errorResponse, json, readJson } from "@/lib/http";
-
-const updateSchema = z.object({
-  title: z.string().max(160).optional(),
-  content: z.unknown().optional(),
-});
+import type { DocumentType } from "@/lib/content";
+import { readDiagram } from "@/lib/content";
 
 type Context = { params: Promise<{ id: string }> };
+
+export async function GET(_request: Request, context: Context) {
+  try {
+    const user = await requireUserId();
+    const { id } = await context.params;
+    const document = await getOwnedDocument(user.id, id);
+    if (!document) return json({ error: "Document not found" }, 404);
+    const type = document.type as DocumentType;
+    return json({
+      id: document.id,
+      type,
+      title: document.title,
+      version: document.version,
+      updatedAt: document.updatedAt,
+      content: type === "diagram" ? readDiagram(document.content) : document.content,
+    });
+  } catch (error) {
+    return errorResponse(error);
+  }
+}
 
 export async function PATCH(request: Request, context: Context) {
   try {
     const user = await requireUserId();
     const { id } = await context.params;
-    const input = updateSchema.parse(await readJson(request));
-    const document = await updateDocumentContent(user.id, id, input);
-    return json({ id: document.id, updatedAt: document.updatedAt });
+    const input = documentUpdateSchema.parse(await readJson(request));
+    const document = await updateDocumentContent(user.id, id, {
+      title: input.title,
+      content: input.content,
+      patch: input.patch,
+    });
+    return json(presentDocumentWrite(document));
   } catch (error) {
     return errorResponse(error);
   }

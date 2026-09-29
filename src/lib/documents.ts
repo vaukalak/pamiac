@@ -3,15 +3,10 @@ import { getDb } from "@/db";
 import { agentTokens, documentEmbeddings, documentShares, documents } from "@/db/schema";
 import type { Visibility } from "@/lib/access";
 import { normalizeEmails } from "@/lib/access";
-import { MAX_CONTENT_LENGTH } from "@/lib/config";
-import {
-  defaultTitle,
-  documentText,
-  readDiagram,
-  serializeContent,
-  type DocumentType,
-} from "@/lib/content";
+import { defaultTitle, documentText, readDiagram, type DocumentType } from "@/lib/content";
+import type { DiagramPatch } from "@/lib/diagram-patch";
 import { embedText, excerpt } from "@/lib/embeddings";
+import { applyDocumentWrite } from "@/lib/document-write";
 import { HttpError } from "@/lib/http";
 import { currentPlan, documentRoom } from "@/lib/plans";
 import { hashPassword } from "@/lib/passwords";
@@ -44,6 +39,7 @@ export async function listLibraryDocuments(ownerId: string) {
     content: row.content,
     visibility: row.visibility,
     updatedAt: row.updatedAt.toISOString(),
+    version: row.version,
     hasPassword: Boolean(row.passwordHash),
     emails: emails.get(row.id) ?? [],
   }));
@@ -65,6 +61,7 @@ export async function createDocument(ownerId: string, type: DocumentType, title?
       type,
       title: nextTitle,
       content,
+      version: 1,
       sortIndex: existing.length,
     })
     .returning();
@@ -91,27 +88,44 @@ export async function getDocumentBundle(id: string) {
 export async function updateDocumentContent(
   ownerId: string,
   id: string,
-  input: { title?: string; content?: unknown },
+  input: { title?: string; content?: unknown; patch?: DiagramPatch },
 ) {
-  const current = await getOwnedDocument(ownerId, id);
-  if (!current) throw new HttpError(404, "Document not found");
-  const title = input.title?.trim() || current.title;
-  if (title.length > 160) throw new HttpError(400, "Title is too long");
-  let content = current.content;
-  if (input.content !== undefined) {
+  const db = getDb();
+  const updated = await db.transaction(async (tx) => {
+    const [current] = await tx
+      .select()
+      .from(documents)
+      .where(and(eq(documents.id, id), eq(documents.ownerId, ownerId)))
+      .for("update");
+    if (!current) throw new HttpError(404, "Document not found");
+    const title = input.title?.trim() || current.title;
+    if (title.length > 160) throw new HttpError(400, "Title is too long");
+    let written;
     try {
-      content = serializeContent(current.type as DocumentType, input.content, current.content);
+      written = applyDocumentWrite(
+        {
+          type: current.type as DocumentType,
+          content: current.content,
+          version: current.version,
+        },
+        { content: input.content, patch: input.patch },
+      );
     } catch (error) {
       const message = error instanceof Error ? error.message : "Invalid content";
       throw new HttpError(400, message);
     }
-  }
-  if (content.length > MAX_CONTENT_LENGTH) throw new HttpError(400, "Document is too large");
-  const [updated] = await getDb()
-    .update(documents)
-    .set({ title, content, updatedAt: new Date() })
-    .where(eq(documents.id, id))
-    .returning();
+    const [row] = await tx
+      .update(documents)
+      .set({
+        title,
+        content: written.content,
+        version: written.version,
+        updatedAt: new Date(),
+      })
+      .where(eq(documents.id, id))
+      .returning();
+    return row;
+  });
   await upsertEmbedding(updated);
   return updated;
 }
@@ -205,6 +219,7 @@ export async function searchDocuments(ownerId: string, query: string, limit: num
         type: documents.type,
         title: documents.title,
         content: documents.content,
+        version: documents.version,
         updatedAt: documents.updatedAt,
         distance,
       })
@@ -235,7 +250,14 @@ export async function searchDocuments(ownerId: string, query: string, limit: num
 }
 
 export function presentDocument(
-  document: { id: string; type: string; title: string; content: string; updatedAt: Date },
+  document: {
+    id: string;
+    type: string;
+    title: string;
+    content: string;
+    version: number;
+    updatedAt: Date;
+  },
   origin: string,
 ) {
   const type = document.type as DocumentType;
@@ -246,9 +268,24 @@ export function presentDocument(
     title: document.title,
     url: `${origin}/d/${document.id}`,
     updatedAt: document.updatedAt,
+    version: document.version,
     content: type === "diagram" ? readDiagram(document.content) : document.content,
     text,
     excerpt: excerpt(text),
+  };
+}
+
+export function presentDocumentWrite(document: {
+  type: string;
+  title: string;
+  content: string;
+  version: number;
+}) {
+  const type = document.type as DocumentType;
+  return {
+    version: document.version,
+    title: document.title,
+    content: type === "diagram" ? readDiagram(document.content) : document.content,
   };
 }
 

@@ -131,8 +131,8 @@ describe("note block colors", () => {
     assert.equal(noteMarkdown(stored), "Painted\n\n");
     assert.equal(text, "Painted");
     assert.equal(text.includes("pamiac-block-colors"), false);
-    assert.match(content, /return `\$\{title\}\\n\\n\$\{noteMarkdown\(content\)\}`/);
-    assert.match(content, /excerpt\(noteMarkdown\(content\), 140\)/);
+    assert.match(content, /readableBlockMarkdown\(noteMarkdown\(content\)\)/);
+    assert.match(content, /excerpt\(readableBlockMarkdown\(noteMarkdown\(content\)\), 140\)/);
     assert.equal(noteMarkdown("Plain note"), "Plain note");
   });
 
@@ -150,9 +150,12 @@ describe("note block colors", () => {
       "utf8",
     );
 
-    assert.match(noteEditor, /packNoteContent\(editor\.blocksToMarkdownLossy\(editor\.document\)/);
-    assert.match(noteEditor, /readNoteContent\(initial \|\| ""\)/);
+    assert.match(noteEditor, /return packNoteContent\(marked, editor\.document\)/);
+    assert.match(noteEditor, /readNoteContent\(markdown \|\| ""\)/);
     assert.match(noteEditor, /note\.blocks/);
-    assert.match(noteEditor, /editor\.replaceBlocks\(editor\.document, note\.blocks/);
+    assert.match(
+      noteEditor,
+      /editor\.replaceBlocks\(editor\.document, blocks as typeof editor\.document\)/,
+    );
   });
 });

@@ -54,7 +54,7 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
         <LockedDocument id={id} reason={access.reason} />
       ) : (
         <DocumentScreen
-          key={`${bundle.document.updatedAt.toISOString()}-${bundle.document.visibility}`}
+          key={bundle.document.visibility}
           canEdit={access.level === "edit"}
           content={bundle.document.content}
           emails={bundle.emails}
@@ -62,6 +62,7 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
           id={bundle.document.id}
           title={bundle.document.title}
           type={bundle.document.type === "diagram" ? "diagram" : "note"}
+          version={bundle.document.version}
           visibility={bundle.document.visibility as Visibility}
         />
       )}

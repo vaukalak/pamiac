@@ -4,7 +4,10 @@ import test from "node:test";
 
 const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8");
 const noteEditor = readFileSync(new URL("../components/note-editor.tsx", import.meta.url), "utf8");
-const umlEditor = readFileSync(new URL("../components/uml-editor.tsx", import.meta.url), "utf8");
+const umlEditor = readFileSync(
+  new URL("../components/diagram/uml-canvas.tsx", import.meta.url),
+  "utf8",
+);
 const umlNode = readFileSync(new URL("../components/uml-node.tsx", import.meta.url), "utf8");
 const layout = readFileSync(new URL("../app/layout.tsx", import.meta.url), "utf8");
 

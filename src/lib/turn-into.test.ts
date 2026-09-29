@@ -139,6 +139,10 @@ test("the note editor keeps theme wiring and mounts one custom side menu", () =>
     new URL("../components/note/note-drag-handle-menu.tsx", import.meta.url),
     "utf8",
   );
+  const copyLink = readFileSync(
+    new URL("../components/note/copy-block-link.tsx", import.meta.url),
+    "utf8",
+  );
   const menu = readFileSync(
     new URL("../components/note/turn-into-menu.tsx", import.meta.url),
     "utf8",
@@ -157,8 +161,17 @@ test("the note editor keeps theme wiring and mounts one custom side menu", () =>
   assert.match(surface, /<SideMenuController sideMenu=\{NoteSideMenu\} \/>/);
   assert.match(sideMenu, /<SideMenu dragHandleMenu=\{dragHandleMenu\} \/>/);
   assert.doesNotMatch(sideMenu, /<AddBlockButton/);
-  assert.ok(dragHandle.indexOf("Turn into") < dragHandle.indexOf("delete_menuitem"));
+  assert.ok(dragHandle.indexOf("Turn into") < dragHandle.indexOf("Copy link to block"));
+  assert.ok(dragHandle.indexOf("Copy link to block") < dragHandle.indexOf("delete_menuitem"));
   assert.match(dragHandle, /dict\.drag_handle\.delete_menuitem/);
+  assert.match(copyLink, /useExtensionState\(SideMenuExtension/);
+  assert.match(copyLink, /blockPermalink/);
+  assert.match(copyLink, /publishNoteMarkdown/);
+  assert.match(copyLink, /navigator\.clipboard\.writeText/);
+  assert.match(copyLink, /copyToClipboard/);
+  assert.doesNotMatch(noteEditor, /blocksToMarkdownLossy\(editor\.document\)/);
+  assert.match(noteEditor, /setIdAttribute: true/);
+  assert.match(noteEditor, /scrollIntoView\(\{ block: "center" \}\)/);
   assert.match(dragHandle, /dict\.drag_handle\.colors_menuitem/);
   assert.match(dragHandle, /dict\.drag_handle\.header_row_menuitem/);
   assert.match(dragHandle, /dict\.drag_handle\.header_column_menuitem/);
