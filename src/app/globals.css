@@ -1297,6 +1297,18 @@ code {
 .workspace-leave .error {
   margin: 0;
 }
+.workspace-delete {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 16px;
+}
+.workspace-delete p,
+.workspace-delete .error {
+  flex-basis: 100%;
+  margin: 0;
+}
 .workspace-selector button {
   border: none;
   background: transparent;

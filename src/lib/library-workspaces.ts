@@ -48,6 +48,15 @@ export async function addWorkspacePerson(
   return body.person;
 }
 
+export async function deleteWorkspace(workspaceId: string): Promise<void> {
+  const response = await fetch(`/api/workspaces/${encodeURIComponent(workspaceId)}`, {
+    method: "DELETE",
+  });
+  if (response.ok) return;
+  const body = (await response.json()) as { error?: string };
+  throw new Error(body.error ?? "Could not delete the workspace");
+}
+
 export async function leaveWorkspace(workspaceId: string): Promise<void> {
   const response = await fetch(`/api/workspaces/${encodeURIComponent(workspaceId)}/leave`, {
     method: "POST",

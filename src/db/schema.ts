@@ -124,7 +124,7 @@ export const documents = pgTable(
       .notNull()
       .default("private"),
     passwordHash: text("password_hash"),
-    workspaceId: text("workspace_id").references(() => workspaces.id, { onDelete: "set null" }),
+    workspaceId: text("workspace_id").references(() => workspaces.id, { onDelete: "cascade" }),
     sortIndex: integer("sort_index").notNull().default(0),
     version: integer("version").notNull().default(1),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

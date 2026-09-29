@@ -67,7 +67,7 @@ describe("member leaving a workspace", () => {
     assert.match(route, /leaveWorkspace\(user\.id, id\)/);
     assert.equal(/delete\(workspaces\)/.test(route), false);
     assert.equal(/workspaceId: null/.test(route), false);
-    assert.match(documentTable, /onDelete: "set null"/);
+    assert.match(documentTable, /onDelete: "cascade"/);
   });
 
   it("drops the workspace from the selector and keeps its document out of the personal library", () => {
