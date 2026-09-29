@@ -822,6 +822,12 @@ select:focus {
   align-items: center;
   box-shadow: none;
 }
+.skill-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
 .secret {
   font-family: var(--mono);
   font-size: 13px;

@@ -277,6 +277,7 @@ export async function listTokens(userId: string) {
       id: agentTokens.id,
       name: agentTokens.name,
       tokenPrefix: agentTokens.tokenPrefix,
+      secret: agentTokens.secret,
       createdAt: agentTokens.createdAt,
       lastUsedAt: agentTokens.lastUsedAt,
       expiresAt: agentTokens.expiresAt,
@@ -298,6 +299,7 @@ export async function issueToken(userId: string, name: string, expiresAt: Date |
     name: trimmed,
     tokenHash: created.tokenHash,
     tokenPrefix: created.tokenPrefix,
+    secret: created.token,
     expiresAt,
   });
   return { id, name: trimmed, token: created.token, tokenPrefix: created.tokenPrefix };
