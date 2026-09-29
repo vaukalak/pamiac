@@ -21,6 +21,9 @@ export default function HomePage() {
             <Link className="btn secondary" href="/workspace">
               Open the library
             </Link>
+            <Link className="btn ghost" href="/support">
+              Contact support
+            </Link>
           </div>
         </div>
         <div className="feature-grid">

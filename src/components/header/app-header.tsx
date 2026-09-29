@@ -15,6 +15,9 @@ export function AppHeader(props: Properties) {
         Pamiac
       </Link>
       <nav className="nav-links">
+        <Link className="btn ghost" href="/support">
+          Support
+        </Link>
         {email ? (
           <ProfileMenu email={email} />
         ) : (

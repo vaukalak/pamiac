@@ -210,6 +210,10 @@ button {
   text-transform: uppercase;
 }
 
+.text-pretty {
+  text-wrap: pretty;
+}
+
 h1,
 h2,
 h3 {
