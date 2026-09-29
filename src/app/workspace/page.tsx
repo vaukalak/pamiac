@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { AppHeader } from "@/components/header/app-header";
 import { DocumentBoard, type BoardDocument } from "@/components/library/document-board";
+import { QueryProvider } from "@/components/query-provider";
 import { SetupScreen } from "@/components/setup-screen";
 import type { Visibility } from "@/lib/access";
 import type { DocumentType } from "@/lib/content";
@@ -44,7 +45,9 @@ export default async function WorkspacePage() {
     <>
       <AppHeader email={result.session.user.email} />
       <main className="workspace">
-        <DocumentBoard documents={documents} />
+        <QueryProvider>
+          <DocumentBoard documents={documents} />
+        </QueryProvider>
       </main>
     </>
   );
