@@ -14,3 +14,18 @@ export async function getSession() {
     return { status: "error" as const, session: null, message };
   }
 }
+
+export async function getLibrarySession() {
+  const result = await getSession();
+  if (result.status !== "ok" || result.session) return result;
+  try {
+    const { agentUserFromCookie } = await import("@/lib/documents");
+    const user = await agentUserFromCookie();
+    if (!user) return result;
+    return { status: "ok" as const, session: { user } };
+  } catch (error) {
+    console.error(error);
+    const message = error instanceof Error ? error.message : "Could not reach the database";
+    return { status: "error" as const, session: null, message };
+  }
+}

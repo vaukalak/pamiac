@@ -3,7 +3,7 @@ import { AppHeader } from "@/components/header/app-header";
 import { LoginForm } from "@/components/login-form";
 import { SetupScreen } from "@/components/setup-screen";
 import { safeNext } from "@/lib/config";
-import { getSession } from "@/lib/session";
+import { getLibrarySession } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +14,7 @@ export default async function LoginPage({
 }) {
   const params = await searchParams;
   const nextPath = safeNext(params.next);
-  const result = await getSession();
+  const result = await getLibrarySession();
   if (result.status === "setup") return <SetupScreen />;
   if (result.status === "error") return <SetupScreen detail={result.message} />;
   if (result.session) redirect(nextPath);

@@ -6,7 +6,7 @@ import { SetupScreen } from "@/components/setup-screen";
 import type { Visibility } from "@/lib/access";
 import type { DocumentType } from "@/lib/content";
 import { listLibraryDocuments } from "@/lib/documents";
-import { getSession } from "@/lib/session";
+import { getLibrarySession } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +19,7 @@ function setupDetail(error: unknown) {
 }
 
 export default async function WorkspacePage() {
-  const result = await getSession();
+  const result = await getLibrarySession();
   if (result.status === "setup") return <SetupScreen />;
   if (result.status === "error") return <SetupScreen detail={result.message} />;
   if (!result.session) redirect("/login?next=/workspace");

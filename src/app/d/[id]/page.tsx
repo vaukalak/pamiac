@@ -8,14 +8,14 @@ import { resolveAccess, type Visibility } from "@/lib/access";
 import { appSecret } from "@/lib/config";
 import { getDocumentBundle } from "@/lib/documents";
 import { unlockCookieName, unlockMatches } from "@/lib/passwords";
-import { getSession } from "@/lib/session";
+import { getLibrarySession } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
 export default async function DocumentPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   if (!process.env.DATABASE_URL) return <SetupScreen />;
-  const result = await getSession();
+  const result = await getLibrarySession();
   if (result.status === "error") return <SetupScreen detail={result.message} />;
 
   let bundle;

@@ -22,7 +22,9 @@ POST /documents
 PATCH /documents/:id
 { "content": "# updated markdown" }
 
-Search uses this user's document embeddings. Diagram relations can refer to an element by id or by name.`;
+Search uses this user's document embeddings. Diagram relations can refer to an element by id or by name.
+
+To browse the library in a browser, set a cookie on the app origin: name pamiac_token, value the PAMIAC_TOKEN value, path /. Then open /workspace. A document is /d/<id>. Do not print the token. /workspace/tokens still requires the magic-link session.`;
 
 const INSTRUCTIONS = `Save the Pamiac skill so later chats can use it. Write the file below and do not change its text. The user sets PAMIAC_TOKEN. Do not ask the user to paste the token.
 
