@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
+import { resolveAccess } from "./access.ts";
 import { adminWorkspaces, shareWorkspaceBody } from "./share-workspace.ts";
 
 describe("share workspace choice", () => {
@@ -214,5 +215,147 @@ describe("share workspace choice", () => {
     assert.match(menu, /workspaceId: share\.workspaceId/);
     assert.match(screen, /workspaceId=\{shareState\.workspaceId\}/);
     assert.match(page, /workspaceId=\{bundle\.document\.workspaceId\}/);
+  });
+
+  it("keeps one workspace beside link visibility and still opens the link for a non-member", () => {
+    const schema = readFileSync(new URL("../db/schema.ts", import.meta.url), "utf8");
+    const store = readFileSync(new URL("./documents.ts", import.meta.url), "utf8");
+    const access = readFileSync(new URL("./access.ts", import.meta.url), "utf8");
+    const page = readFileSync(new URL("../app/d/[id]/page.tsx", import.meta.url), "utf8");
+    const route = readFileSync(
+      new URL("../app/api/documents/[id]/share/route.ts", import.meta.url),
+      "utf8",
+    );
+    const modal = readFileSync(
+      new URL("../components/share/share-modal.tsx", import.meta.url),
+      "utf8",
+    );
+    const documentTable = schema.slice(
+      schema.indexOf("export const documents"),
+      schema.indexOf("export const documentShares"),
+    );
+    const bundle = store.slice(
+      store.indexOf("export async function getDocumentBundle"),
+      store.indexOf("export async function updateDocumentContent"),
+    );
+    const place = store.slice(
+      store.indexOf("export async function placeDocumentInWorkspace"),
+      store.indexOf("export async function listSpaceDocuments"),
+    );
+    const apply = store.slice(
+      store.indexOf("async function applyDocumentWorkspace"),
+      store.indexOf("export async function updateShare"),
+    );
+    const update = store.slice(
+      store.indexOf("export async function updateShare"),
+      store.indexOf("async function upsertEmbedding"),
+    );
+    const resolve = access.slice(
+      access.indexOf("export function resolveAccess"),
+      access.indexOf("const EMAIL"),
+    );
+    const decision = page.slice(page.indexOf("resolveAccess({"), page.indexOf("if (access.level"));
+    const visibilityWrite = update.slice(
+      update.indexOf(".set({"),
+      update.indexOf(".where(eq(documents.id, id))"),
+    );
+    const saveStart = modal.indexOf("async function save");
+    const save = modal.slice(saveStart, modal.indexOf("return (", saveStart));
+    const stranger = {
+      isOwner: false,
+      viewerEmail: null as string | null,
+      allowedEmails: [] as string[],
+      passwordOk: false,
+    };
+
+    assert.equal((documentTable.match(/workspaceId:/g) ?? []).length, 1);
+    assert.equal(/workspaceIds/.test(documentTable), false);
+    assert.equal(/workspaceId:[^,\n]*notNull/.test(documentTable), false);
+    assert.match(place, /\.set\(\{ workspaceId: libraryId \}\)/);
+    assert.equal(place.includes("workspaceIds"), false);
+    assert.match(visibilityWrite, /visibility: input\.visibility/);
+    assert.equal(visibilityWrite.includes("workspaceId"), false);
+    assert.equal(update.includes("workspaceId: null"), false);
+    assert.match(update, /input\.workspaceId === undefined[\s\S]*current\.workspaceId/);
+    assert.equal(apply.includes("visibility"), false);
+    assert.match(apply, /workspaceId: null/);
+    assert.match(route, /visibility: z\.enum\(VISIBILITIES\)/);
+    assert.match(route, /workspaceId: z\.string\(\)\.min\(1\)\.nullable\(\)\.optional\(\)/);
+    assert.equal(route.includes("workspaceIds"), false);
+    assert.equal(/workspace|member/i.test(bundle), false);
+    assert.equal(/workspace|member/i.test(decision), false);
+    assert.match(page, /if \(access\.level === "none"\) notFound\(\)/);
+    assert.match(page, /canEdit=\{access\.level === "edit"\}/);
+    assert.match(page, /workspaceId=\{bundle\.document\.workspaceId\}/);
+    assert.equal((resolve.match(/level: "edit"/g) ?? []).length, 1);
+    assert.match(resolve, /if \(input\.isOwner\) return \{ level: "edit", reason: "owner" \}/);
+    assert.match(modal, /<ShareModeList mode=\{mode\} onChange=\{setMode\} \/>/);
+    assert.match(
+      modal,
+      /<ShareWorkspaceChoice onSelect=\{setWorkspaceChoice\} selectedId=\{workspaceChoice\} \/>/,
+    );
+    assert.match(save, /visibility: mode/);
+    assert.match(save, /shareWorkspaceBody\(workspaceId, workspaceChoice/);
+    assert.equal(save.includes("workspaceId: null"), false);
+    assert.equal(resolveAccess({ ...stranger, visibility: "public" }).level, "view");
+    assert.equal(
+      resolveAccess({ ...stranger, visibility: "password", passwordOk: true }).level,
+      "view",
+    );
+    assert.equal(resolveAccess({ ...stranger, visibility: "password" }).level, "locked");
+    assert.equal(
+      resolveAccess({
+        ...stranger,
+        visibility: "emails",
+        allowedEmails: ["ada@example.com"],
+      }).reason,
+      "login",
+    );
+    assert.equal(
+      resolveAccess({
+        ...stranger,
+        visibility: "emails",
+        allowedEmails: ["ada@example.com"],
+        viewerEmail: "ada@example.com",
+      }).level,
+      "view",
+    );
+    assert.equal(
+      resolveAccess({
+        ...stranger,
+        visibility: "emails",
+        allowedEmails: ["ada@example.com"],
+        viewerEmail: "other@example.com",
+      }).level,
+      "locked",
+    );
+    assert.equal(resolveAccess({ ...stranger, visibility: "private" }).level, "none");
+    assert.equal(
+      resolveAccess({ ...stranger, isOwner: true, visibility: "private" }).level,
+      "edit",
+    );
+    assert.equal(resolveAccess({ ...stranger, isOwner: true, visibility: "public" }).level, "edit");
+  });
+
+  it("keeps visibility writes off the workspace column and workspace writes off visibility", () => {
+    const store = readFileSync(new URL("./documents.ts", import.meta.url), "utf8");
+    const update = store.slice(
+      store.indexOf("export async function updateShare"),
+      store.indexOf("async function upsertEmbedding"),
+    );
+    const body = update.slice(update.indexOf("const current"));
+    const shareFields = body.slice(0, body.indexOf("const workspaceId"));
+    const workspaceAssign = body.slice(
+      body.indexOf("const workspaceId"),
+      body.indexOf("const db = getDb()"),
+    );
+
+    assert.match(shareFields, /input\.visibility === "emails"/);
+    assert.match(shareFields, /input\.visibility === "password"/);
+    assert.equal(shareFields.includes("workspaceId"), false);
+    assert.equal(workspaceAssign.includes("visibility"), false);
+    assert.match(workspaceAssign, /input\.workspaceId === undefined/);
+    assert.match(workspaceAssign, /current\.workspaceId/);
+    assert.match(workspaceAssign, /applyDocumentWorkspace\(/);
   });
 });
