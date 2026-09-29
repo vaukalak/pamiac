@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import type { AgentToken } from "@/components/tokens/agent-token";
 import { TokenForm } from "@/components/tokens/token-form";
 import { TokenList } from "@/components/tokens/token-list";
+import { ChatGptConnect } from "@/components/tokens/chatgpt-connect";
 import { TokenSecret } from "@/components/tokens/token-secret";
 
 const SKILL = `Read PAMIAC_TOKEN from the agent environment and send Authorization: Bearer <PAMIAC_TOKEN> on every request. Do not ask the user to paste the token. If PAMIAC_TOKEN is missing, say so and stop.
@@ -109,6 +110,7 @@ export function TokenManager() {
         Create a key, choose when it expires, and set PAMIAC_TOKEN in the cloud agent's environment
         to the token you just created. The agent can search, read, and edit your notes and diagrams.
       </p>
+      <ChatGptConnect endpoint="/api/mcp" />
       <TokenForm
         onCreated={(value) => {
           setSecret(value);
