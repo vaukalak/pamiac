@@ -1,30 +1,37 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { ShareActions } from "@/components/share/share-actions";
 import { ShareLink } from "@/components/share/share-link";
 import { ShareModeFields } from "@/components/share/share-mode-fields";
 import { ShareModeList } from "@/components/share/share-mode-list";
 import type { ShareResult } from "@/components/share/share-result";
+import { shareWorkspaceBody } from "@/lib/share-workspace";
+import { ShareWorkspaceChoice } from "@/components/share/share-workspace-choice";
 import type { Visibility } from "@/lib/access";
+import { workspacesQueryOptions } from "@/lib/library-workspaces";
 
 interface Properties {
   emails: string[];
   hasPassword: boolean;
   id: string;
   visibility: Visibility;
+  workspaceId: string | null;
   onClose: () => void;
   onSaved: (share: ShareResult) => void;
 }
 
 export function ShareModal(props: Properties) {
-  const { emails, hasPassword, id, visibility, onClose, onSaved } = props;
+  const { emails, hasPassword, id, visibility, workspaceId, onClose, onSaved } = props;
   const [mode, setMode] = useState<Visibility>(visibility);
   const [emailText, setEmailText] = useState(emails.join("\n"));
   const [password, setPassword] = useState("");
+  const [workspaceChoice, setWorkspaceChoice] = useState<string | null>(workspaceId);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
+  const spaces = useQuery(workspacesQueryOptions());
   const dialogRef = useRef<HTMLDivElement>(null);
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
@@ -80,11 +87,18 @@ export function ShareModal(props: Properties) {
             .split(/[\n,]/)
             .map((email) => email.trim())
             .filter(Boolean),
+          ...shareWorkspaceBody(workspaceId, workspaceChoice, spaces.data ?? []),
         }),
       });
       const body = (await response.json()) as Partial<ShareResult> & { error?: string };
       setPending(false);
-      if (!response.ok || !body.visibility || !body.emails || body.hasPassword === undefined) {
+      if (
+        !response.ok ||
+        !body.visibility ||
+        !body.emails ||
+        body.hasPassword === undefined ||
+        body.workspaceId === undefined
+      ) {
         setError(body.error ?? "Could not update sharing");
         return;
       }
@@ -94,6 +108,7 @@ export function ShareModal(props: Properties) {
         visibility: body.visibility,
         emails: body.emails,
         hasPassword: body.hasPassword,
+        workspaceId: body.workspaceId,
       });
     } catch {
       setPending(false);
@@ -131,6 +146,7 @@ export function ShareModal(props: Properties) {
           onPassword={setPassword}
           password={password}
         />
+        <ShareWorkspaceChoice onSelect={setWorkspaceChoice} selectedId={workspaceChoice} />
         <ShareLink id={id} key={mode} mode={mode} />
         <ShareActions
           error={error}

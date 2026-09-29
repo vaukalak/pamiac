@@ -98,6 +98,7 @@ export function DocumentBoard(props: Properties) {
           visibility: change.visibility,
           emails: change.emails,
           hasPassword: change.hasPassword,
+          workspaceId: change.workspaceId,
         };
       });
     });

@@ -64,6 +64,7 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
           type={bundle.document.type === "diagram" ? "diagram" : "note"}
           version={bundle.document.version}
           visibility={bundle.document.visibility as Visibility}
+          workspaceId={bundle.document.workspaceId}
         />
       )}
     </>

@@ -27,4 +27,5 @@ export type BoardChange =
       visibility: Visibility;
       emails: string[];
       hasPassword: boolean;
+      workspaceId: string | null;
     };

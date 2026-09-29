@@ -14,7 +14,12 @@ import type { DiagramPatch } from "@/lib/diagram-patch";
 import { embedText, excerpt } from "@/lib/embeddings";
 import { applyDocumentWrite } from "@/lib/document-write";
 import { HttpError } from "@/lib/http";
-import { documentsInSpace, PERSONAL_SPACE_ID, workspaceLibraryId } from "@/lib/library-spaces";
+import {
+  documentsInSpace,
+  isWorkspaceAdmin,
+  PERSONAL_SPACE_ID,
+  workspaceLibraryId,
+} from "@/lib/library-spaces";
 import { currentPlan, currentWorkspacePlan, documentRoom } from "@/lib/plans";
 import { hashPassword } from "@/lib/passwords";
 import { createAgentToken, hashAgentToken, tokenHashesMatch } from "@/lib/tokens";
@@ -216,10 +221,49 @@ export async function reorderDocuments(ownerId: string, ids: string[]) {
   );
 }
 
+async function adminLibraryId(ownerId: string, workspaceId: string) {
+  const libraryId = createdLibraryId(workspaceId);
+  const [member] = await getDb()
+    .select({ role: workspaceMembers.role })
+    .from(workspaceMembers)
+    .where(and(eq(workspaceMembers.workspaceId, libraryId), eq(workspaceMembers.userId, ownerId)));
+  if (!isWorkspaceAdmin(member?.role)) {
+    throw new HttpError(403, "Only an admin can choose this workspace");
+  }
+  return libraryId;
+}
+
+async function applyDocumentWorkspace(
+  ownerId: string,
+  documentId: string,
+  currentWorkspaceId: string | null,
+  workspaceId: string | null,
+) {
+  if (workspaceId === currentWorkspaceId) return currentWorkspaceId;
+  if (currentWorkspaceId) await adminLibraryId(ownerId, currentWorkspaceId);
+  if (workspaceId === null) {
+    const [updated] = await getDb()
+      .update(documents)
+      .set({ workspaceId: null })
+      .where(and(eq(documents.id, documentId), eq(documents.ownerId, ownerId)))
+      .returning({ id: documents.id });
+    if (!updated) throw new HttpError(404, "Document not found");
+    return null;
+  }
+  await adminLibraryId(ownerId, workspaceId);
+  const placed = await placeDocumentInWorkspace(ownerId, documentId, workspaceId);
+  return placed.workspaceId;
+}
+
 export async function updateShare(
   ownerId: string,
   id: string,
-  input: { visibility: Visibility; password?: string; emails?: string[] },
+  input: {
+    visibility: Visibility;
+    password?: string;
+    emails?: string[];
+    workspaceId?: string | null;
+  },
 ) {
   const current = await getOwnedDocument(ownerId, id);
   if (!current) throw new HttpError(404, "Document not found");
@@ -238,6 +282,11 @@ export async function updateShare(
     }
   }
 
+  const workspaceId =
+    input.workspaceId === undefined
+      ? current.workspaceId
+      : await applyDocumentWorkspace(ownerId, id, current.workspaceId, input.workspaceId);
+
   const db = getDb();
   await db
     .update(documents)
@@ -253,7 +302,12 @@ export async function updateShare(
       })),
     );
   }
-  return { visibility: input.visibility, emails, hasPassword: Boolean(passwordHash) };
+  return {
+    visibility: input.visibility,
+    emails,
+    hasPassword: Boolean(passwordHash),
+    workspaceId,
+  };
 }
 
 async function upsertEmbedding(document: {

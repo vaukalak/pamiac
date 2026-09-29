@@ -24,14 +24,26 @@ interface Properties {
   visibility: Visibility;
   emails: string[];
   hasPassword: boolean;
+  workspaceId: string | null;
   canEdit: boolean;
 }
 
 export function DocumentScreen(props: Properties) {
-  const { id, type, title, content, version, visibility, emails, hasPassword, canEdit } = props;
+  const {
+    id,
+    type,
+    title,
+    content,
+    version,
+    visibility,
+    emails,
+    hasPassword,
+    workspaceId,
+    canEdit,
+  } = props;
   const router = useRouter();
   const [sharing, setSharing] = useState(false);
-  const [shareState, setShareState] = useState({ visibility, emails, hasPassword });
+  const [shareState, setShareState] = useState({ visibility, emails, hasPassword, workspaceId });
   const wide = type === "diagram";
 
   return (
@@ -77,6 +89,7 @@ export function DocumentScreen(props: Properties) {
           }}
           onSaved={(share) => setShareState(share)}
           visibility={shareState.visibility}
+          workspaceId={shareState.workspaceId}
         />
       ) : null}
     </>
