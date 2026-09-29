@@ -4,6 +4,6 @@ export function GET(request: Request) {
   return handleAuthRequest(request);
 }
 
-export function POST(request: Request) {
+export function HEAD(request: Request) {
   return handleAuthRequest(request);
 }
