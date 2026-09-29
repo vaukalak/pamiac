@@ -18,11 +18,16 @@ const required = [
   "Do not ask the user to paste the token.",
   "If `PAMIAC_TOKEN` is missing, say so and stop.",
   "Do not invent a token.",
-  "Ask for the app URL if you do not already know it.",
+  "App: https://pamiac.com",
   "Base: `/api/agent/v1`",
   "POST /api/agent/v1/search",
   "checkout payment classes",
   "Diagram relations can refer to an element by id or by name.",
+  "GET `/api/agent/v1/documents/:id` in the same turn",
+  "only the nodes you change",
+  "Omit other nodes.",
+  "Creating a node without an id still slugs from the name",
+  "Notes remain a full markdown `content` replace.",
 ];
 
 test("published skill and /pamiac skill are the same contract", () => {

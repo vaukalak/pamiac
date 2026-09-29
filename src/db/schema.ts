@@ -87,6 +87,7 @@ export const documents = pgTable(
       .default("private"),
     passwordHash: text("password_hash"),
     sortIndex: integer("sort_index").notNull().default(0),
+    version: integer("version").notNull().default(1),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },

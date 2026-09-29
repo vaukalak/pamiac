@@ -1,6 +1,6 @@
-import { readableBlockMarkdown } from "@/lib/block-link";
-import { diagramToText, emptyDiagram, parseDiagram, type DiagramContent } from "@/lib/diagram";
-import { excerpt } from "@/lib/embeddings";
+import { readableBlockMarkdown } from "./block-link.ts";
+import { diagramToText, emptyDiagram, parseDiagram, type DiagramContent } from "./diagram.ts";
+import { excerpt } from "./embeddings.ts";
 
 export type DocumentType = "note" | "diagram";
 

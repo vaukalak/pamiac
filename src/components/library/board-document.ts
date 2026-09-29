@@ -8,6 +8,7 @@ export type BoardDocument = {
   content: string;
   visibility: Visibility;
   updatedAt: string;
+  version: number;
   hasPassword: boolean;
   emails: string[];
 };

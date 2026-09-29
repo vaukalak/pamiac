@@ -11,7 +11,7 @@ Read `PAMIAC_TOKEN` from the process environment (the agent environment). Send `
 
 Do not print the token.
 
-App: the origin the user is using. Ask for the app URL if you do not already know it.
+App: https://pamiac.com
 
 Base: `/api/agent/v1`
 
@@ -84,5 +84,30 @@ Notes store markdown in `content`. Diagrams store:
 `type` on a relation is `association`, `inheritance`, `composition`, `aggregation`, `dependency`, or `realization`.
 
 Diagram relations can refer to an element by id or by name. Omit `position` to keep the user's current layout.
+
+Update one diagram without replacing the others' work. GET `/api/agent/v1/documents/:id` in the same turn before you change it. PATCH `patch` with only the nodes you change, using each id from that GET. Omit other nodes. Omit `position` to keep the layout.
+
+```json
+{
+  "patch": {
+    "nodes": [{ "id": "user", "methods": ["login(): void"] }],
+    "deleteNodes": [],
+    "relations": [
+      {
+        "id": "rel-1",
+        "from": "user",
+        "to": "order",
+        "type": "association",
+        "label": "places"
+      }
+    ],
+    "deleteRelations": []
+  }
+}
+```
+
+A node object sets only the fields it contains. Those fields are `kind`, `name`, `stereotype`, `attributes`, `methods`, `body`, and `position`. When `attributes` or `methods` is present, it replaces that whole list. A node absent from `patch.nodes` stays. You can send `title` beside `patch`.
+
+`content` on a diagram PATCH is a full replace. Do not send it to change a node. Creating a node without an id still slugs from the name when you send full `content`. Notes remain a full markdown `content` replace.
 
 `GET /api/agent/v1` returns this contract when the token is valid.

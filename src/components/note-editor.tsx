@@ -14,7 +14,8 @@ import "@blocknote/mantine/style.css";
 import "@blocknote/core/fonts/inter.css";
 
 interface Properties {
-  initial: string;
+  markdown: string;
+  version: number;
   editable: boolean;
   onChange: (markdown: string) => void;
 }
@@ -51,10 +52,13 @@ function scrollToBlock(id: string) {
 }
 
 export function NoteEditor(props: Properties) {
-  const { initial, editable, onChange } = props;
+  const { markdown, version, editable, onChange } = props;
   const editor = useCreateBlockNote({ setIdAttribute: true });
   const ready = useRef(false);
-  const published = useRef<string | null>(null);
+  const applying = useRef(false);
+  const appliedVersion = useRef<number | null>(null);
+  const baseline = useRef("");
+  const stored = useRef(markdown);
   const publishRef = useRef<() => void>(() => {});
   const dark = useSyncExternalStore(
     subscribeToColorScheme,
@@ -62,20 +66,23 @@ export function NoteEditor(props: Properties) {
     colorSchemeServerSnapshot,
   );
 
-  publishRef.current = () => {
-    if (!ready.current || !editable) return;
-
-    const markdown = markedMarkdownFromBlocks(editor.document, (block) =>
+  function noteMarkdown() {
+    return markedMarkdownFromBlocks(editor.document, (block) =>
       editor.blocksToMarkdownLossy([block]),
     );
-    if (published.current === null && markdown === initial) {
-      published.current = markdown;
-      return;
-    }
-    if (markdown === published.current) return;
+  }
 
-    published.current = markdown;
-    onChange(markdown);
+  function emit(next: string) {
+    if (next === stored.current) return;
+    stored.current = next;
+    baseline.current = next;
+    onChange(next);
+  }
+
+  publishRef.current = () => {
+    if (!ready.current || !editable) return;
+    if (applying.current) return;
+    emit(noteMarkdown());
   };
 
   useEffect(() => {
@@ -83,21 +90,32 @@ export function NoteEditor(props: Properties) {
   }, [editor]);
 
   useEffect(() => {
-    if (ready.current) return;
+    if (appliedVersion.current === version) return;
 
-    const marked = parseBlockMarkdown(initial || "");
+    const first = appliedVersion.current === null;
+    applying.current = true;
+    const marked = parseBlockMarkdown(markdown || "");
     const blocks = marked
-      ? blocksFromMarkedMarkdown(marked, (markdown) => editor.tryParseMarkdownToBlocks(markdown))
-      : editor.tryParseMarkdownToBlocks(initial || "");
+      ? blocksFromMarkedMarkdown(marked, (part) => editor.tryParseMarkdownToBlocks(part))
+      : editor.tryParseMarkdownToBlocks(markdown || "");
     editor.replaceBlocks(editor.document, blocks);
+    baseline.current = noteMarkdown();
+    stored.current = markdown;
+    appliedVersion.current = version;
     ready.current = true;
+    applying.current = false;
 
+    if (!first) return;
     const blockId = blockIdFromHash(window.location.hash, editor.document);
     if (blockId) scrollToBlock(blockId);
-  }, [editor, initial]);
+  }, [editor, markdown, version]);
 
   function handleChange() {
-    publishRef.current();
+    if (applying.current) return;
+    if (!ready.current || !editable) return;
+    const next = noteMarkdown();
+    if (next === baseline.current) return;
+    emit(next);
   }
 
   return (
