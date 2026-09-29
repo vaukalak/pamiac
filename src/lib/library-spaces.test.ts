@@ -5,6 +5,7 @@ import {
   documentsInSpace,
   firstMember,
   librarySpaces,
+  openLibraryId,
   PERSONAL_SPACE_ID,
   workspaceName,
 } from "./library-spaces.ts";
@@ -110,5 +111,57 @@ describe("library personal space", () => {
     assert.deepEqual(documents, [{ id: "note-1" }]);
     const space = librarySpaces(created).find((item) => item.id === "ws-1");
     assert.equal(Object.hasOwn(space ?? {}, "documents"), false);
+  });
+
+  it("opens an empty library for every created workspace the account belongs to", () => {
+    const documents = [
+      { id: "note-1", type: "note" },
+      { id: "diagram-2", type: "diagram" },
+    ];
+    const created = [
+      { id: "ws-1", name: "Atlas" },
+      { id: "ws-2", name: "Field notes" },
+    ];
+    assert.deepEqual(documentsInSpace("ws-1", documents, created), []);
+    assert.deepEqual(documentsInSpace("ws-2", documents, created), []);
+    assert.equal(documentsInSpace(PERSONAL_SPACE_ID, documents, created), documents);
+    assert.deepEqual(
+      documents.map((document) => document.id),
+      ["note-1", "diagram-2"],
+    );
+  });
+
+  it("keeps personal documents when the id is not a membership", () => {
+    const documents = [{ id: "note-1" }];
+    const created = [{ id: "ws-1", name: "Atlas" }];
+    assert.equal(documentsInSpace("missing", documents, created), documents);
+  });
+
+  it("remembers an open workspace the account still belongs to", () => {
+    const created = [
+      { id: "ws-1", name: "Atlas" },
+      { id: "ws-2", name: "Field notes" },
+    ];
+    assert.equal(openLibraryId("ws-2", created), "ws-2");
+    assert.equal(openLibraryId(PERSONAL_SPACE_ID, created), PERSONAL_SPACE_ID);
+    assert.equal(openLibraryId(null, created), PERSONAL_SPACE_ID);
+    assert.equal(openLibraryId("left-behind", created), PERSONAL_SPACE_ID);
+    const open = openLibraryId("left-behind", created);
+    assert.equal(documentsInSpace(open, [{ id: "note-1" }], created).length, 1);
+  });
+
+  it("writes the open library into this browser and leaves documents unplaced", () => {
+    const board = readFileSync(
+      new URL("../components/library/document-board.tsx", import.meta.url),
+      "utf8",
+    );
+    const schema = readFileSync(new URL("../db/schema.ts", import.meta.url), "utf8");
+    const documentTable = schema.slice(
+      schema.indexOf("export const documents"),
+      schema.indexOf("export const documentShares"),
+    );
+    assert.match(board, /pamiac-open-library/);
+    assert.match(board, /openLibraryId/);
+    assert.equal(documentTable.includes("workspace"), false);
   });
 });

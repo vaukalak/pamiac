@@ -19,6 +19,7 @@ import { libraryItemsQueryKey, libraryItemsQueryOptions } from "@/lib/library-it
 import {
   documentsInSpace,
   librarySpaces,
+  openLibraryId,
   PERSONAL_SPACE_ID,
   type NamedWorkspace,
 } from "@/lib/library-spaces";
@@ -32,6 +33,7 @@ interface Properties {
 }
 
 const VIEW_KEY = "pamiac-library-view";
+const OPEN_LIBRARY_KEY = "pamiac-open-library";
 
 export function DocumentBoard(props: Properties) {
   const { documents, workspaces } = props;
@@ -61,6 +63,11 @@ export function DocumentBoard(props: Properties) {
     if (stored === "grid" || stored === "list") setView(stored);
   }, []);
 
+  useEffect(() => {
+    const next = openLibraryId(window.localStorage.getItem(OPEN_LIBRARY_KEY), spacesQuery.data);
+    setWorkspaceId(next);
+  }, [spacesQuery.data]);
+
   function chooseView(next: LibraryView) {
     setView(next);
     window.localStorage.setItem(VIEW_KEY, next);
@@ -71,6 +78,7 @@ export function DocumentBoard(props: Properties) {
       queryClient.getQueryData<NamedWorkspace[]>(workspacesQueryKey) ?? spacesQuery.data;
     const known = librarySpaces(stored).some((space) => space.id === nextId);
     if (!known) return;
+    window.localStorage.setItem(OPEN_LIBRARY_KEY, nextId);
     setWorkspaceId(nextId);
   }
 

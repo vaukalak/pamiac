@@ -43,6 +43,15 @@ export function firstMember(workspaceId: string, userId: string): WorkspaceMembe
   return { workspaceId, userId };
 }
 
+export function openLibraryId(
+  stored: string | null,
+  created: readonly NamedWorkspace[] = [],
+): string {
+  const spaces = librarySpaces(created);
+  if (stored && spaces.some((space) => space.id === stored)) return stored;
+  return PERSONAL_SPACE_ID;
+}
+
 export function documentsInSpace<Document>(
   workspaceId: string,
   documents: readonly Document[],
@@ -51,5 +60,5 @@ export function documentsInSpace<Document>(
   const spaces = librarySpaces(created);
   const selected = spaces.find((space) => space.id === workspaceId) ?? spaces[0];
   if (selected?.id === PERSONAL_SPACE_ID) return documents;
-  return documents;
+  return [];
 }
