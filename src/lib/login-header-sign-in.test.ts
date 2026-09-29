@@ -39,9 +39,7 @@ describe("login header sign-in", () => {
     expect(header).toMatch(/href=\{email \? "\/workspace" : "\/"\}/);
     expect(nav).toMatch(/<nav className="nav-links">/);
     expect(nav).toMatch(/\{email \? <ProfileMenu email=\{email\} \/> : null\}/);
-    expect(nav).toMatch(
-      /\{showSignIn \? \([\s\S]*href="\/login"[\s\S]*Email me a link[\s\S]*\) : null\}/,
-    );
+    expect(nav).toMatch(/\{showSignIn \? \([\s\S]*href="\/login"[\s\S]*Sign in[\s\S]*\) : null\}/);
     expect(login).toMatch(/<AppHeader \/>/);
     expect(home).toMatch(/<AppHeader \/>/);
     expect(login).not.toMatch(/Email me a magic link/);
@@ -52,8 +50,9 @@ describe("login header sign-in", () => {
     expect(nav).toMatch(/<ProfileMenu email=\{email\} \/>/);
   });
 
-  it("leaves the home card action and the login form in place", () => {
-    expect(home).toMatch(/<Link className="btn" href="\/login">\s*Email me a link\s*<\/Link>/);
+  it("leaves the login form in place and keeps the home hero free of sign-in links", () => {
+    expect(home).not.toMatch(/hero-actions/);
+    expect(home).not.toMatch(/href="\/login"/);
     expect(login).toMatch(/<LoginForm nextPath=\{formNext\} \/>/);
     expect(login).not.toMatch(/href="\/login"/);
   });

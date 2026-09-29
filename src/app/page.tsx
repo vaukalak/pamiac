@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { AppHeader } from "@/components/header/app-header";
 
 export default function HomePage() {
@@ -14,14 +13,6 @@ export default function HomePage() {
             document has a direct link. Share it by email, password, or in public, and give an agent
             a token so it can search and edit your library.
           </p>
-          <div className="hero-actions">
-            <Link className="btn" href="/login">
-              Email me a link
-            </Link>
-            <Link className="btn secondary" href="/workspace">
-              Open the library
-            </Link>
-          </div>
         </div>
         <div className="feature-grid">
           <article className="feature">
