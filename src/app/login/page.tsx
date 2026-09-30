@@ -4,6 +4,7 @@ import { CircuitBoard } from "@/components/home/circuit-board";
 import { LoginForm } from "@/components/login-form";
 import { SetupScreen } from "@/components/setup-screen";
 import { safeNext } from "@/lib/config";
+import { devMagicLinkVisible } from "@/lib/dev-magic-link";
 import { loginSentBootScript } from "@/lib/login-sent-memory";
 import { oauthAuthorizeResumePath, oauthLoginReturnPath, toSearchParams } from "@/lib/oauth-return";
 import { getLibrarySession, getSession } from "@/lib/session";
@@ -29,6 +30,8 @@ export default async function LoginPage(props: Properties) {
   if (result.status === "error") return <SetupScreen detail={result.message} />;
   if (result.session) redirect(nextPath);
 
+  const showDevLink = devMagicLinkVisible();
+
   return (
     <div className="home">
       <CircuitBoard />
@@ -36,7 +39,7 @@ export default async function LoginPage(props: Properties) {
       <Page className="home-sign-in">
         <script dangerouslySetInnerHTML={{ __html: loginSentBootScript() }} />
         <Section className="home-sign-in-panel">
-          <LoginForm nextPath={formNext} />
+          <LoginForm nextPath={formNext} showDevLink={showDevLink} />
         </Section>
       </Page>
       <footer className="home-foot">

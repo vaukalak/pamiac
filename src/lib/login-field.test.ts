@@ -73,7 +73,7 @@ describe("sign-in email fill", () => {
     expect(form).toMatch(/type="email"/);
     expect(form).not.toMatch(/placeholder=/);
     expect(form).toMatch(/Email me a link/);
-    expect(login).toMatch(/<LoginForm nextPath=\{formNext\} \/>/);
+    expect(login).toMatch(/<LoginForm nextPath=\{formNext\} showDevLink=\{showDevLink\} \/>/);
     expect(locked).not.toMatch(/home-sign-in/);
     expect(member).not.toMatch(/home-sign-in/);
   });

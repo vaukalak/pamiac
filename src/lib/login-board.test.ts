@@ -45,7 +45,7 @@ describe("login board", () => {
     expect(form).toMatch(/callbackURL: nextPath/);
     expect(form).toMatch(/name: email\.split\("@"\)\[0\] \|\| "User"/);
     expect(form).toMatch(
-      /fetch\(`\/api\/dev\/magic-link\?email=\$\{encodeURIComponent\(email\)\}`\)/,
+      /if \(!showDevLink\) return \{ devUrl: null \};\s*try \{\s*const dev = await fetch\(`\/api\/dev\/magic-link\?email=\$\{encodeURIComponent\(email\)\}`\)/,
     );
     expect(form).toMatch(/useForm</);
     expect(form).toMatch(/mutation\.isPending/);

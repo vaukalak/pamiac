@@ -19,6 +19,7 @@ import { Form } from "@/ui/Form";
 
 interface Properties {
   nextPath: string;
+  showDevLink: boolean;
 }
 
 interface LoginValues {
@@ -45,8 +46,8 @@ const loginResolver: Resolver<LoginValues> = (values) => {
   return { values: {}, errors };
 };
 
-async function sendMagicLink(input: { email: string; nextPath: string }) {
-  const { email, nextPath } = input;
+async function sendMagicLink(input: { email: string; nextPath: string; showDevLink: boolean }) {
+  const { email, nextPath, showDevLink } = input;
   let result: Awaited<ReturnType<typeof authClient.signIn.magicLink>>;
   try {
     result = await authClient.signIn.magicLink({
@@ -61,6 +62,7 @@ async function sendMagicLink(input: { email: string; nextPath: string }) {
     throw new Error(loginSendFailureSentence(result.error.message));
   }
   rememberSentLoginAddress(email);
+  if (!showDevLink) return { devUrl: null };
   try {
     const dev = await fetch(`/api/dev/magic-link?email=${encodeURIComponent(email)}`);
     if (!dev.ok) return { devUrl: null };
@@ -72,7 +74,7 @@ async function sendMagicLink(input: { email: string; nextPath: string }) {
 }
 
 export function LoginForm(props: Properties) {
-  const { nextPath } = props;
+  const { nextPath, showDevLink } = props;
   const form = useForm<LoginValues>({
     defaultValues: { email: "" },
     mode: "onSubmit",
@@ -81,7 +83,7 @@ export function LoginForm(props: Properties) {
   });
   const [sent, setSent] = useState<SentLink | null>(null);
   const mutation = useMutation({
-    mutationFn: (email: string) => sendMagicLink({ email, nextPath }),
+    mutationFn: (email: string) => sendMagicLink({ email, nextPath, showDevLink }),
     onSuccess: (result, email) => {
       setSent({ address: email, devUrl: result.devUrl });
     },
