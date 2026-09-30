@@ -64,8 +64,24 @@ describe("library sidebar and create plus", () => {
     assert.match(selector, /librarySpaces/);
     assert.match(selector, /pressed=\{selectedId === space\.id\}/);
     assert.match(pressed, /background:\s*var\(--home-lime\)/);
+    assert.match(pressed, /font-weight:\s*700/);
     assert.match(plus, /background:\s*var\(--home-lime\)/);
     assert.match(plus, /color:\s*var\(--home-on-lime\)/);
+  });
+
+  it("bolds only the selected workspace row", () => {
+    const css = read("../app/globals.css");
+    const idle = css.slice(
+      css.indexOf(".library-shell .workspace-selector button {"),
+      css.indexOf(".library-shell .workspace-space-mark"),
+    );
+    const pressed = css.slice(
+      css.indexOf('.library-shell .workspace-selector button[aria-pressed="true"]'),
+      css.indexOf('.library-shell .workspace-selector button[aria-pressed="true"]:hover'),
+    );
+
+    assert.match(pressed, /font-weight:\s*700/);
+    assert.equal(/font-weight/.test(idle), false);
   });
 
   it("keeps the pending label on the note and diagram choices", () => {

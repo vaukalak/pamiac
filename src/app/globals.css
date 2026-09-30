@@ -2708,6 +2708,7 @@ code {
   background: var(--home-lime);
   border-color: var(--home-lime);
   color: var(--home-on-lime);
+  font-weight: 700;
 }
 .library-shell .workspace-selector button[aria-pressed="true"]:hover {
   color: var(--home-on-lime);
