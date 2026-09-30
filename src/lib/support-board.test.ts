@@ -38,7 +38,7 @@ describe("support board", () => {
     expect(page).toMatch(/<AppHeader \/>/);
     expect(page).toMatch(/<Page className="home-support">/);
     expect(page).toMatch(/<Section className="home-support-panel">/);
-    expect(page).toMatch(/eyebrow="Support"/);
+    expect(page).not.toMatch(/eyebrow=/);
     expect(page).toMatch(/title="Contact support"/);
     expect(page).toMatch(/subtitle="This message goes to Pamiac support\."/);
     expect(page).toMatch(/<Paragraph>Use the email you sign in with\.<\/Paragraph>/);

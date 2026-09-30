@@ -2431,10 +2431,6 @@ code {
   margin: 0 0 12px;
   color: var(--home-soft);
 }
-.home .home-support-panel .eyebrow {
-  margin: 0 0 14px;
-  color: var(--home-lime);
-}
 .home .home-support-panel .form-stack p,
 .home .home-support-panel [role="status"] p:last-child {
   margin-bottom: 0;

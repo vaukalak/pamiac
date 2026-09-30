@@ -21,7 +21,7 @@ OWN-WORLD: the home board, unchanged. Near-black ground, dim olive traces, lime 
 
 STORY: the visitor arrives from Support in the header, reads that the message goes to Pamiac support, enters the sign-in email and the message, and sends it. Success stays in the same panel.
 
-FIRST VIEWPORT: the home header over the circuit board; one centered panel, about 460px, with the lime Support label, the sans title Contact support, the two existing lines, email, message, and a full-width lime Send to support pill. The home footer line closes the page.
+FIRST VIEWPORT: the home header over the circuit board; one centered panel, about 460px, with the sans title Contact support and no kicker above it, the two existing lines, email, message, and a full-width lime Send to support pill. The home footer line closes the page.
 
 FORM: pinned by the request to match the root page. No concept roll. Seed: none (brief-pinned).
 

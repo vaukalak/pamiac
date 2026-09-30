@@ -19,11 +19,7 @@ export default function SupportPage() {
       <AppHeader />
       <Page className="home-support">
         <Section className="home-support-panel">
-          <PageTitle
-            eyebrow="Support"
-            subtitle="This message goes to Pamiac support."
-            title="Contact support"
-          />
+          <PageTitle subtitle="This message goes to Pamiac support." title="Contact support" />
           <Paragraph>Use the email you sign in with.</Paragraph>
           <SupportForm />
         </Section>
