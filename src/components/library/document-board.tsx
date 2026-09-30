@@ -3,6 +3,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
+import { ProfileMenu } from "@/components/header/profile-menu";
 import { CircuitBoard } from "@/components/home/circuit-board";
 import {
   type BoardChange,
@@ -151,7 +152,6 @@ export function DocumentBoard(props: Properties) {
     <div className="library-shell">
       <CircuitBoard />
       <LibrarySidebar
-        email={email}
         filter={filter}
         managing={managing}
         onFilter={chooseFilter}
@@ -160,6 +160,7 @@ export function DocumentBoard(props: Properties) {
         selectedId={workspaceId}
         workspaces={workspaces}
       />
+      <ProfileMenu email={email} />
       <LibraryColumn
         className="library-main"
         counts={counts}
