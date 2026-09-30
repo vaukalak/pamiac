@@ -5,6 +5,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { LibraryPlusIcon } from "@/components/library/library-plus-icon";
 import type { DocumentType } from "@/lib/content";
+import { Button } from "@/ui/Button";
 
 interface Properties {
   workspaceId: string;
@@ -69,10 +70,11 @@ export function LibraryCreate(props: Properties) {
       <details ref={detailsRef}>
         <summary aria-label="New document" className="library-plus">
           <LibraryPlusIcon />
+          Create
         </summary>
         <div className="menu-panel">
           {message ? <p className="error">{message}</p> : null}
-          <button
+          <Button
             className="menu-item"
             disabled={mutation.isPending}
             onClick={() => {
@@ -81,8 +83,8 @@ export function LibraryCreate(props: Properties) {
             type="button"
           >
             {creating === "note" ? "Creating…" : "New note"}
-          </button>
-          <button
+          </Button>
+          <Button
             className="menu-item"
             disabled={mutation.isPending}
             onClick={() => {
@@ -91,7 +93,7 @@ export function LibraryCreate(props: Properties) {
             type="button"
           >
             {creating === "diagram" ? "Creating…" : "New UML diagram"}
-          </button>
+          </Button>
         </div>
       </details>
     </div>

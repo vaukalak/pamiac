@@ -35,10 +35,10 @@ describe("library chrome", () => {
   });
 
   it("keeps the personal library on the dashboard while management stays armed", () => {
-    const board = read("../components/library/document-board.tsx");
+    const column = read("../components/library/library-column.tsx");
 
     assert.match(
-      board,
+      column,
       /workspaceId !== PERSONAL_SPACE_ID && panel === "manage" \? \(\s*<LibraryManage[\s\S]*?\) : \(\s*<LibraryDashboard/,
     );
   });
@@ -84,7 +84,8 @@ describe("library chrome", () => {
     assert.match(tip, /white-space:\s*nowrap/);
     assert.match(tip, /width:\s*max-content/);
     assert.equal(/overflow-wrap/.test(tip), false);
-    assert.match(sidebar, /width:\s*fit-content/);
+    assert.match(sidebar, /min-height:\s*100%/);
+    assert.equal(/width:\s*fit-content/.test(sidebar), false);
     assert.match(column, /width:\s*fit-content/);
     assert.equal(/width:\s*100%/.test(column), false);
   });

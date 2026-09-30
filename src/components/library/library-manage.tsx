@@ -5,6 +5,8 @@ import { LibraryManageDanger } from "@/components/library/library-manage-danger"
 import { WorkspaceMemberAdd } from "@/components/library/workspace-member-add";
 import { openWorkspaceName, PERSONAL_SPACE_ID } from "@/lib/library-spaces";
 import { workspacesQueryOptions } from "@/lib/library-workspaces";
+import { Paragraph } from "@/ui/Paragraph";
+import { Section } from "@/ui/Section";
 
 interface Properties {
   managing: boolean;
@@ -17,13 +19,13 @@ export function LibraryManage(props: Properties) {
   const name = openWorkspaceName(workspaceId, spaces.data);
 
   return (
-    <div className="library-manage">
+    <Section className="library-manage">
       {name ? <h2 className="library-manage-name">{name}</h2> : null}
       {workspaceId === PERSONAL_SPACE_ID ? (
-        <p className="hint">Personal space has no shared members.</p>
+        <Paragraph className="hint">Personal space has no shared members.</Paragraph>
       ) : null}
       {managing ? <WorkspaceMemberAdd key={workspaceId} workspaceId={workspaceId} /> : null}
       <LibraryManageDanger managing={managing} workspaceId={workspaceId} />
-    </div>
+    </Section>
   );
 }

@@ -101,6 +101,10 @@ describe("workspace roles", () => {
       new URL("../components/library/document-board.tsx", import.meta.url),
       "utf8",
     );
+    const column = readFileSync(
+      new URL("../components/library/library-column.tsx", import.meta.url),
+      "utf8",
+    );
     const manage = readFileSync(
       new URL("../components/library/library-manage.tsx", import.meta.url),
       "utf8",
@@ -123,7 +127,7 @@ describe("workspace roles", () => {
     assert.equal(/WorkspacePaywall/.test(board), false);
     assert.equal(/WorkspacePaywall/.test(manage), false);
     assert.match(sidebar, /<WorkspaceSelector/);
-    assert.match(board, /<LibrarySwitcher/);
+    assert.match(column, /<LibrarySwitcher/);
     assert.match(switcher, />\s*Dashboard\s*</);
     assert.match(switcher, />\s*Workspace management\s*</);
     assert.equal(/managing \?/.test(switcher), false);

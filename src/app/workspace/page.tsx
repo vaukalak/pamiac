@@ -1,5 +1,4 @@
 import { redirect } from "next/navigation";
-import { AppHeader } from "@/components/header/app-header";
 import { DocumentBoard, type BoardDocument } from "@/components/library/document-board";
 import { WorkspaceInviteDialog } from "@/components/library/workspace-invite-dialog";
 import { QueryProvider } from "@/components/query-provider";
@@ -62,14 +61,13 @@ export default async function WorkspacePage(props: Properties) {
   }));
 
   return (
-    <>
-      <AppHeader email={result.session.user.email} />
-      <main className="workspace">
-        <QueryProvider>
-          <DocumentBoard documents={documents} workspaces={workspaces} />
-          {inviteId ? <WorkspaceInviteDialog inviteId={inviteId} /> : null}
-        </QueryProvider>
-      </main>
-    </>
+    <QueryProvider>
+      <DocumentBoard
+        documents={documents}
+        email={result.session.user.email}
+        workspaces={workspaces}
+      />
+      {inviteId ? <WorkspaceInviteDialog inviteId={inviteId} /> : null}
+    </QueryProvider>
   );
 }
