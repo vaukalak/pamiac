@@ -1,22 +1,24 @@
 import { AppHeader } from "@/components/header/app-header";
+import { CircuitBoard } from "@/components/home/circuit-board";
 import { HomeFeatures } from "@/components/home/home-features";
-import { Paragraph } from "@/ui/Paragraph";
+import { HomeHero } from "@/components/home/home-hero";
+import { WorkspacePreview } from "@/components/home/workspace-preview";
 
 export default function HomePage() {
   return (
-    <>
+    <div className="home">
+      <CircuitBoard />
       <AppHeader />
-      <main className="hero">
-        <HomeFeatures>
-          <p className="eyebrow">Notes, UML, and agents</p>
-          <h1>A desk for diagrams that an agent can read.</h1>
-          <Paragraph className="lede">
-            We email you a link to sign in, draw UML, and write notes you can drag into shape. Every
-            document has a direct link. Share it by email, password, or in public, and give an agent
-            a token so it can search and edit your library.
-          </Paragraph>
-        </HomeFeatures>
+      <main className="home-main">
+        <section className="home-hero">
+          <HomeHero />
+          <WorkspacePreview />
+        </section>
+        <HomeFeatures />
       </main>
-    </>
+      <footer className="home-foot">
+        <p>Built for human ideas and machine intelligence.</p>
+      </footer>
+    </div>
   );
 }

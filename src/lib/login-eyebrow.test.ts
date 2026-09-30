@@ -8,7 +8,6 @@ const copy = readFileSync(
   "utf8",
 );
 const form = readFileSync(new URL("../components/login-form.tsx", import.meta.url), "utf8");
-const home = readFileSync(new URL("../app/page.tsx", import.meta.url), "utf8");
 const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8");
 
 function expect(actual: string) {
@@ -42,10 +41,9 @@ function eyebrowText(source: string) {
 }
 
 describe("login eyebrow", () => {
-  it("names the product with the home page line", () => {
+  it("names the product on the login card", () => {
     const card = slice(login, '<section className="auth-card">', "</section>");
 
-    expect(eyebrowText(login)).toBe(eyebrowText(home));
     expect(eyebrowText(login)).toBe("Notes, UML, and agents");
     expect(card).not.toMatch(/>Account</);
     expect(card).not.toMatch(/<h1>Sign in or register<\/h1>/);

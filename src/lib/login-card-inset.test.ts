@@ -37,7 +37,7 @@ describe("login card inset", () => {
   it("keeps a 460px card with the same side inset as the header", () => {
     const card = block(css, ".auth-card {");
     const inset = block(css, ".app-header,\n.topbar,\n.workspace,\n.auth-card,");
-    const chrome = block(css, ".feature,\n.doc-card,\n.auth-card,");
+    const chrome = block(css, ".doc-card,\n.auth-card,\n.panel,");
 
     expect(card).toMatch(/width:\s*min\(460px,\s*calc\(100% - 32px\)\)/);
     expect(card).not.toMatch(/width:\s*min\(460px,\s*100%\)/);

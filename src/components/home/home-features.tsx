@@ -1,32 +1,29 @@
-"use client";
+import { HomeFeatureCard, type HomeFeature } from "@/components/home/home-feature-card";
 
-import { useState, type ReactNode } from "react";
-import {
-  homeFeaturePanelId,
-  homeFeatureTabId,
-  type HomeFeatureId,
-} from "@/components/home/home-feature-catalog";
-import { HomeFeatureColumn } from "@/components/home/home-feature-column";
-import { HomeFeaturePanel } from "@/components/home/home-feature-panel";
+const FEATURES: HomeFeature[] = [
+  {
+    icon: "canvas",
+    title: "UML canvas",
+    text: "Draw, connect, and explore ideas on a flexible canvas.",
+  },
+  {
+    icon: "notes",
+    title: "Rich notes",
+    text: "Turn rough thoughts into structured, shareable documents.",
+  },
+  {
+    icon: "agent",
+    title: "Agent access",
+    text: "Let agents search, create, and update your workspace.",
+  },
+];
 
-interface Properties {
-  children: ReactNode;
-}
-
-export function HomeFeatures(props: Properties) {
-  const { children } = props;
-  const [selectedId, setSelectedId] = useState<HomeFeatureId>("rich-notes");
-
+export function HomeFeatures() {
   return (
-    <>
-      <HomeFeatureColumn onSelect={setSelectedId} selectedId={selectedId}>
-        {children}
-      </HomeFeatureColumn>
-      <HomeFeaturePanel
-        featureId={selectedId}
-        labelledBy={homeFeatureTabId(selectedId)}
-        panelId={homeFeaturePanelId}
-      />
-    </>
+    <div className="home-features">
+      {FEATURES.map((feature) => (
+        <HomeFeatureCard key={feature.title} feature={feature} />
+      ))}
+    </div>
   );
 }
