@@ -2054,6 +2054,71 @@ code {
   border-bottom-right-radius: 14px;
   overflow: hidden;
 }
+.home-preview-stage {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+}
+.home-preview-scene {
+  animation: home-preview-in 180ms ease;
+}
+@keyframes home-preview-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.home-preview-stage.is-notes {
+  overflow: auto;
+}
+.home-preview-stage.is-notes .home-preview-note {
+  position: relative;
+  top: auto;
+  right: auto;
+  width: auto;
+  margin: 0.8em;
+}
+.home-preview-stage.is-agent .home-preview-graph {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+.home-preview-spaces {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.7em;
+  height: 100%;
+  padding: 0.9em;
+  align-content: center;
+}
+.home-preview-desk {
+  display: grid;
+  align-content: start;
+  gap: 0.35em;
+  min-width: 0;
+  padding: 0.85em 0.9em;
+  border: 1px solid var(--home-hair);
+  border-radius: 0.8em;
+  background: var(--home-panel);
+}
+.home-preview-desk.is-open {
+  border-color: var(--home-hair-strong);
+}
+.home-preview-desk .home-preview-icon {
+  color: var(--home-lime);
+}
+.home-preview-desk strong {
+  font-size: 1.05em;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.home-preview-desk span {
+  color: var(--home-soft);
+  font-size: 0.78em;
+  line-height: 1.35;
+}
 .home-preview-side {
   display: flex;
   flex-direction: column;
@@ -2217,18 +2282,28 @@ code {
   grid-template-columns: 40px 1fr;
   grid-template-rows: auto auto;
   gap: 4px 16px;
+  width: 100%;
+  margin: 0;
   padding: 20px 22px;
   border: 1px solid var(--home-hair);
   border-radius: 16px;
   background: var(--home-panel);
   box-shadow: var(--home-shadow);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
   transition: border-color 160ms ease;
 }
-.home-feature:first-child {
+.home-feature[aria-selected="true"] {
   border-color: var(--home-hair-strong);
 }
 .home-feature:hover {
   border-color: rgba(185, 245, 66, 0.7);
+}
+.home-feature:focus-visible {
+  outline: 2px solid var(--home-lime);
+  outline-offset: 3px;
 }
 .home-feature-icon {
   grid-row: 1 / span 2;
@@ -2335,5 +2410,8 @@ code {
   .home .btn,
   .home-feature {
     transition: none;
+  }
+  .home-preview-scene {
+    animation: none;
   }
 }

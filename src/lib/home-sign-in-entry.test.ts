@@ -4,8 +4,21 @@ import { describe, it } from "node:test";
 
 const home = readFileSync(new URL("../app/page.tsx", import.meta.url), "utf8");
 const hero = readFileSync(new URL("../components/home/home-hero.tsx", import.meta.url), "utf8");
+const stage = readFileSync(new URL("../components/home/home-stage.tsx", import.meta.url), "utf8");
 const features = readFileSync(
   new URL("../components/home/home-features.tsx", import.meta.url),
+  "utf8",
+);
+const featureCard = readFileSync(
+  new URL("../components/home/home-feature-card.tsx", import.meta.url),
+  "utf8",
+);
+const preview = readFileSync(
+  new URL("../components/home/workspace-preview.tsx", import.meta.url),
+  "utf8",
+);
+const previewStage = readFileSync(
+  new URL("../components/home/preview-stage.tsx", import.meta.url),
   "utf8",
 );
 const nav = readFileSync(
@@ -57,14 +70,15 @@ function mediaBlock(source: string, query: string) {
 }
 
 describe("home sign-in entry", () => {
-  it("keeps the board hero copy and feature cards without a second sign-in control", () => {
+  it("keeps the board hero copy and feature tabs without a second sign-in control", () => {
     expect(home).toMatch(/<div className="home">/);
     expect(home).toMatch(/<CircuitBoard \/>/);
     expect(home).toMatch(/<AppHeader \/>/);
-    expect(home).toMatch(/<HomeHero \/>/);
-    expect(home).toMatch(/<WorkspacePreview \/>/);
-    expect(home).toMatch(/<HomeFeatures \/>/);
+    expect(home).toMatch(/<HomeStage \/>/);
     expect(home).toMatch(/Built for human ideas and machine intelligence\./);
+    expect(stage).toMatch(/useState<HomeFeatureId>\("notes"\)/);
+    expect(stage).toMatch(/<HomeHeroSection selected=\{selected\} \/>/);
+    expect(stage).toMatch(/<HomeFeatures selected=\{selected\} onSelect=\{setSelected\} \/>/);
     expect(hero).toMatch(/<p className="eyebrow">Notes\. Diagrams\. Agents\.<\/p>/);
     expect(hero).toMatch(
       /A shared mind for you and your <span className="home-accent">agents\.<\/span>/,
@@ -72,22 +86,39 @@ describe("home sign-in entry", () => {
     expect(hero).toMatch(
       /className="lede">\s*Write notes, map ideas, and give your agents the context to move work forward\.\s*</,
     );
-    expect(features).toMatch(/title: "UML canvas"/);
-    expect(features).toMatch(/title: "Rich notes"/);
-    expect(features).toMatch(/title: "Agent access"/);
+    expect(features).toMatch(
+      /title: "Rich notes"[\s\S]*title: "Agent access"[\s\S]*title: "Personal and team workspaces"/,
+    );
+    expect(features).toMatch(/Turn rough thoughts into structured, shareable documents\./);
+    expect(features).toMatch(/Let agents search, create, and update your workspace\./);
+    expect(features).toMatch(/A private desk, and named workspaces you can invite people into\./);
+    expect(features).not.toMatch(/UML canvas/);
+    expect(features).toMatch(/role="tablist"/);
+    expect(featureCard).toMatch(/role="tab"/);
+    expect(featureCard).toMatch(/aria-selected=\{selected\}/);
+    expect(featureCard).toMatch(/aria-controls="home-preview-panel"/);
+    expect(preview).toMatch(/role="tabpanel"/);
+    expect(preview).toMatch(/id="home-preview-panel"/);
+    expect(preview).toMatch(/aria-labelledby=\{`home-tab-\$\{selected\}`\}/);
+    expect(previewStage).toMatch(/selected === "notes" \? <PreviewNote \/> : null/);
+    expect(previewStage).toMatch(/selected === "agent" \? <PreviewGraph \/> : null/);
+    expect(previewStage).toMatch(/selected === "workspaces" \? <PreviewSpaces \/> : null/);
     expect(home).not.toMatch(/className="btn"/);
     expect(home).not.toMatch(/>\s*Sign in\s*</);
   });
 
-  it("adds no buttons or links anywhere in the home feature", () => {
+  it("uses feature tabs and keeps links and a second sign-in control out of the home feature", () => {
+    const buttons = homeSources.join("\n").match(/<button/g) ?? [];
+    assert.equal(buttons.length, 1);
+    expect(featureCard).toMatch(/role="tab"/);
     for (const source of homeSources) {
-      expect(source).not.toMatch(/<button/);
       expect(source).not.toMatch(/<Link/);
       expect(source).not.toMatch(/<a\s/);
       expect(source).not.toMatch(/className="btn/);
       expect(source).not.toMatch(/Get started/);
       expect(source).not.toMatch(/Connect an agent/);
       expect(source).not.toMatch(/Your knowledge\. Connected\./);
+      expect(source).not.toMatch(/>\s*Sign in\s*</);
     }
   });
 
