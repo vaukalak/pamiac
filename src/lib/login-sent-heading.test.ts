@@ -48,33 +48,31 @@ function block(source: string, header: string) {
 }
 
 describe("sent sign-in heading", () => {
-  it("keeps Check your email at 22px after it becomes the card title", () => {
-    const sentTitle = block(css, ".auth-door .auth-card .login-sent h1 {");
-    const doorTitle = block(css, ".auth-door .auth-card h1 {");
+  it("uses the board title for Check your email", () => {
+    const sentTitle = block(css, ".home .home-sign-in-panel h1 {");
     const sharedTitle = block(css, ".auth-card h1 {");
 
-    expect(sent).toMatch(/<h1>Check your email<\/h1>/);
+    expect(sent).toMatch(/title="Check your email"/);
+    expect(sent).toMatch(/<PageTitle/);
     expect(sent).not.toMatch(/<h2>Check your email<\/h2>/);
-    expect(sentTitle).toMatch(/font-size:\s*22px/);
-    expect(sentTitle).toMatch(/line-height:\s*1\.25/);
-    expect(sentTitle).toMatch(/margin:\s*0;/);
-    expect(sentTitle).not.toMatch(/24px|40px/);
+    expect(sentTitle).toMatch(/font-family:\s*var\(--sans\)/);
+    expect(sentTitle).toMatch(/font-size:\s*32px/);
+    expect(sentTitle).toMatch(/line-height:\s*1\.15/);
+    expect(sentTitle).not.toMatch(/22px|24px|40px/);
     expect(css).not.toMatch(/\.login-sent h2/);
-    expect(doorTitle).toMatch(/font-size:\s*24px/);
     expect(sharedTitle).toMatch(/font-size:\s*40px/);
-    expect(sentTitle).toMatch(/^\.auth-door \.auth-card \.login-sent h1 \{/);
   });
 
   it("drops the sign-in copy once a link has been sent, including from the server page", () => {
-    const card = slice(page, '<section className="auth-card">', "</section>");
-    const sentBranch = slice(form, 'status === "sent" ? (', ": (");
+    const panel = slice(page, '<Section className="home-sign-in-panel">', "</Section>");
+    const sentBranch = slice(form, "sent ? (", ") : (");
 
-    expect(card).toMatch(/<p className="eyebrow">Notes, UML, and agents<\/p>/);
-    expect(card).not.toMatch(/<h1>/);
-    expect(card).not.toMatch(/There is no password/);
+    expect(panel).not.toMatch(/eyebrow|Notes, UML, and agents/);
+    expect(panel).not.toMatch(/<h1>/);
+    expect(panel).not.toMatch(/There is no password/);
     expect(sentBranch).toMatch(/<LoginLinkSent/);
     expect(sentBranch).not.toMatch(/LoginSignInCopy/);
     expect(sentBranch).not.toMatch(/Sign in or register/);
-    expect(form).toMatch(/status !== "sent" \? <LoginSignInCopy \/> : null/);
+    expect(form).toMatch(/sent \? null : <LoginSignInCopy \/>/);
   });
 });

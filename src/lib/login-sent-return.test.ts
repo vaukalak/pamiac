@@ -31,15 +31,14 @@ function slice(source: string, startMark: string, endMark: string) {
 
 describe("sign-in sent return", () => {
   it("returns to an empty form without keeping the address or the sent step", () => {
-    const reset = slice(form, "function chooseDifferentEmail", "return (");
+    const reset = slice(form, "function chooseDifferentEmail", "const email");
     const sentCall = slice(form, "<LoginLinkSent", "/>");
 
-    expect(reset).toMatch(/setEmail\(""\)/);
-    expect(reset).toMatch(/setMessage\(""\)/);
-    expect(reset).toMatch(/setDevUrl\(null\)/);
-    expect(reset).toMatch(/setStatus\("idle"\)/);
+    expect(reset).toMatch(/form\.reset\(\{ email: "" \}\)/);
+    expect(reset).toMatch(/mutation\.reset\(\)/);
+    expect(reset).toMatch(/setSent\(null\)/);
     expect(sentCall).toMatch(/onChooseDifferentEmail=\{chooseDifferentEmail\}/);
-    expect(sentCall).not.toMatch(/email=/);
+    expect(sentCall).toMatch(/address=\{sent\.address\}/);
     expect(sent).toMatch(/onClick=\{onChooseDifferentEmail\}/);
     expect(sent).toMatch(/type="button"/);
     expect(form).not.toMatch(/sessionStorage|localStorage/);

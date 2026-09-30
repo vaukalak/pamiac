@@ -30,7 +30,7 @@ function slice(source: string, startMark: string, endMark: string) {
 
 describe("sign-in promotions", () => {
   it("names the address, then inbox, spam, and promotions, in two sentences", () => {
-    const hint = slice(sent, '<p className="hint">', "</p>");
+    const hint = slice(sent, '<Paragraph className="hint">', "</Paragraph>");
     const sentences = hint.match(/\./g) ?? [];
 
     expect(hint).toMatch(/We sent a link to \{address\}\./);

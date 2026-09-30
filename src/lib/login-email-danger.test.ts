@@ -48,27 +48,22 @@ function block(source: string, header: string) {
 
 describe("sign-in email danger", () => {
   it("marks an empty address or one without @ only after a send attempt", () => {
-    const rejected = slice(form, "const addressRejected", "useLayoutEffect");
-    const invalid = slice(form, "setAttempted(true)", 'setStatus("sending")');
-    const input = slice(form, "<input", "/>");
-    const reset = slice(form, "function chooseDifferentEmail", "return (");
+    const message = slice(form, "function loginEmailMessage", "const loginResolver");
+    const resolver = slice(form, "const loginResolver", "async function sendMagicLink");
+    const submit = slice(form, "onSubmit={(values)", "}}");
+    const reset = slice(form, "function chooseDifferentEmail", "const email");
 
-    expect(rejected).toMatch(/attempted && !email\.includes\("@"\)/);
-    expect(form).toMatch(/useState\(false\)/);
-    expect(invalid).toMatch(/setAttempted\(true\)/);
-    expect(invalid).toMatch(/setStatus\("idle"\)/);
-    expect(invalid).toMatch(/return;/);
-    expect(invalid).not.toMatch(/setEmail\(/);
-    expect(invalid).not.toMatch(/signIn\.magicLink/);
-    expect(invalid).not.toMatch(/rememberSentLoginAddress/);
-    expect(invalid).not.toMatch(/setStatus\("sent"\)/);
-    expect(invalid).not.toMatch(/setStatus\("error"\)/);
-    expect(input).toMatch(/aria-invalid=\{addressRejected\}/);
-    expect(input).toMatch(/value=\{email\}/);
-    expect(form).toMatch(/<form className="form-stack" noValidate onSubmit=\{onSubmit\}>/);
-    expect(reset).toMatch(/setAttempted\(false\)/);
+    expect(message).toMatch(/email\.includes\("@"\)/);
+    expect(message).toMatch(/email\.trim\(\) === ""/);
+    expect(message).toMatch(/"Enter an email address\."/);
+    expect(message).toMatch(/"That address needs an @\."/);
+    expect(form).toMatch(/mode:\s*"onSubmit"/);
+    expect(resolver).not.toMatch(/signIn\.magicLink|rememberSentLoginAddress/);
+    expect(submit).toMatch(/mutation\.mutate\(values\.email\)/);
+    expect(submit).not.toMatch(/rememberSentLoginAddress|setSent\(/);
+    expect(reset).toMatch(/form\.reset\(\{ email: "" \}\)/);
     expect(form).toMatch(
-      /status === "error" && !addressRejected \? <LoginSendFailure happened=\{message\} \/> : null/,
+      /mutation\.isError && !addressError \? <LoginSendFailure happened=\{message\} \/> : null/,
     );
     expect(form).toMatch(/rememberSentLoginAddress\(email\)/);
     expect(member).not.toMatch(/aria-invalid/);
@@ -77,17 +72,20 @@ describe("sign-in email danger", () => {
   it("paints the sign-in email border and glow with danger, including while focused", () => {
     const danger = block(
       css,
-      '.auth-door .auth-card input[type="email"][aria-invalid="true"],\n.auth-door .auth-card input[type="email"][aria-invalid="true"]:focus {',
+      '.home .home-sign-in-panel input[aria-invalid="true"],\n.home .home-sign-in-panel input[aria-invalid="true"]:focus {',
     );
     const focus = block(css, "input:focus,\ntextarea:focus,\nselect:focus {");
-    const sheet = block(css, '.auth-door .auth-card input[type="email"] {');
+    const sheet = block(
+      css,
+      ".home .home-sign-in-panel input,\n.home .home-sign-in-panel textarea {",
+    );
 
-    expect(danger).toMatch(/border-color:\s*var\(--danger\)/);
-    expect(danger).toMatch(/box-shadow:\s*0 0 0 3px color-mix\(in srgb, var\(--danger\)/);
-    expect(danger).not.toMatch(/var\(--teal\)|var\(--focus\)/);
+    expect(danger).toMatch(/border-color:\s*#ffb4ab/);
+    expect(danger).toMatch(/box-shadow:\s*0 0 0 3px rgba\(255,\s*180,\s*171,\s*0\.35\)/);
+    expect(danger).not.toMatch(/var\(--home-lime\)|var\(--teal\)|var\(--focus\)/);
     expect(focus).toMatch(/border-color:\s*var\(--teal\)/);
     expect(focus).toMatch(/box-shadow:\s*var\(--focus\)/);
-    expect(sheet).not.toMatch(/border:|box-shadow:|aria-invalid/);
+    expect(sheet).not.toMatch(/box-shadow:|aria-invalid/);
     expect(css).not.toMatch(/workspace-person-email\[aria-invalid/);
   });
 });

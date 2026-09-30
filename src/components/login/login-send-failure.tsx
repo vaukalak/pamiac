@@ -1,3 +1,5 @@
+import { Alert } from "@/ui/Alert";
+
 interface Properties {
   happened: string;
 }
@@ -6,10 +8,10 @@ export function LoginSendFailure(props: Properties) {
   const { happened } = props;
 
   return (
-    <p className="error">
+    <Alert>
       {happened}
       <br />
       Try again, or use another address.
-    </p>
+    </Alert>
   );
 }

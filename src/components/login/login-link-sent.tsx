@@ -1,3 +1,7 @@
+import { Button } from "@/ui/Button";
+import { PageTitle } from "@/ui/PageTitle";
+import { Paragraph } from "@/ui/Paragraph";
+
 interface Properties {
   address: string;
   devUrl: string | null;
@@ -9,22 +13,22 @@ export function LoginLinkSent(props: Properties) {
 
   return (
     <div className="form-stack login-sent">
-      <h1>Check your email</h1>
-      <p className="hint">
+      <PageTitle title="Check your email" />
+      <Paragraph className="hint">
         We sent a link to {address}.
         <br />
         Check your inbox, then spam, then promotions,
         <br />
         and it can take a minute.
-      </p>
+      </Paragraph>
       {devUrl ? (
         <a className="dev-link" href={devUrl}>
           Development only: open the link
         </a>
       ) : null}
-      <button className="btn ghost" onClick={onChooseDifferentEmail} type="button">
+      <Button className="ghost" onClick={onChooseDifferentEmail} type="button">
         Use a different email
-      </button>
+      </Button>
     </div>
   );
 }

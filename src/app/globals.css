@@ -295,61 +295,9 @@ h3 {
   margin: 0 0 8px;
   font-size: 40px;
 }
-.auth-door .auth-card h1 {
-  font-size: 24px;
-  line-height: 1.2;
-}
 .auth-card p {
   color: var(--ink-soft);
   margin-top: 0;
-}
-.auth-door .auth-card .eyebrow {
-  color: var(--teal);
-}
-
-.auth-door {
-  position: relative;
-  overflow: hidden;
-}
-.auth-door .auth-card {
-  position: relative;
-  z-index: 1;
-}
-.auth-ground {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  user-select: none;
-}
-.auth-ground-note,
-.auth-ground-diagram {
-  position: absolute;
-  display: block;
-}
-.auth-ground-note {
-  left: -36px;
-  bottom: -44px;
-  width: 210px;
-  height: 104px;
-}
-.auth-ground-diagram {
-  display: none;
-}
-@media (min-width: 1180px) {
-  .auth-ground-note {
-    left: -24px;
-    bottom: -32px;
-    width: min(280px, calc(50% - 290px));
-    height: 168px;
-  }
-  .auth-ground-diagram {
-    display: block;
-    top: -12px;
-    right: -140px;
-    width: 340px;
-    height: 228px;
-  }
 }
 
 label {
@@ -370,26 +318,6 @@ select {
   padding: 11px 12px;
   outline: none;
 }
-.auth-door .auth-card input[type="email"] {
-  background: var(--card);
-}
-.auth-door .auth-card input[type="email"][aria-invalid="true"],
-.auth-door .auth-card input[type="email"][aria-invalid="true"]:focus {
-  border-color: var(--danger);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 28%, transparent);
-}
-.auth-door .auth-card p.login-email-error {
-  color: var(--danger);
-  font-size: 14px;
-  line-height: 1.4;
-  margin: 8px 0 0;
-}
-.auth-door .auth-card p.error {
-  color: var(--danger);
-  font-size: 14px;
-  line-height: 1.4;
-  margin: 0;
-}
 textarea {
   min-height: 96px;
   resize: vertical;
@@ -409,17 +337,12 @@ select:focus {
   display: contents;
 }
 html[data-login-sent] .login-sign-in-copy,
-html[data-login-sent] .auth-door .auth-card form.form-stack {
+html[data-login-sent] .home-sign-in-panel form.form-stack {
   display: none;
 }
 .hint {
   color: var(--ink-soft);
   font-size: 14px;
-}
-.auth-door .auth-card .login-sent h1 {
-  margin: 0;
-  font-size: 22px;
-  line-height: 1.25;
 }
 .login-sent .hint {
   overflow-wrap: anywhere;
@@ -1819,6 +1742,7 @@ code {
 .home > .app-header,
 .home-main,
 .home > .home-support,
+.home > .home-sign-in,
 .home-foot {
   position: relative;
   z-index: 1;
@@ -2500,4 +2424,117 @@ code {
   .home-preview-scene {
     animation: none;
   }
+}
+
+.home .home-sign-in {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: safe center;
+  width: min(460px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 32px 0 16px;
+}
+.home .home-sign-in-panel {
+  width: 100%;
+  padding: 28px;
+  border: 1px solid var(--home-hair);
+  border-radius: 16px;
+  background: var(--home-panel);
+  box-shadow: var(--home-shadow);
+  color: var(--home-text);
+}
+.home .home-sign-in-panel h1 {
+  margin: 0 0 8px;
+  color: var(--home-text);
+  font-family: var(--sans);
+  font-size: 32px;
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+}
+.home .home-sign-in-panel p {
+  margin: 0 0 12px;
+  color: var(--home-soft);
+}
+.home .home-sign-in-panel .form-stack p,
+.home .home-sign-in-panel [role="status"] p:last-child {
+  margin-bottom: 0;
+}
+.home .home-sign-in-panel label {
+  color: var(--home-text);
+}
+.home .home-sign-in-panel input,
+.home .home-sign-in-panel textarea {
+  border-color: var(--home-line);
+  background: #101410;
+  color: var(--home-text);
+  caret-color: var(--home-lime);
+}
+.home .home-sign-in-panel input::placeholder,
+.home .home-sign-in-panel textarea::placeholder {
+  color: var(--home-soft);
+}
+.home .home-sign-in-panel input:focus,
+.home .home-sign-in-panel textarea:focus {
+  border-color: var(--home-lime);
+  box-shadow: 0 0 0 3px rgba(185, 245, 66, 0.35);
+}
+.home .home-sign-in-panel input[aria-invalid="true"],
+.home .home-sign-in-panel input[aria-invalid="true"]:focus {
+  border-color: #ffb4ab;
+  box-shadow: 0 0 0 3px rgba(255, 180, 171, 0.35);
+}
+.home .home-sign-in-panel input:-webkit-autofill,
+.home .home-sign-in-panel input:-webkit-autofill:focus {
+  border-color: var(--home-line);
+  -webkit-text-fill-color: var(--home-text);
+  caret-color: var(--home-lime);
+  box-shadow: 0 0 0 1000px #101410 inset;
+}
+.home .home-sign-in-panel input[aria-invalid="true"]:-webkit-autofill,
+.home .home-sign-in-panel input[aria-invalid="true"]:-webkit-autofill:focus {
+  border-color: #ffb4ab;
+  -webkit-text-fill-color: var(--home-text);
+  caret-color: var(--home-lime);
+  box-shadow:
+    0 0 0 3px rgba(255, 180, 171, 0.35),
+    0 0 0 1000px #101410 inset;
+}
+.home .home-sign-in-panel .error {
+  margin-top: 8px;
+  color: #ffb4ab;
+}
+.home .home-sign-in-panel .btn:not(.ghost) {
+  width: 100%;
+  border-color: var(--home-lime);
+  background: var(--home-lime);
+  color: var(--home-on-lime);
+}
+.home .home-sign-in-panel .btn:not(.ghost):hover:not(:disabled) {
+  border-color: var(--home-lime-deep);
+  background: var(--home-lime-deep);
+  color: var(--home-on-lime);
+}
+.home .home-sign-in-panel .btn:not(.ghost):focus-visible {
+  outline: 2px solid var(--home-text);
+  outline-offset: 3px;
+}
+.home .home-sign-in-panel .btn:not(.ghost):disabled {
+  opacity: 0.45;
+  cursor: progress;
+}
+.home .home-sign-in-panel .btn.ghost,
+.home .home-sign-in-panel .btn.ghost:hover {
+  width: auto;
+  justify-self: start;
+  border-color: transparent;
+  background: transparent;
+  color: var(--home-soft);
+}
+.home .home-sign-in-panel .dev-link {
+  border: 1px solid var(--home-line);
+  background: #101410;
+  color: var(--home-text);
 }

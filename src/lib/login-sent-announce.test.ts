@@ -54,8 +54,8 @@ function block(source: string, header: string) {
 describe("sign-in confirmation announcement", () => {
   it("keeps one polite live region mounted for the whole visit", () => {
     const region = slice(form, '<div aria-atomic="true" aria-live="polite"', "</div>");
-    const sentBranch = slice(form, 'status === "sent"', ": (");
-    const formBranch = slice(form, ": (", "  );");
+    const sentBranch = slice(form, "sent ? (", ") : (");
+    const formBranch = slice(form, ") : (", "</Form.Context>");
     const lives = form.match(/aria-live=/g) ?? [];
 
     expect(region).toMatch(/aria-atomic="true"/);
@@ -70,7 +70,7 @@ describe("sign-in confirmation announcement", () => {
     expect(form).not.toMatch(/aria-live="assertive"/);
     expect(sent).not.toMatch(/sr-only|visually-hidden|aria-hidden/);
     assert.equal(lives.length, 1);
-    assert.ok(form.indexOf('aria-live="polite"') < form.indexOf('status === "sent"'));
+    assert.ok(form.indexOf('aria-live="polite"') < form.indexOf("sent ? ("));
     expect(form).not.toMatch(/sessionStorage|localStorage/);
     expect(sent).not.toMatch(/sessionStorage|localStorage/);
   });
@@ -128,7 +128,7 @@ describe("sign-in confirmation announcement", () => {
       }),
       "",
     );
-    expect(sent).toMatch(/<h1>Check your email<\/h1>/);
+    expect(sent).toMatch(/title="Check your email"/);
     expect(sent).toMatch(/We sent a link to \{address\}\./);
     expect(sent).toMatch(/Check your inbox, then spam, then promotions,/);
     expect(sent).toMatch(/and it can take a minute\./);

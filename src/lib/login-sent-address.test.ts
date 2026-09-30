@@ -32,12 +32,12 @@ function slice(source: string, startMark: string, endMark: string) {
 
 describe("sign-in sent address", () => {
   it("repeats the submitted address and points recovery at the quiet action", () => {
-    const submit = slice(form, "async function onSubmit", "function chooseDifferentEmail");
+    const submit = slice(form, "async function sendMagicLink", "export function LoginForm");
     const hint = slice(css, ".login-sent .hint {", "}");
 
-    expect(submit).toMatch(/setStatus\("sent"\)/);
-    expect(submit).not.toMatch(/setEmail\(/);
-    expect(form).toMatch(/address=\{email\}/);
+    expect(submit).toMatch(/rememberSentLoginAddress\(email\)/);
+    expect(submit).not.toMatch(/form\.reset/);
+    expect(form).toMatch(/address=\{sent\.address\}/);
     expect(sent).toMatch(/We sent a link to \{address\}\.\s*<br \/>/);
     expect(sent).toMatch(
       /Check your inbox, then spam, then promotions,\s*<br \/>\s*and it can take a minute\./,

@@ -45,22 +45,25 @@ function block(source: string, header: string) {
 }
 
 describe("sign-in email fill", () => {
-  it("paints only the sign-in email with the card sheet in both schemes", () => {
+  it("paints the sign-in fields with the board and leaves the desk fields alone", () => {
     const fields = block(
       css,
       'input[type="text"],\ninput[type="email"],\ninput[type="password"],\ntextarea,\nselect {',
     );
-    const email = block(css, '.auth-door .auth-card input[type="email"] {');
+    const email = block(
+      css,
+      ".home .home-sign-in-panel input,\n.home .home-sign-in-panel textarea {",
+    );
     const focus = block(css, "input:focus,\ntextarea:focus,\nselect:focus {");
     const light = css.slice(0, css.indexOf("@media (prefers-color-scheme: dark)"));
     const dark = css.slice(css.indexOf("@media (prefers-color-scheme: dark)"));
 
     expect(fields).toMatch(/background:\s*var\(--field\)/);
     expect(fields).toMatch(/border:\s*1px solid var\(--line\)/);
-    expect(email).toMatch(/background:\s*var\(--card\)/);
-    expect(email).not.toMatch(/var\(--field\)/);
-    expect(email).not.toMatch(/#[0-9a-fA-F]{3,8}/);
-    expect(email).not.toMatch(/border:|box-shadow:|color:|font-|padding:|border-radius:/);
+    expect(email).toMatch(/background:\s*#101410/);
+    expect(email).toMatch(/caret-color:\s*var\(--home-lime\)/);
+    expect(email).toMatch(/border-color:\s*var\(--home-line\)/);
+    expect(email).not.toMatch(/var\(--field\)|var\(--teal\)|var\(--focus\)/);
     expect(focus).toMatch(/border-color:\s*var\(--teal\)/);
     expect(focus).toMatch(/box-shadow:\s*var\(--focus\)/);
     expect(light).toMatch(/--card:\s*#fffdf8/);
@@ -71,16 +74,17 @@ describe("sign-in email fill", () => {
     expect(form).not.toMatch(/placeholder=/);
     expect(form).toMatch(/Email me a link/);
     expect(login).toMatch(/<LoginForm nextPath=\{formNext\} \/>/);
-    expect(locked).not.toMatch(/auth-door/);
-    expect(member).not.toMatch(/auth-door/);
+    expect(locked).not.toMatch(/home-sign-in/);
+    expect(member).not.toMatch(/home-sign-in/);
   });
 });
 
 describe("sign-in email sample", () => {
   it("keeps a labeled empty email box and no sample address", () => {
-    expect(form).toMatch(/<label htmlFor="email">Email<\/label>/);
+    expect(form).toMatch(/label="Email"/);
+    expect(form).toMatch(/name="email"/);
     expect(form).toMatch(/autoComplete="email"/);
-    expect(form).toMatch(/\brequired\b/);
+    expect(form).toMatch(/<Form\.Input/);
     expect(form).not.toMatch(/you@example\.com/);
     expect(form).not.toMatch(/@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/);
     expect(sent).toMatch(/We sent a link to \{address\}\./);

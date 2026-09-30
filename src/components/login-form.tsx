@@ -1,6 +1,8 @@
 "use client";
 
 import { useLayoutEffect, useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { useForm, type FieldErrors, type Resolver } from "react-hook-form";
 import { LoginLinkSent } from "@/components/login/login-link-sent";
 import { LoginSendFailure } from "@/components/login/login-send-failure";
 import { LoginSignInCopy } from "@/components/login/login-sign-in-copy";
@@ -12,78 +14,103 @@ import {
   readSentLoginAddress,
   rememberSentLoginAddress,
 } from "@/lib/login-sent-memory";
+import { Button } from "@/ui/Button";
+import { Form } from "@/ui/Form";
 
 interface Properties {
   nextPath: string;
 }
 
+interface LoginValues {
+  email: string;
+}
+
+interface SentLink {
+  address: string;
+  devUrl: string | null;
+}
+
+function loginEmailMessage(email: string) {
+  if (email.includes("@")) return "";
+  if (email.trim() === "") return "Enter an email address.";
+  return "That address needs an @.";
+}
+
+const loginResolver: Resolver<LoginValues> = (values) => {
+  const message = loginEmailMessage(values.email);
+  if (!message) return { values, errors: {} };
+  const errors: FieldErrors<LoginValues> = {
+    email: { type: "validate", message },
+  };
+  return { values: {}, errors };
+};
+
+async function sendMagicLink(input: { email: string; nextPath: string }) {
+  const { email, nextPath } = input;
+  let result: Awaited<ReturnType<typeof authClient.signIn.magicLink>>;
+  try {
+    result = await authClient.signIn.magicLink({
+      email,
+      name: email.split("@")[0] || "User",
+      callbackURL: nextPath,
+    });
+  } catch (error) {
+    throw new Error(loginSendFailureSentence(error instanceof Error ? error.message : undefined));
+  }
+  if (result.error) {
+    throw new Error(loginSendFailureSentence(result.error.message));
+  }
+  rememberSentLoginAddress(email);
+  try {
+    const dev = await fetch(`/api/dev/magic-link?email=${encodeURIComponent(email)}`);
+    if (!dev.ok) return { devUrl: null };
+    const body = (await dev.json()) as { url?: string };
+    return { devUrl: body.url ?? null };
+  } catch {
+    return { devUrl: null };
+  }
+}
+
 export function LoginForm(props: Properties) {
   const { nextPath } = props;
-  const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
-  const [message, setMessage] = useState("");
-  const [devUrl, setDevUrl] = useState<string | null>(null);
-  const [attempted, setAttempted] = useState(false);
-  const addressRejected = attempted && !email.includes("@");
-  const addressError = !addressRejected
-    ? ""
-    : email.trim() === ""
-      ? "Enter an email address."
-      : "That address needs an @.";
+  const form = useForm<LoginValues>({
+    defaultValues: { email: "" },
+    mode: "onSubmit",
+    reValidateMode: "onChange",
+    resolver: loginResolver,
+  });
+  const [sent, setSent] = useState<SentLink | null>(null);
+  const mutation = useMutation({
+    mutationFn: (email: string) => sendMagicLink({ email, nextPath }),
+    onSuccess: (result, email) => {
+      setSent({ address: email, devUrl: result.devUrl });
+    },
+  });
 
   useLayoutEffect(() => {
     const remembered = readSentLoginAddress();
     if (!remembered) return;
-    setEmail(remembered);
-    setStatus("sent");
+    setSent({ address: remembered, devUrl: null });
   }, []);
-
-  async function onSubmit(event: React.FormEvent) {
-    event.preventDefault();
-    setAttempted(true);
-    if (!email.includes("@")) {
-      setStatus("idle");
-      setMessage("");
-      setDevUrl(null);
-      return;
-    }
-    setStatus("sending");
-    setMessage("");
-    setDevUrl(null);
-    let result: Awaited<ReturnType<typeof authClient.signIn.magicLink>>;
-    try {
-      result = await authClient.signIn.magicLink({
-        email,
-        name: email.split("@")[0] || "User",
-        callbackURL: nextPath,
-      });
-    } catch (error) {
-      setStatus("error");
-      setMessage(loginSendFailureSentence(error instanceof Error ? error.message : undefined));
-      return;
-    }
-    if (result.error) {
-      setStatus("error");
-      setMessage(loginSendFailureSentence(result.error.message));
-      return;
-    }
-    rememberSentLoginAddress(email);
-    setStatus("sent");
-    const dev = await fetch(`/api/dev/magic-link?email=${encodeURIComponent(email)}`);
-    if (dev.ok) {
-      const body = (await dev.json()) as { url?: string };
-      setDevUrl(body.url ?? null);
-    }
-  }
 
   function chooseDifferentEmail() {
     forgetSentLoginAddress();
-    setEmail("");
-    setMessage("");
-    setDevUrl(null);
-    setStatus("idle");
-    setAttempted(false);
+    form.reset({ email: "" });
+    mutation.reset();
+    setSent(null);
   }
+
+  const email = sent?.address ?? form.watch("email");
+  const fieldError = form.formState.errors.email?.message;
+  const addressError = sent ? "" : typeof fieldError === "string" ? fieldError : "";
+  const message = mutation.error instanceof Error ? mutation.error.message : "";
+  const status = sent
+    ? "sent"
+    : mutation.isPending
+      ? "sending"
+      : mutation.isError
+        ? "error"
+        : "idle";
 
   const announcement = loginAnnouncement({
     status,
@@ -94,41 +121,30 @@ export function LoginForm(props: Properties) {
 
   return (
     <>
-      {status !== "sent" ? <LoginSignInCopy /> : null}
+      {sent ? null : <LoginSignInCopy />}
       <div aria-atomic="true" aria-live="polite" className="login-announcement">
         {announcement}
       </div>
-      {status === "sent" ? (
+      {sent ? (
         <LoginLinkSent
-          address={email}
-          devUrl={devUrl}
+          address={sent.address}
+          devUrl={sent.devUrl}
           onChooseDifferentEmail={chooseDifferentEmail}
         />
       ) : (
-        <form className="form-stack" noValidate onSubmit={onSubmit}>
-          <div>
-            <label htmlFor="email">Email</label>
-            <input
-              id="email"
-              type="email"
-              autoComplete="email"
-              required
-              aria-invalid={addressRejected}
-              aria-describedby={addressError ? "login-email-error" : undefined}
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-            />
-            {addressError ? (
-              <p id="login-email-error" className="login-email-error">
-                {addressError}
-              </p>
-            ) : null}
-          </div>
-          <button className="btn" disabled={status === "sending"} type="submit">
-            {status === "sending" ? "Sending link…" : "Email me a link"}
-          </button>
-          {status === "error" && !addressRejected ? <LoginSendFailure happened={message} /> : null}
-        </form>
+        <Form.Context
+          className="form-stack"
+          form={form}
+          onSubmit={(values) => {
+            mutation.mutate(values.email);
+          }}
+        >
+          <Form.Input autoComplete="email" label="Email" name="email" type="email" />
+          <Button disabled={mutation.isPending} type="submit">
+            {mutation.isPending ? "Sending link…" : "Email me a link"}
+          </Button>
+          {mutation.isError && !addressError ? <LoginSendFailure happened={message} /> : null}
+        </Form.Context>
       )}
     </>
   );

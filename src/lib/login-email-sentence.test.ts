@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 
 const form = readFileSync(new URL("../components/login-form.tsx", import.meta.url), "utf8");
+const field = readFileSync(new URL("../ui/Form/Input.tsx", import.meta.url), "utf8");
 const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8");
 
 function expect(actual: string) {
@@ -44,38 +45,34 @@ function block(source: string, header: string) {
 
 describe("sign-in email sentence", () => {
   it("writes the problem under the box and points the input at that sentence", () => {
-    const copy = slice(form, "const addressError", "useLayoutEffect");
-    const field = slice(form, '<label htmlFor="email">Email</label>', "</div>");
+    const copy = slice(form, "function loginEmailMessage", "const loginResolver");
     const input = slice(field, "<input", "/>");
-    const sentence = slice(field, "{addressError ?", ": null}");
-    const invalid = slice(form, "setAttempted(true)", 'setStatus("sending")');
+    const sentence = slice(field, "{message ?", ": null}");
 
-    expect(copy).toMatch(/!addressRejected/);
+    expect(copy).toMatch(/email\.includes\("@"\)/);
     expect(copy).toMatch(/email\.trim\(\) === ""/);
     expect(copy).toMatch(/"Enter an email address\."/);
     expect(copy).toMatch(/"That address needs an @\."/);
-    expect(input).toMatch(/aria-invalid=\{addressRejected\}/);
-    expect(input).toMatch(/aria-describedby=\{addressError \? "login-email-error" : undefined\}/);
-    expect(input).toMatch(/value=\{email\}/);
-    expect(sentence).toMatch(/<p id="login-email-error" className="login-email-error">/);
-    expect(sentence).toMatch(/\{addressError\}/);
-    expect(sentence).not.toMatch(/aria-live|role="alert"|role="status"/);
-    assert.ok(field.indexOf("/>") < field.indexOf('<p id="login-email-error"'));
-    expect(invalid).not.toMatch(/setEmail\(/);
+    expect(form).toMatch(/<Form\.Input[^>]*name="email"/);
+    expect(input).toMatch(/aria-invalid=\{message \? true : undefined\}/);
+    expect(input).toMatch(/aria-describedby=\{message \? errorId : undefined\}/);
+    expect(field).toMatch(/const errorId = `\$\{name\}-error`/);
+    expect(sentence).toMatch(/<Alert id=\{errorId\}>\{message\}<\/Alert>/);
+    assert.ok(field.indexOf("<input") < field.indexOf("<Alert"));
     expect(form).toMatch(/aria-live="polite"/);
     expect(form).not.toMatch(/aria-live="assertive"/);
     expect(form).toMatch(
-      /status === "error" && !addressRejected \? <LoginSendFailure happened=\{message\} \/> : null/,
+      /mutation\.isError && !addressError \? <LoginSendFailure happened=\{message\} \/> : null/,
     );
   });
 
-  it("paints that sentence with danger, ahead of the card paragraph color", () => {
-    const sentence = block(css, ".auth-door .auth-card p.login-email-error {");
+  it("paints that sentence with the board error color, ahead of the panel copy", () => {
+    const sentence = block(css, ".home .home-sign-in-panel .error {");
     const card = block(css, ".auth-card p {");
 
-    expect(sentence).toMatch(/color:\s*var\(--danger\)/);
-    expect(sentence).toMatch(/margin:\s*8px 0 0/);
-    expect(sentence).not.toMatch(/aria-live|var\(--ink-soft\)|var\(--teal\)/);
+    expect(sentence).toMatch(/color:\s*#ffb4ab/);
+    expect(sentence).toMatch(/margin-top:\s*8px/);
+    expect(sentence).not.toMatch(/aria-live|var\(--ink-soft\)|var\(--teal\)|var\(--home-lime\)/);
     expect(card).toMatch(/color:\s*var\(--ink-soft\)/);
   });
 });
