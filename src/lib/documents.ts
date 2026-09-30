@@ -147,12 +147,30 @@ export async function listSpaceDocuments(ownerId: string, workspaceId: string) {
   return documentsInSpace(libraryId, rows, [{ id: libraryId, name: "Workspace" }]);
 }
 
-export async function createDocument(ownerId: string, type: DocumentType, title?: string) {
+export async function createDocument(
+  ownerId: string,
+  type: DocumentType,
+  title?: string,
+  workspaceId?: string,
+) {
+  const libraryId =
+    !workspaceId || workspaceId === PERSONAL_SPACE_ID
+      ? null
+      : await memberLibraryId(ownerId, workspaceId);
   const db = getDb();
   const existing = await listDocuments(ownerId);
-  const personal = existing.filter((document) => !document.workspaceId);
-  const room = documentRoom(personal.length, currentPlan());
-  if (room) throw new HttpError(403, room);
+  if (libraryId) {
+    const [tally] = await db
+      .select({ total: count() })
+      .from(documents)
+      .where(eq(documents.workspaceId, libraryId));
+    const room = documentRoom(Number(tally?.total ?? 0), currentWorkspacePlan());
+    if (room) throw new HttpError(403, room);
+  } else {
+    const personal = existing.filter((document) => !document.workspaceId);
+    const room = documentRoom(personal.length, currentPlan());
+    if (room) throw new HttpError(403, room);
+  }
   const id = crypto.randomUUID();
   const content = type === "note" ? "" : JSON.stringify({ nodes: [], relations: [] });
   const nextTitle = title?.trim() || defaultTitle(type);
@@ -166,7 +184,7 @@ export async function createDocument(ownerId: string, type: DocumentType, title?
       content,
       version: 1,
       sortIndex: existing.length,
-      workspaceId: null,
+      workspaceId: libraryId ?? null,
     })
     .returning();
   await upsertEmbedding(created);

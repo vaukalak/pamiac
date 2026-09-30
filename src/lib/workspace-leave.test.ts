@@ -71,8 +71,12 @@ describe("member leaving a workspace", () => {
   });
 
   it("drops the workspace from the selector and keeps its document out of the personal library", () => {
-    const board = readFileSync(
-      new URL("../components/library/document-board.tsx", import.meta.url),
+    const manage = readFileSync(
+      new URL("../components/library/library-manage.tsx", import.meta.url),
+      "utf8",
+    );
+    const danger = readFileSync(
+      new URL("../components/library/library-manage-danger.tsx", import.meta.url),
       "utf8",
     );
     const leave = readFileSync(
@@ -95,8 +99,9 @@ describe("member leaving a workspace", () => {
       ["personal-note"],
     );
     assert.equal(documents[0]?.workspaceId, "ws-1");
-    assert.match(board, /<WorkspaceLeave key=\{workspaceId\} workspaceId=\{workspaceId\} \/>/);
-    assert.equal(/\{managing \? <WorkspaceLeave/.test(board), false);
+    assert.match(manage, /<LibraryManageDanger/);
+    assert.match(danger, /<WorkspaceLeave key=\{workspaceId\} workspaceId=\{workspaceId\} \/>/);
+    assert.equal(/\{managing \? <WorkspaceLeave/.test(danger), false);
     assert.match(leave, /workspacesQueryKey/);
     assert.match(leave, /workspace\.id !== workspaceId/);
     assert.match(leave, /PERSONAL_SPACE_ID/);

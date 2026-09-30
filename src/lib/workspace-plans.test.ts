@@ -75,6 +75,11 @@ describe("workspace billing", () => {
       new URL("../components/library/document-board.tsx", import.meta.url),
       "utf8",
     );
+    const manage = readFileSync(
+      new URL("../components/library/library-manage.tsx", import.meta.url),
+      "utf8",
+    );
+    const page = readFileSync(new URL("../app/workspace/page.tsx", import.meta.url), "utf8");
     const profile = readFileSync(new URL("../app/profile/page.tsx", import.meta.url), "utf8");
     const account = readFileSync(
       new URL("../components/plan/plan-paywall.tsx", import.meta.url),
@@ -85,9 +90,10 @@ describe("workspace billing", () => {
     assert.match(paywall, /workspacePlans/);
     assert.match(paywall, /This workspace is on the free plan/);
     assert.equal(/checkout|stripe|charge/i.test(paywall), false);
-    assert.match(board, /WorkspacePaywall/);
-    assert.match(board, /workspaceId=\{workspaceId\}/);
-    assert.equal(/workspacePlans/.test(board), false);
+    assert.equal(/WorkspacePaywall|plan-grid|workspacePlans/.test(board), false);
+    assert.equal(/WorkspacePaywall|plan-grid|workspacePlans/.test(manage), false);
+    assert.equal(/WorkspacePaywall|plan-grid|workspacePlans/.test(page), false);
+    assert.match(manage, /workspaceId=\{workspaceId\}/);
     assert.match(profile, /PlanPaywall/);
     assert.equal(/WorkspacePaywall|workspacePlans/.test(profile), false);
     assert.match(account, /plans\.map/);
@@ -142,6 +148,12 @@ describe("workspace billing", () => {
     assert.match(create, /!document\.workspaceId/);
     assert.match(create, /documentRoom\(personal\.length, currentPlan\(\)\)/);
     assert.equal(create.includes("documentRoom(existing.length"), false);
-    assert.match(create, /workspaceId: null/);
+    assert.match(create, /workspaceId: libraryId \?\? null/);
+    assert.match(create, /eq\(documents\.workspaceId, libraryId\)/);
+    assert.match(
+      create,
+      /documentRoom\(Number\(tally\?\.total \?\? 0\), currentWorkspacePlan\(\)\)/,
+    );
+    assert.match(create, /HttpError\(403, room\)/);
   });
 });

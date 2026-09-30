@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
-import { ProfileMenu } from "@/components/header/profile-menu";
+import { usePathname } from "next/navigation";
+import { AppHeaderNav } from "@/components/header/app-header-nav";
 
 interface Properties {
   email?: string | null;
@@ -7,6 +10,9 @@ interface Properties {
 
 export function AppHeader(props: Properties) {
   const { email } = props;
+  const pathname = usePathname();
+  const showSignIn = !email && pathname !== "/login";
+  const showNav = Boolean(email) || showSignIn;
 
   return (
     <header className="app-header">
@@ -14,18 +20,7 @@ export function AppHeader(props: Properties) {
         <span className="brand-mark" aria-hidden="true" />
         Pamiac
       </Link>
-      <nav className="nav-links">
-        <Link className="btn ghost" href="/support">
-          Support
-        </Link>
-        {email ? (
-          <ProfileMenu email={email} />
-        ) : (
-          <Link className="btn" href="/login">
-            Sign in
-          </Link>
-        )}
-      </nav>
+      {showNav ? <AppHeaderNav email={email} showSignIn={showSignIn} /> : null}
     </header>
   );
 }

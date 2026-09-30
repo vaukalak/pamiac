@@ -21,8 +21,12 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className={`${sans.variable} ${serif.variable} ${mono.variable}`}>
+    <html
+      lang="en"
+      className={`${sans.variable} ${serif.variable} ${mono.variable}`}
+      suppressHydrationWarning
+    >
+      <body>
         <QueryProvider>{children}</QueryProvider>
       </body>
     </html>

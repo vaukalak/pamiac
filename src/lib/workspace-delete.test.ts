@@ -96,8 +96,12 @@ describe("deleting a workspace", () => {
   });
 
   it("drops the workspace from every selector and keeps its documents out of personal libraries", () => {
-    const board = readFileSync(
-      new URL("../components/library/document-board.tsx", import.meta.url),
+    const manage = readFileSync(
+      new URL("../components/library/library-manage.tsx", import.meta.url),
+      "utf8",
+    );
+    const danger = readFileSync(
+      new URL("../components/library/library-manage-danger.tsx", import.meta.url),
       "utf8",
     );
     const control = readFileSync(
@@ -127,11 +131,12 @@ describe("deleting a workspace", () => {
       ["personal-note", "other-note"],
     );
     assert.equal(documents[0]?.workspaceId, "ws-1");
+    assert.match(manage, /<LibraryManageDanger/);
     assert.match(
-      board,
+      danger,
       /\{managing \? <WorkspaceDelete key=\{workspaceId\} workspaceId=\{workspaceId\} \/> : null\}/,
     );
-    assert.equal(/\{managing \? <WorkspaceLeave/.test(board), false);
+    assert.equal(/\{managing \? <WorkspaceLeave/.test(danger), false);
     assert.match(control, /workspacesQueryKey/);
     assert.match(control, /libraryItemsQueryKey/);
     assert.match(control, /workspace\.id !== workspaceId/);

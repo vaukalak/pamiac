@@ -102,11 +102,12 @@ describe("share workspace choice", () => {
     assert.match(update, /applyDocumentWorkspace/);
     assert.match(update, /workspaceId,/);
     assert.match(route, /workspaceId: z\.string\(\)\.min\(1\)\.nullable\(\)\.optional\(\)/);
-    assert.match(create, /workspaceId: null/);
+    assert.match(create, /workspaceId: libraryId \?\? null/);
     assert.equal(/applyDocumentWorkspace/.test(create), false);
+    assert.equal(/isWorkspaceAdmin/.test(create), false);
   });
 
-  it("leaves a new note or diagram unshared until the share dialog assigns a workspace", () => {
+  it("creates a note or diagram in the open library without the share dialog", () => {
     const store = readFileSync(new URL("./documents.ts", import.meta.url), "utf8");
     const createRoute = readFileSync(
       new URL("../app/api/documents/route.ts", import.meta.url),
@@ -120,8 +121,8 @@ describe("share workspace choice", () => {
       new URL("../components/library/library-create.tsx", import.meta.url),
       "utf8",
     );
-    const board = readFileSync(
-      new URL("../components/library/document-board.tsx", import.meta.url),
+    const tools = readFileSync(
+      new URL("../components/library/library-tools.tsx", import.meta.url),
       "utf8",
     );
     const create = store.slice(
@@ -148,27 +149,34 @@ describe("share workspace choice", () => {
 
     assert.match(
       store,
-      /export async function createDocument\(ownerId: string, type: DocumentType, title\?: string\)/,
+      /export async function createDocument\(\s*ownerId: string,\s*type: DocumentType,\s*title\?: string,\s*workspaceId\?: string,\s*\)/,
     );
-    assert.match(insert, /workspaceId:\s*null\b/);
+    assert.match(insert, /workspaceId: libraryId \?\? null/);
     assert.equal((insert.match(/workspaceId/g) ?? []).length, 1);
     assert.equal(create.includes("placeDocumentInWorkspace"), false);
     assert.equal(create.includes("applyDocumentWorkspace"), false);
-    assert.equal(createSchema.includes("workspaceId"), false);
-    assert.match(createRoute, /createDocument\(user\.id, input\.type, input\.title\)/);
+    assert.match(create, /memberLibraryId\(ownerId, workspaceId\)/);
+    assert.equal(/isWorkspaceAdmin/.test(create), false);
+    assert.match(createSchema, /workspaceId: z\.string\(\)\.min\(1\)\.optional\(\)/);
+    assert.match(
+      createRoute,
+      /createDocument\(\s*user\.id,\s*input\.type,\s*input\.title,\s*input\.workspaceId\s*\)/,
+    );
     assert.equal(agentSchema.includes("workspaceId"), false);
     assert.match(agentRoute, /createDocument\(userId, input\.type, input\.title\)/);
-    assert.equal(libraryCreate.includes("workspaceId"), false);
-    assert.match(libraryCreate, /JSON\.stringify\(\{ type \}\)/);
-    assert.match(board, /<LibraryCreate \/>/);
-    assert.equal(/<LibraryCreate[^/]*workspace/i.test(board), false);
+    assert.equal(
+      /createDocument\(\s*userId,\s*input\.type,\s*input\.title,/.test(agentRoute),
+      false,
+    );
+    assert.match(libraryCreate, /JSON\.stringify\(\{ type, workspaceId \}\)/);
+    assert.match(tools, /<LibraryCreate workspaceId=\{workspaceId\} \/>/);
     assert.equal((store.match(/placeDocumentInWorkspace\(/g) ?? []).length, 2);
     assert.match(apply, /placeDocumentInWorkspace\(/);
     assert.equal((store.match(/applyDocumentWorkspace\(/g) ?? []).length, 2);
     assert.match(update, /applyDocumentWorkspace\(/);
   });
 
-  it("keeps create routes and a later content write from placing the document", () => {
+  it("keeps the agent create route and a later content write from placing the document", () => {
     const store = readFileSync(new URL("./documents.ts", import.meta.url), "utf8");
     const createRoute = readFileSync(
       new URL("../app/api/documents/route.ts", import.meta.url),
@@ -185,7 +193,7 @@ describe("share workspace choice", () => {
     const setAt = write.indexOf(".set({");
     const saved = write.slice(setAt, write.indexOf(".where(eq(documents.id, id))", setAt));
 
-    assert.equal(createRoute.includes("workspaceId"), false);
+    assert.match(createRoute, /workspaceId: z\.string\(\)\.min\(1\)\.optional\(\)/);
     assert.equal(createRoute.includes("placeDocumentInWorkspace"), false);
     assert.equal(createRoute.includes("updateShare"), false);
     assert.equal(agentRoute.includes("workspaceId"), false);

@@ -1,11 +1,15 @@
 "use client";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import type { BoardDocument } from "@/components/library/board-document";
-import { PERSONAL_SPACE_ID, type NamedWorkspace } from "@/lib/library-spaces";
+import { openWorkspaceName, PERSONAL_SPACE_ID, type NamedWorkspace } from "@/lib/library-spaces";
 import { libraryItemsQueryKey } from "@/lib/library-items";
-import { deleteWorkspace, workspacesQueryKey } from "@/lib/library-workspaces";
+import {
+  deleteWorkspace,
+  workspacesQueryKey,
+  workspacesQueryOptions,
+} from "@/lib/library-workspaces";
 
 interface Properties {
   workspaceId: string;
@@ -14,6 +18,8 @@ interface Properties {
 export function WorkspaceDelete(props: Properties) {
   const { workspaceId } = props;
   const queryClient = useQueryClient();
+  const spaces = useQuery(workspacesQueryOptions());
+  const label = openWorkspaceName(workspaceId, spaces.data) || "this workspace";
   const [confirming, setConfirming] = useState(false);
   const mutation = useMutation({
     mutationFn: () => deleteWorkspace(workspaceId),
@@ -33,7 +39,7 @@ export function WorkspaceDelete(props: Properties) {
 
   return (
     <div className="workspace-delete">
-      {confirming ? <p>Delete this workspace and its documents?</p> : null}
+      {confirming ? <p>Delete {label} and its documents?</p> : null}
       <button
         className="btn danger small"
         disabled={mutation.isPending}
@@ -46,7 +52,7 @@ export function WorkspaceDelete(props: Properties) {
         }}
         type="button"
       >
-        {mutation.isPending ? "Deleting…" : "Delete workspace"}
+        {mutation.isPending ? "Deleting…" : confirming ? `Delete ${label}` : "Delete workspace"}
       </button>
       {confirming ? (
         <button

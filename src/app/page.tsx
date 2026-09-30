@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { AppHeader } from "@/components/header/app-header";
 
 export default function HomePage() {
@@ -10,21 +9,10 @@ export default function HomePage() {
           <p className="eyebrow">Notes, UML, and agents</p>
           <h1>A desk for diagrams that an agent can read.</h1>
           <p className="lede">
-            Sign in with a magic link, draw UML, and write notes you can drag into shape. Every
+            We email you a link to sign in, draw UML, and write notes you can drag into shape. Every
             document has a direct link. Share it by email, password, or in public, and give an agent
             a token so it can search and edit your library.
           </p>
-          <div className="hero-actions">
-            <Link className="btn" href="/login">
-              Continue with email
-            </Link>
-            <Link className="btn secondary" href="/workspace">
-              Open the library
-            </Link>
-            <Link className="btn ghost" href="/support">
-              Contact support
-            </Link>
-          </div>
         </div>
         <div className="feature-grid">
           <article className="feature">
