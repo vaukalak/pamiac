@@ -1709,9 +1709,6 @@ code {
     border-right: 0;
     border-bottom: 1px solid var(--home-hair);
   }
-  .library-main {
-    padding: 24px 16px 32px;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -2502,6 +2499,7 @@ code {
   font-family: var(--sans);
   font-weight: 600;
   letter-spacing: -0.02em;
+  padding-right: 64px;
 }
 .library-shell .brand-mark {
   background: transparent;
@@ -2557,20 +2555,14 @@ code {
   color: var(--home-on-lime);
   background: var(--home-lime);
 }
-.library-shell .library-account {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: auto;
-  padding-top: 12px;
-  border-top: 1px solid var(--home-line);
+.library-shell > .profile {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 3;
 }
-.library-shell .library-email {
-  margin: 0;
-  min-width: 0;
-  color: var(--home-soft);
-  font-size: 13px;
-  overflow-wrap: anywhere;
+.library-shell:has(.share-backdrop) > .profile {
+  z-index: 1;
 }
 .library-shell .profile-button {
   background: transparent;
@@ -2581,10 +2573,10 @@ code {
   background: color-mix(in srgb, var(--home-lime) 14%, transparent);
 }
 .library-shell .profile-menu {
-  top: auto;
-  right: auto;
-  bottom: calc(100% + 8px);
-  left: 0;
+  top: calc(100% + 8px);
+  right: 0;
+  bottom: auto;
+  left: auto;
   background: var(--home-panel);
   border-color: var(--home-hair);
   color: var(--home-text);
@@ -2657,7 +2649,12 @@ code {
   background: color-mix(in srgb, var(--home-lime) 8%, transparent);
 }
 .library-shell .library-main {
-  padding: 28px 32px 40px;
+  padding: 72px 72px 40px 32px;
+}
+@media (max-width: 760px) {
+  .library-shell > .library-main {
+    padding: 24px 16px 32px;
+  }
 }
 .library-shell .library-crumb {
   margin: 0 0 14px;
