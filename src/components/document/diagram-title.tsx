@@ -1,7 +1,6 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import {
   documentEditKey,
@@ -101,10 +100,7 @@ export function DiagramTitle(props: Properties) {
   }
 
   return (
-    <div className="diagram-heading">
-      <Link className="hint" href="/workspace">
-        Library
-      </Link>
+    <h1 className="document-title">
       <input
         aria-label="Title"
         className="title-input"
@@ -112,6 +108,6 @@ export function DiagramTitle(props: Properties) {
         value={name}
         onChange={(event) => schedule(event.target.value)}
       />
-    </div>
+    </h1>
   );
 }

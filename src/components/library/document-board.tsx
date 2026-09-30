@@ -17,6 +17,7 @@ import { LibraryStatus } from "@/components/library/library-status";
 import type { LibraryPanel } from "@/components/library/library-switcher";
 import { documentPreview } from "@/lib/content";
 import { libraryItemsQueryKey, libraryItemsQueryOptions } from "@/lib/library-items";
+import { libraryFilter, libraryPanel } from "@/lib/library-memory";
 import { libraryQueryMatches, libraryTypeCounts } from "@/lib/library-query";
 import {
   documentsInSpace,
@@ -39,6 +40,8 @@ interface Properties {
 
 const VIEW_KEY = "pamiac-library-view";
 const OPEN_LIBRARY_KEY = "pamiac-open-library";
+const FILTER_KEY = "pamiac-library-filter";
+const PANEL_KEY = "pamiac-library-panel";
 
 function spaceTitle(workspaceId: string, workspaces: readonly NamedWorkspace[] | undefined) {
   if (workspaceId === PERSONAL_SPACE_ID) return "Personal";
@@ -97,9 +100,23 @@ export function DocumentBoard(props: Properties) {
     window.localStorage.setItem(VIEW_KEY, next);
   }
 
+  useEffect(() => {
+    setFilter(libraryFilter(window.localStorage.getItem(FILTER_KEY)));
+  }, []);
+
+  useEffect(() => {
+    setPanel(libraryPanel(window.localStorage.getItem(PANEL_KEY)));
+  }, []);
+
+  function choosePanel(next: LibraryPanel) {
+    setPanel(next);
+    window.localStorage.setItem(PANEL_KEY, next);
+  }
+
   function chooseFilter(next: LibraryFilter) {
     setFilter(next);
-    setPanel("dashboard");
+    window.localStorage.setItem(FILTER_KEY, next);
+    choosePanel("dashboard");
   }
 
   function chooseWorkspace(nextId: string) {
@@ -177,7 +194,7 @@ export function DocumentBoard(props: Properties) {
         onView={chooseView}
         panel={panel}
         reorder={reorder}
-        setPanel={setPanel}
+        setPanel={choosePanel}
         spaceName={spaceName}
         view={view}
         visible={visible}

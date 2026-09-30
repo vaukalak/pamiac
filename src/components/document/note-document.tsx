@@ -2,7 +2,8 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import dynamic from "next/dynamic";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { DocumentHeading } from "@/components/document/document-heading";
 import { NoteTitle } from "@/components/document/note-title";
 import {
   documentEditKey,
@@ -26,6 +27,8 @@ interface Properties {
   content: string;
   version: number;
   canEdit: boolean;
+  crumb: ReactNode;
+  tools: ReactNode;
 }
 
 function noteName(title: string) {
@@ -33,7 +36,7 @@ function noteName(title: string) {
 }
 
 export function NoteDocument(props: Properties) {
-  const { id, title, content, version, canEdit } = props;
+  const { id, title, content, version, canEdit, crumb, tools } = props;
   const queryClient = useQueryClient();
   const [name, setName] = useState(noteName(title));
   const [remote, setRemote] = useState({ markdown: content, version });
@@ -176,14 +179,27 @@ export function NoteDocument(props: Properties) {
   }, [canEdit, id, save.isPending, versionQuery.data]);
 
   return (
-    <div className="note-sheet">
-      <NoteTitle disabled={!canEdit} value={name} onBlur={restoreTitle} onChange={commitTitle} />
-      <NoteEditor
-        editable={canEdit}
-        markdown={remote.markdown}
-        version={remote.version}
-        onChange={(markdown) => schedule({ content: markdown })}
+    <div className="document-note">
+      <DocumentHeading
+        crumb={crumb}
+        title={
+          <NoteTitle
+            disabled={!canEdit}
+            value={name}
+            onBlur={restoreTitle}
+            onChange={commitTitle}
+          />
+        }
+        tools={tools}
       />
+      <div className="note-sheet">
+        <NoteEditor
+          editable={canEdit}
+          markdown={remote.markdown}
+          version={remote.version}
+          onChange={(markdown) => schedule({ content: markdown })}
+        />
+      </div>
     </div>
   );
 }

@@ -1,18 +1,25 @@
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
-import { AppHeader } from "@/components/header/app-header";
 import { DocumentScreen } from "@/components/document-screen";
+import { DocumentShell } from "@/components/document/document-shell";
 import { LockedDocument } from "@/components/locked-document";
 import { SetupScreen } from "@/components/setup-screen";
 import { resolveAccess, type Visibility } from "@/lib/access";
 import { appSecret } from "@/lib/config";
 import { getDocumentBundle, isDocumentWorkspaceMember } from "@/lib/documents";
+import { documentSpaceLabel, type NamedWorkspace } from "@/lib/library-spaces";
 import { unlockCookieName, unlockMatches } from "@/lib/passwords";
 import { getLibrarySession } from "@/lib/session";
+import { listMemberWorkspaces } from "@/lib/workspaces";
 
 export const dynamic = "force-dynamic";
 
-export default async function DocumentPage({ params }: { params: Promise<{ id: string }> }) {
+interface Properties {
+  params: Promise<{ id: string }>;
+}
+
+export default async function DocumentPage(props: Properties) {
+  const { params } = props;
   const { id } = await params;
   if (!process.env.DATABASE_URL) return <SetupScreen />;
   const result = await getLibrarySession();
@@ -51,27 +58,47 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
 
   if (access.level === "none") notFound();
 
+  let workspaces: NamedWorkspace[] = [];
+  if (user) {
+    try {
+      workspaces = await listMemberWorkspaces(user.id);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Could not reach the database";
+      return <SetupScreen detail={message} />;
+    }
+  }
+
+  const documentType = bundle.document.type === "diagram" ? "diagram" : "note";
+  const spaceName = user ? documentSpaceLabel(bundle.document.workspaceId, workspaces) : null;
+  const body =
+    access.level === "locked" ? (
+      <LockedDocument id={id} reason={access.reason} />
+    ) : (
+      <DocumentScreen
+        key={bundle.document.visibility}
+        canEdit={access.level === "edit"}
+        content={bundle.document.content}
+        emails={bundle.emails}
+        hasPassword={Boolean(bundle.document.passwordHash)}
+        id={bundle.document.id}
+        isOwner={access.level === "edit" && access.reason === "owner"}
+        spaceName={spaceName}
+        title={bundle.document.title}
+        type={documentType}
+        version={bundle.document.version}
+        visibility={bundle.document.visibility as Visibility}
+        workspaceId={bundle.document.workspaceId}
+      />
+    );
+
   return (
-    <>
-      <AppHeader email={user?.email} />
-      {access.level === "locked" ? (
-        <LockedDocument id={id} reason={access.reason} />
-      ) : (
-        <DocumentScreen
-          key={bundle.document.visibility}
-          canEdit={access.level === "edit"}
-          content={bundle.document.content}
-          emails={bundle.emails}
-          hasPassword={Boolean(bundle.document.passwordHash)}
-          id={bundle.document.id}
-          isOwner={access.level === "edit" && access.reason === "owner"}
-          title={bundle.document.title}
-          type={bundle.document.type === "diagram" ? "diagram" : "note"}
-          version={bundle.document.version}
-          visibility={bundle.document.visibility as Visibility}
-          workspaceId={bundle.document.workspaceId}
-        />
-      )}
-    </>
+    <DocumentShell
+      documentType={documentType}
+      email={user?.email ?? null}
+      workspaceId={user ? bundle.document.workspaceId : null}
+      workspaces={workspaces}
+    >
+      {body}
+    </DocumentShell>
   );
 }
