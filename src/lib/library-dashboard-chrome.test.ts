@@ -40,7 +40,10 @@ describe("library dashboard chrome risks", () => {
     assert.match(sketch, /node\.name/);
     assert.equal(/User input|Planner|Synthesis/.test(sketch), false);
     assert.match(preview, /documentPreview\(document\.type, document\.content\)/);
-    assert.match(meta, /document\.type === "note" \? "NOTE" : "DIAGRAM"/);
+    assert.match(preview, /layout === "list"\) return null/);
+    assert.match(meta, /DocumentTypeIcon/);
+    assert.equal(/\bNOTE\b|\bDIAGRAM\b/.test(meta), false);
+    assert.match(foot, /badge is-\$\{document\.visibility\}/);
     assert.match(foot, /Edited \{editedLabel\(document\.updatedAt\)\}/);
     assert.match(foot, /private: "Only me"/);
     assert.match(foot, /public: "Public"/);
