@@ -7,11 +7,11 @@ Notes and UML diagrams on Vercel. Magic-link accounts, direct document links, an
 1. Create a Neon Postgres database and copy the pooled connection string.
 2. Copy `.env.example` to `.env.local`.
 3. Set `DATABASE_URL` and `BETTER_AUTH_SECRET`.
-4. Install and push the schema, which also enables `pgvector`. The push creates the library tables and the ChatGPT plugin tables `jwks`, `oauth_client`, `oauth_resource`, `oauth_client_resource`, `oauth_refresh_token`, `oauth_access_token`, `oauth_consent`, and `oauth_client_assertion`:
+4. Install and migrate the schema, which also enables `pgvector`. The migration creates the library tables and the ChatGPT plugin tables `jwks`, `oauth_client`, `oauth_resource`, `oauth_client_resource`, `oauth_refresh_token`, `oauth_access_token`, `oauth_consent`, and `oauth_client_assertion`:
 
 ```bash
 npm install
-npm run db:push
+npm run db:migrate
 npm run dev
 ```
 

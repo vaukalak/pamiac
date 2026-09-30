@@ -1,0 +1,2 @@
+ALTER TABLE "agent_token" ADD COLUMN "workspace_id" text;--> statement-breakpoint
+ALTER TABLE "agent_token" ADD CONSTRAINT "agent_token_workspace_id_workspace_id_fk" FOREIGN KEY ("workspace_id") REFERENCES "public"."workspace"("id") ON DELETE cascade ON UPDATE no action;
