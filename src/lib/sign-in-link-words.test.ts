@@ -37,7 +37,7 @@ function slice(source: string, startMark: string, endMark: string) {
 
 describe("sign-in link words", () => {
   it("keeps the rest of the home lede after the sign-in clause", () => {
-    const lede = slice(home, '<p className="lede">', "</p>");
+    const lede = slice(home, '<Paragraph className="lede">', "</Paragraph>");
 
     expect(lede).toMatch(
       /We email you a link to sign in, draw UML, and write notes you can drag into shape\.\s+Every\s+document has a direct link\. Share it by email, password, or in public, and give an agent\s+a token so it can search and edit your library\./,
