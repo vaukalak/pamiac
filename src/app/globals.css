@@ -2923,6 +2923,16 @@ code {
   align-items: flex-end;
   margin: 0 0 18px;
 }
+.library-shell .workspace-member-filters select {
+  appearance: none;
+  width: auto;
+  min-width: 8.75rem;
+  padding: 11px 2.5rem 11px 12px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5' stroke='%239fab9c' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 12px 12px;
+}
 .library-shell .workspace-members-table {
   width: 100%;
   border-collapse: collapse;
