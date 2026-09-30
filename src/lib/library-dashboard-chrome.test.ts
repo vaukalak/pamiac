@@ -40,7 +40,11 @@ describe("library dashboard chrome risks", () => {
     assert.match(sketch, /node\.name/);
     assert.equal(/User input|Planner|Synthesis/.test(sketch), false);
     assert.match(preview, /documentPreview\(document\.type, document\.content\)/);
-    assert.match(preview, /layout === "list"\) return null/);
+    assert.match(preview, /if \(layout === "list"\) return null/);
+    assert.ok(
+      preview.indexOf('if (layout === "list") return null') <
+        preview.indexOf('document.type === "note"'),
+    );
     assert.match(meta, /DocumentTypeIcon/);
     assert.equal(/\bNOTE\b|\bDIAGRAM\b/.test(meta), false);
     assert.match(foot, /badge is-\$\{document\.visibility\}/);

@@ -3023,17 +3023,13 @@ code {
   grid-row: 1;
   margin-top: 0;
   justify-content: flex-end;
-  gap: 10px;
+  gap: 8px;
 }
-.library-shell .doc-card.list .doc-preview {
-  grid-column: 1 / -1;
-  grid-row: 2;
-  display: -webkit-box;
-  overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 1;
-  font-size: 13px;
-  line-height: 1.35;
+.library-shell .doc-card.list .badge {
+  padding: 0 6px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
 }
 .library-shell .doc-card.list h2 {
   font-size: 16px;
@@ -3049,22 +3045,22 @@ code {
   margin-left: 4px;
 }
 @media (max-width: 640px) {
-  .library-shell .doc-card.list {
-    align-items: flex-start;
-  }
   .library-shell .doc-card.list .doc-card-body {
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: "title badge" "edited edited";
   }
   .library-shell .doc-card.list .doc-card-foot {
-    grid-column: 1;
-    grid-row: 2;
-    justify-content: flex-start;
+    display: contents;
   }
-  .library-shell .doc-card.list .doc-preview {
-    grid-row: 3;
+  .library-shell .doc-card.list .doc-card-title {
+    grid-area: title;
   }
-  .library-shell .doc-card.list .doc-menu {
-    margin-top: 2px;
+  .library-shell .doc-card.list .badge {
+    grid-area: badge;
+    justify-self: end;
+  }
+  .library-shell .doc-card.list .doc-edited {
+    grid-area: edited;
   }
 }
 
