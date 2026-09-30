@@ -65,6 +65,7 @@ describe("sign-in send failure", () => {
     );
     expect(failure).toMatch(/\{happened\}/);
     expect(failure).toMatch(/Try again, or use another address\./);
+    expect(failure).toMatch(/<Alert>/);
     expect(failure).not.toMatch(/aria-live|aria-invalid|magic link/i);
   });
 
@@ -97,20 +98,16 @@ describe("sign-in send failure", () => {
   it("keeps the typed address and leaves the field valid after a failed request", () => {
     const thrown = slice(form, "} catch (error) {", "if (result.error)");
     const rejected = slice(form, "if (result.error)", "rememberSentLoginAddress");
-    const input = slice(form, "<input", "/>");
-    const copy = slice(form, "const addressError", "useLayoutEffect");
+    const copy = slice(form, "function loginEmailMessage", "const loginResolver");
 
-    expect(thrown).toMatch(/setStatus\("error"\)/);
-    expect(thrown).toMatch(/loginSendFailureSentence\(/);
-    expect(thrown).not.toMatch(/setEmail\(/);
+    expect(thrown).toMatch(/throw new Error\(loginSendFailureSentence\(/);
+    expect(thrown).not.toMatch(/form\.reset|setSent\(/);
     expect(thrown).not.toMatch(/aria-invalid|magic link/i);
-    expect(rejected).toMatch(/setStatus\("error"\)/);
     expect(rejected).toMatch(/loginSendFailureSentence\(result\.error\.message\)/);
-    expect(rejected).not.toMatch(/setEmail\(/);
+    expect(rejected).not.toMatch(/form\.reset|setSent\(/);
     expect(rejected).not.toMatch(/rememberSentLoginAddress/);
-    expect(input).toMatch(/aria-invalid=\{addressRejected\}/);
-    expect(input).toMatch(/value=\{email\}/);
-    expect(input).not.toMatch(/status === "error"/);
+    expect(form).toMatch(/<Form\.Input[^>]*name="email"/);
+    expect(form).not.toMatch(/<input/);
     expect(copy).toMatch(/"Enter an email address\."/);
     expect(copy).toMatch(/"That address needs an @\."/);
     expect(form).toMatch(/aria-live="polite"/);
@@ -118,13 +115,13 @@ describe("sign-in send failure", () => {
     expect(failure).not.toMatch(/aria-live/);
   });
 
-  it("paints the send failure with danger, ahead of the card paragraph color", () => {
-    const sentence = block(css, ".auth-door .auth-card p.error {");
+  it("paints the send failure with the board error color, ahead of the desk paragraph", () => {
+    const sentence = block(css, ".home .home-sign-in-panel .error {");
     const card = block(css, ".auth-card p {");
 
-    expect(sentence).toMatch(/color:\s*var\(--danger\)/);
+    expect(sentence).toMatch(/color:\s*#ffb4ab/);
     expect(sentence).not.toMatch(/aria-live|var\(--ink-soft\)/);
     expect(card).toMatch(/color:\s*var\(--ink-soft\)/);
-    expect(failure).toMatch(/className="error"/);
+    expect(failure).toMatch(/<Alert>/);
   });
 });

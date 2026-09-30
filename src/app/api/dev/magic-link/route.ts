@@ -1,10 +1,11 @@
 import { eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { devMagicLinks } from "@/db/schema";
+import { devMagicLinkVisible } from "@/lib/dev-magic-link";
 import { json } from "@/lib/http";
 
 export async function GET(request: Request) {
-  if (process.env.NODE_ENV === "production" || process.env.RESEND_API_KEY) {
+  if (!devMagicLinkVisible()) {
     return json({ error: "Not found" }, 404);
   }
   const email = new URL(request.url).searchParams.get("email")?.toLowerCase();

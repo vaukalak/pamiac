@@ -35,7 +35,7 @@ describe("sign-in step name", () => {
     expect(home).not.toMatch(/Open the library/);
     expect(home).not.toMatch(/Continue with email/);
     expect(nav).toMatch(/<Link className="btn" href="\/login">\s*Sign in\s*<\/Link>/);
-    expect(form).toMatch(/status === "sending" \? "Sending link…" : "Email me a link"/);
+    expect(form).toMatch(/mutation\.isPending \? "Sending link…" : "Email me a link"/);
     expect(form).not.toMatch(/Email me a magic link/);
   });
 
@@ -45,7 +45,7 @@ describe("sign-in step name", () => {
     );
     expect(home).not.toMatch(/magic/i);
     expect(hero).not.toMatch(/magic/i);
-    expect(login).toMatch(/<h1>Sign in or register<\/h1>/);
+    expect(login).toMatch(/<PageTitle title="Sign in or register" \/>/);
     expect(locked).toMatch(/<h1>Sign in to view<\/h1>/);
     expect(locked).toMatch(/>\s*Continue with email\s*</);
     expect(form).toMatch(/authClient\.signIn\.magicLink\(/);

@@ -152,22 +152,21 @@ describe("sent login address memory", { concurrency: false }, () => {
   });
 
   it("restores a remembered address and forgets it only from the different-email action", () => {
-    const restore = slice(form, "useLayoutEffect", "async function onSubmit");
-    const beforeResult = slice(form, "async function onSubmit", "if (result.error)");
+    const restore = slice(form, "useLayoutEffect", "function chooseDifferentEmail");
+    const beforeResult = slice(form, "async function sendMagicLink", "if (result.error)");
     const success = slice(form, "if (result.error)", "const dev");
-    const errorBranch = success.slice(0, success.indexOf("return;"));
-    const reset = slice(form, "function chooseDifferentEmail", "return (");
+    const errorBranch = success.slice(0, success.indexOf("throw new Error"));
+    const reset = slice(form, "function chooseDifferentEmail", "const email");
 
     expect(restore).toMatch(/readSentLoginAddress\(\)/);
-    expect(restore).toMatch(/setEmail\(remembered\)/);
-    expect(restore).toMatch(/setStatus\("sent"\)/);
+    expect(restore).toMatch(/setSent\(\{ address: remembered, devUrl: null \}\)/);
     expect(beforeResult).not.toMatch(/rememberSentLoginAddress/);
     expect(errorBranch).not.toMatch(/rememberSentLoginAddress/);
     expect(success).toMatch(/rememberSentLoginAddress\(email\)/);
-    expect(success).toMatch(/setStatus\("sent"\)/);
+    expect(form).toMatch(/setSent\(\{ address: email, devUrl: result\.devUrl \}\)/);
     expect(reset).toMatch(/forgetSentLoginAddress\(\)/);
-    expect(reset).toMatch(/setEmail\(""\)/);
-    expect(reset).toMatch(/setStatus\("idle"\)/);
+    expect(reset).toMatch(/form\.reset\(\{ email: "" \}\)/);
+    expect(reset).toMatch(/setSent\(null\)/);
     expect(sent).toMatch(/Use a different email/);
   });
 });

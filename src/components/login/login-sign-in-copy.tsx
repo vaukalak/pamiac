@@ -1,11 +1,14 @@
+import { PageTitle } from "@/ui/PageTitle";
+import { Paragraph } from "@/ui/Paragraph";
+
 export function LoginSignInCopy() {
   return (
     <div className="login-sign-in-copy">
-      <h1>Sign in or register</h1>
-      <p>
+      <PageTitle title="Sign in or register" />
+      <Paragraph>
         We email you a link. There is no password. If the address is new, opening the link creates
         the account.
-      </p>
+      </Paragraph>
     </div>
   );
 }
