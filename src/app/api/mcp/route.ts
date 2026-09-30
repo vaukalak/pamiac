@@ -1,6 +1,7 @@
 import { requireMcpAuth } from "@better-auth/mcp";
 import { createMcpHandler } from "@modelcontextprotocol/server";
 import { getAuth } from "@/lib/auth";
+import { ensureLiveJwks } from "@/lib/ensure-jwks";
 import { appBaseUrl } from "@/lib/config";
 import { requestOrigin } from "@/lib/mcp-documents";
 import { mcpResourceUrl } from "@/lib/mcp-resource";
@@ -32,5 +33,6 @@ export async function POST(request: Request) {
   if (!process.env.DATABASE_URL) {
     return Response.json({ error: "DATABASE_URL is not set" }, { status: 500 });
   }
+  await ensureLiveJwks();
   return requireMcpAuth(getAuth(), handleMcp, { resource: mcpResourceUrl() })(request);
 }

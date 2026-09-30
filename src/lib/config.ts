@@ -1,5 +1,5 @@
 export function appSecret() {
-  const secret = process.env.BETTER_AUTH_SECRET;
+  const secret = process.env.BETTER_AUTH_SECRET?.trim();
   if (secret) return secret;
   if (process.env.NODE_ENV === "production") {
     throw new Error("BETTER_AUTH_SECRET is required");
