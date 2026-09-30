@@ -2937,6 +2937,73 @@ code {
   border-color: var(--home-hair);
   color: var(--home-text);
 }
+.library-shell .workspace-add-dialog {
+  width: min(460px, 100%);
+  padding: 28px;
+  border-radius: 16px;
+  box-shadow: var(--home-shadow);
+}
+.library-shell .workspace-add-dialog .share-dialog-head {
+  align-items: baseline;
+  margin-bottom: 20px;
+}
+.library-shell .workspace-add-dialog h2 {
+  margin: 0;
+  color: var(--home-text);
+  font-family: var(--sans);
+  font-size: 32px;
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+}
+.library-shell .workspace-add-dialog .btn.ghost {
+  color: var(--home-soft);
+}
+.library-shell .workspace-add-dialog .workspace-create {
+  grid-template-columns: 1fr;
+  gap: 0;
+  max-width: none;
+  margin: 0;
+}
+.library-shell .workspace-add-dialog .workspace-create label {
+  margin-bottom: 6px;
+}
+.library-shell .workspace-add-dialog .workspace-create button,
+.library-shell .workspace-add-dialog .workspace-create .error {
+  grid-column: 1;
+}
+.library-shell .workspace-add-dialog .workspace-create button {
+  grid-row: 3;
+  justify-self: stretch;
+  width: 100%;
+  margin-top: 14px;
+  border-color: var(--home-lime);
+  background: var(--home-lime);
+  color: var(--home-on-lime);
+}
+.library-shell .workspace-add-dialog .workspace-create button:hover:not(:disabled) {
+  border-color: var(--home-lime-deep);
+  background: var(--home-lime-deep);
+  color: var(--home-on-lime);
+}
+.library-shell .workspace-add-dialog .workspace-create button:focus-visible {
+  outline: 2px solid var(--home-text);
+  outline-offset: 3px;
+}
+.library-shell .workspace-add-dialog .workspace-create button:disabled {
+  opacity: 0.45;
+  cursor: progress;
+}
+.library-shell .workspace-add-dialog .workspace-create .error {
+  grid-row: 4;
+  margin-top: 12px;
+  color: #ffb4ab;
+}
+@media (max-width: 480px) {
+  .library-shell .workspace-add-dialog h2 {
+    font-size: 28px;
+  }
+}
 .library-status {
   grid-column: 1 / -1;
   margin: 0;

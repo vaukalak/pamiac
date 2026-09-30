@@ -105,12 +105,43 @@ describe("library chrome", () => {
     assert.match(sidebar, /setCreating\(false\)/);
     assert.match(dialog, /className="share-backdrop"/);
     assert.match(dialog, /onPointerDown=\{onClose\}/);
-    assert.match(panel, /className="share-dialog"/);
+    assert.match(panel, /className="share-dialog workspace-add-dialog"/);
     assert.match(panel, /stopPropagation\(\)/);
     assert.match(panel, /event\.key === "Escape"/);
     assert.match(panel, /input\[name="name"\]/);
     assert.match(panel, /\.focus\(\)/);
     assert.match(heading, />\s*Cancel\s*</);
+  });
+
+  it("spaces the add-workspace dialog like the support panel", () => {
+    const css = read("../app/globals.css");
+    const dialog = css.slice(
+      css.indexOf(".library-shell .workspace-add-dialog {"),
+      css.indexOf(".library-shell .workspace-add-dialog .share-dialog-head"),
+    );
+    const head = css.slice(
+      css.indexOf(".library-shell .workspace-add-dialog .share-dialog-head"),
+      css.indexOf(".library-shell .workspace-add-dialog h2"),
+    );
+    const form = css.slice(
+      css.indexOf(".library-shell .workspace-add-dialog .workspace-create {"),
+      css.indexOf(".library-shell .workspace-add-dialog .workspace-create label"),
+    );
+    const label = css.slice(
+      css.indexOf(".library-shell .workspace-add-dialog .workspace-create label"),
+      css.indexOf(".library-shell .workspace-add-dialog .workspace-create button,"),
+    );
+    const action = css.slice(
+      css.indexOf(".library-shell .workspace-add-dialog .workspace-create button {"),
+      css.indexOf(".library-shell .workspace-add-dialog .workspace-create button:hover"),
+    );
+
+    assert.match(dialog, /padding:\s*28px/);
+    assert.match(head, /margin-bottom:\s*20px/);
+    assert.match(form, /margin:\s*0/);
+    assert.match(label, /margin-bottom:\s*6px/);
+    assert.match(action, /margin-top:\s*14px/);
+    assert.match(action, /width:\s*100%/);
   });
 
   it("asks before leave or delete and includes the workspace name", () => {
