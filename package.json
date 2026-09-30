@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@better-auth/cimd": "^1.7.6",
+    "@better-auth/infra": "^0.4.13",
     "@better-auth/mcp": "^1.7.6",
     "@blocknote/core": "^0.55.0",
     "@blocknote/mantine": "^0.55.0",
