@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 
 const home = readFileSync(new URL("../app/page.tsx", import.meta.url), "utf8");
+const hero = readFileSync(new URL("../components/home/home-hero.tsx", import.meta.url), "utf8");
 const nav = readFileSync(
   new URL("../components/header/app-header-nav.tsx", import.meta.url),
   "utf8",
@@ -39,10 +40,11 @@ describe("sign-in step name", () => {
   });
 
   it("states the home lede in ordinary words and leaves the other sign-in titles alone", () => {
-    expect(home).toMatch(
-      /We email you a link to sign in, draw UML, and write notes you can drag into shape\. Every\s+document has a direct link\./,
+    expect(hero).toMatch(
+      /Write notes, map ideas, and give your agents the context to move work forward\./,
     );
     expect(home).not.toMatch(/magic/i);
+    expect(hero).not.toMatch(/magic/i);
     expect(login).toMatch(/<h1>Sign in or register<\/h1>/);
     expect(locked).toMatch(/<h1>Sign in to view<\/h1>/);
     expect(locked).toMatch(/>\s*Continue with email\s*</);
