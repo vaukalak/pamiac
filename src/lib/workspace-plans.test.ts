@@ -76,7 +76,7 @@ describe("workspace billing", () => {
       "utf8",
     );
     const manage = readFileSync(
-      new URL("../components/library/library-manage.tsx", import.meta.url),
+      new URL("../components/workspace-members/workspace-members-list.tsx", import.meta.url),
       "utf8",
     );
     const page = readFileSync(new URL("../app/workspace/page.tsx", import.meta.url), "utf8");

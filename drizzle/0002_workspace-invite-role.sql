@@ -1,0 +1,1 @@
+ALTER TABLE "workspace_invite" ADD COLUMN "role" text DEFAULT 'editor' NOT NULL;

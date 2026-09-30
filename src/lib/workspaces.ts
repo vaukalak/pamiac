@@ -4,6 +4,7 @@ import { workspaceMembers, workspaces } from "@/db/schema";
 import { HttpError } from "@/lib/http";
 import {
   firstMember,
+  isWorkspaceAdmin,
   PERSONAL_SPACE_ID,
   workspaceName,
   workspaceRole,
@@ -49,6 +50,34 @@ export async function createNamedWorkspace(userId: string, name: string): Promis
     });
   });
   return { id, name: label, role };
+}
+
+export async function renameWorkspace(userId: string, workspaceId: string, name: string) {
+  if (workspaceId === PERSONAL_SPACE_ID) {
+    throw new HttpError(400, "Personal space cannot be renamed");
+  }
+  let label: string;
+  try {
+    label = workspaceName(name);
+  } catch (error) {
+    throw workspaceClientError(error);
+  }
+  const db = getDb();
+  const [membership] = await db
+    .select({ role: workspaceMembers.role })
+    .from(workspaceMembers)
+    .where(and(eq(workspaceMembers.workspaceId, workspaceId), eq(workspaceMembers.userId, userId)));
+  if (!membership) throw new HttpError(404, "Workspace not found");
+  if (!isWorkspaceAdmin(membership.role)) {
+    throw new HttpError(403, "Only an admin can rename this workspace");
+  }
+  const [updated] = await db
+    .update(workspaces)
+    .set({ name: label })
+    .where(eq(workspaces.id, workspaceId))
+    .returning({ id: workspaces.id, name: workspaces.name });
+  if (!updated) throw new HttpError(404, "Workspace not found");
+  return updated;
 }
 
 export async function leaveWorkspace(userId: string, workspaceId: string) {

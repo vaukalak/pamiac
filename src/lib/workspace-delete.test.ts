@@ -96,16 +96,15 @@ describe("deleting a workspace", () => {
   });
 
   it("drops the workspace from every selector and keeps its documents out of personal libraries", () => {
-    const manage = readFileSync(
-      new URL("../components/library/library-manage.tsx", import.meta.url),
-      "utf8",
-    );
     const danger = readFileSync(
-      new URL("../components/library/library-manage-danger.tsx", import.meta.url),
+      new URL("../components/workspace-settings/workspace-settings-danger.tsx", import.meta.url),
       "utf8",
     );
     const control = readFileSync(
-      new URL("../components/library/workspace-delete.tsx", import.meta.url),
+      new URL(
+        "../components/workspace-settings/workspace-settings-delete-actions.tsx",
+        import.meta.url,
+      ),
       "utf8",
     );
     const documents = [
@@ -131,17 +130,15 @@ describe("deleting a workspace", () => {
       ["personal-note", "other-note"],
     );
     assert.equal(documents[0]?.workspaceId, "ws-1");
-    assert.match(manage, /<LibraryManageDanger/);
-    assert.match(
-      danger,
-      /\{managing \? <WorkspaceDelete key=\{workspaceId\} workspaceId=\{workspaceId\} \/> : null\}/,
-    );
-    assert.equal(/\{managing \? <WorkspaceLeave/.test(danger), false);
+    assert.match(danger, /\{managing \? <WorkspaceSettingsDelete \/> : null\}/);
+    assert.equal(/\{managing \? <WorkspaceSettingsLeave/.test(danger), false);
     assert.match(control, /workspacesQueryKey/);
     assert.match(control, /libraryItemsQueryKey/);
     assert.match(control, /workspace\.id !== workspaceId/);
     assert.match(control, /document\.workspaceId !== workspaceId/);
     assert.match(control, /PERSONAL_SPACE_ID/);
+    assert.match(control, /pamiac-open-library/);
+    assert.match(control, /router\.push\("\/workspace"\)/);
     assert.equal(/workspaceId:\s*null/.test(control), false);
   });
 });

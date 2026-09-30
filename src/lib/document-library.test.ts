@@ -40,20 +40,20 @@ describe("document library shell", () => {
     assert.equal(documentSpaceLabel("ws-1", []), null);
   });
 
-  it("shares the filter and panel keys with the dashboard", () => {
+  it("shares the library filter with a document and leaves the manage panel off the board", () => {
     const board = read("../components/library/document-board.tsx");
     const sidebar = read("../components/document/document-sidebar.tsx");
 
     assert.equal(LIBRARY_FILTER_KEY, "pamiac-library-filter");
     assert.equal(LIBRARY_PANEL_KEY, "pamiac-library-panel");
     assert.equal(OPEN_LIBRARY_KEY, "pamiac-open-library");
-    assert.match(board, /pamiac-library-filter/);
-    assert.match(board, /pamiac-library-panel/);
-    assert.match(board, /libraryFilter\(window\.localStorage\.getItem\(FILTER_KEY\)\)/);
-    assert.match(board, /libraryPanel\(window\.localStorage\.getItem\(PANEL_KEY\)\)/);
+    assert.match(board, /LIBRARY_FILTER_KEY/);
+    assert.match(board, /libraryFilter\(window\.localStorage\.getItem\(LIBRARY_FILTER_KEY\)\)/);
+    assert.equal(/libraryPanel|setPanel|pamiac-library-panel/.test(board), false);
     assert.match(sidebar, /LIBRARY_FILTER_KEY/);
-    assert.match(sidebar, /LIBRARY_PANEL_KEY/);
     assert.match(sidebar, /OPEN_LIBRARY_KEY/);
+    assert.match(sidebar, /page="document"/);
+    assert.equal(/LIBRARY_PANEL_KEY|onManage/.test(sidebar), false);
     assert.match(sidebar, /librarySpaces\(stored\)/);
     assert.match(sidebar, /router\.push\("\/workspace"\)/);
   });

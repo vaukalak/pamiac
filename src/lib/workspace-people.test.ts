@@ -20,7 +20,11 @@ describe("adding a person to a workspace", () => {
     assert.match(add, /return null/);
     assert.equal(/invite/i.test(board), false);
     assert.equal(/invite/i.test(personal), false);
-    assert.equal(/role/i.test(add), false);
+    assert.match(add, /<Form\.Select label="Role" name="role" options=\{roleOptions\} \/>/);
+    assert.match(add, /value: "admin", label: "Admin"/);
+    assert.match(add, /value: "editor", label: "Editor"/);
+    assert.match(add, /role: "editor"/);
+    assert.equal(/viewer|owner/.test(add), false);
   });
 
   it("stores a member row or emails a pending invite", () => {
@@ -43,7 +47,11 @@ describe("adding a person to a workspace", () => {
     assert.equal(/sendWorkspaceInvite/.test(member), false);
     assert.match(pending, /sendWorkspaceInvite/);
     assert.match(pending, /workspaceInvitePath/);
-    assert.equal(/role/i.test(schema.slice(schema.indexOf("workspace_invite"))), false);
+    const invite = schema.slice(schema.indexOf("workspace_invite"));
+    assert.match(
+      invite,
+      /role: text\("role", \{ enum: \["admin", "editor"\] \}\)\s*\.notNull\(\)\s*\.default\("editor"\)/,
+    );
     assert.match(route, /addWorkspacePerson/);
     assert.equal(/invite/i.test(route), false);
   });
