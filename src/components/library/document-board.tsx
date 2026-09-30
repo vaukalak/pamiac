@@ -15,14 +15,12 @@ import { LibraryColumn } from "@/components/library/library-column";
 import type { LibrarySearchValues } from "@/components/library/library-search";
 import { LibrarySidebar } from "@/components/library/library-sidebar";
 import { LibraryStatus } from "@/components/library/library-status";
-import type { LibraryPanel } from "@/components/library/library-switcher";
 import { documentPreview } from "@/lib/content";
 import { libraryItemsQueryKey, libraryItemsQueryOptions } from "@/lib/library-items";
 import { libraryQueryMatches, libraryTypeCounts } from "@/lib/library-query";
 import {
   documentsInSpace,
   librarySpaces,
-  managesWorkspace,
   openLibraryId,
   openWorkspaceName,
   PERSONAL_SPACE_ID,
@@ -64,11 +62,9 @@ export function DocumentBoard(props: Properties) {
   const [filter, setFilter] = useState<LibraryFilter>("all");
   const [view, setView] = useState<LibraryView>("grid");
   const [dragging, setDragging] = useState<string | null>(null);
-  const [panel, setPanel] = useState<LibraryPanel>("dashboard");
   const [workspaceId, setWorkspaceId] = useState(PERSONAL_SPACE_ID);
   const query = searchForm.watch("query") ?? "";
   const library = documentsInSpace(workspaceId, items, spacesQuery.data);
-  const managing = managesWorkspace(workspaceId, spacesQuery.data);
   const counts = libraryTypeCounts(library);
   const visible = useMemo(
     () =>
@@ -100,7 +96,6 @@ export function DocumentBoard(props: Properties) {
 
   function chooseFilter(next: LibraryFilter) {
     setFilter(next);
-    setPanel("dashboard");
   }
 
   function chooseWorkspace(nextId: string) {
@@ -153,10 +148,9 @@ export function DocumentBoard(props: Properties) {
       <CircuitBoard />
       <LibrarySidebar
         filter={filter}
-        managing={managing}
         onFilter={chooseFilter}
-        onManage={() => setPanel("manage")}
         onSelect={chooseWorkspace}
+        page="library"
         selectedId={workspaceId}
         workspaces={workspaces}
       />
@@ -168,7 +162,6 @@ export function DocumentBoard(props: Properties) {
         filter={filter}
         form={searchForm}
         libraryCount={library.length}
-        managing={managing}
         onChange={apply}
         onDragStart={setDragging}
         onDrop={(id) => {
@@ -176,9 +169,7 @@ export function DocumentBoard(props: Properties) {
         }}
         onFilter={chooseFilter}
         onView={chooseView}
-        panel={panel}
         reorder={reorder}
-        setPanel={setPanel}
         spaceName={spaceName}
         view={view}
         visible={visible}

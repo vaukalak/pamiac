@@ -71,16 +71,15 @@ describe("member leaving a workspace", () => {
   });
 
   it("drops the workspace from the selector and keeps its document out of the personal library", () => {
-    const manage = readFileSync(
-      new URL("../components/library/library-manage.tsx", import.meta.url),
-      "utf8",
-    );
     const danger = readFileSync(
-      new URL("../components/library/library-manage-danger.tsx", import.meta.url),
+      new URL("../components/workspace-settings/workspace-settings-danger.tsx", import.meta.url),
       "utf8",
     );
     const leave = readFileSync(
-      new URL("../components/library/workspace-leave.tsx", import.meta.url),
+      new URL(
+        "../components/workspace-settings/workspace-settings-leave-actions.tsx",
+        import.meta.url,
+      ),
       "utf8",
     );
     const documents = [
@@ -99,12 +98,13 @@ describe("member leaving a workspace", () => {
       ["personal-note"],
     );
     assert.equal(documents[0]?.workspaceId, "ws-1");
-    assert.match(manage, /<LibraryManageDanger/);
-    assert.match(danger, /<WorkspaceLeave key=\{workspaceId\} workspaceId=\{workspaceId\} \/>/);
-    assert.equal(/\{managing \? <WorkspaceLeave/.test(danger), false);
+    assert.match(danger, /<WorkspaceSettingsLeave \/>/);
+    assert.equal(/\{managing \? <WorkspaceSettingsLeave/.test(danger), false);
     assert.match(leave, /workspacesQueryKey/);
     assert.match(leave, /workspace\.id !== workspaceId/);
     assert.match(leave, /PERSONAL_SPACE_ID/);
+    assert.match(leave, /pamiac-open-library/);
+    assert.match(leave, /router\.push\("\/workspace"\)/);
     assert.equal(/documents/.test(leave), false);
     assert.equal(/delete\(workspaces\)/.test(leave), false);
   });
@@ -167,7 +167,10 @@ describe("member leaving a workspace", () => {
       "utf8",
     );
     const control = readFileSync(
-      new URL("../components/library/workspace-leave.tsx", import.meta.url),
+      new URL(
+        "../components/workspace-settings/workspace-settings-leave-actions.tsx",
+        import.meta.url,
+      ),
       "utf8",
     );
     const gate = documents.slice(

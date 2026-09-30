@@ -1,22 +1,29 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useLibraryShell } from "@/components/library/library-shell";
 import { openWorkspaceName, PERSONAL_SPACE_ID, type NamedWorkspace } from "@/lib/library-spaces";
 import {
   leaveWorkspace,
   workspacesQueryKey,
   workspacesQueryOptions,
 } from "@/lib/library-workspaces";
+import { Alert } from "@/ui/Alert";
+import { Button } from "@/ui/Button";
+import { Paragraph } from "@/ui/Paragraph";
 
-interface Properties {
-  workspaceId: string;
-}
-
-export function WorkspaceLeave(props: Properties) {
-  const { workspaceId } = props;
+export function WorkspaceSettingsLeaveActions() {
+  const shell = useLibraryShell();
+  const { workspaceId, workspaces } = shell;
+  const router = useRouter();
   const queryClient = useQueryClient();
-  const spaces = useQuery(workspacesQueryOptions());
+  const spaces = useQuery({
+    ...workspacesQueryOptions(),
+    initialData: workspaces,
+  });
   const label = openWorkspaceName(workspaceId, spaces.data) || "this workspace";
   const [confirming, setConfirming] = useState(false);
   const mutation = useMutation({
@@ -25,6 +32,8 @@ export function WorkspaceLeave(props: Properties) {
       queryClient.setQueryData<NamedWorkspace[]>(workspacesQueryKey, (current) =>
         current?.filter((workspace) => workspace.id !== workspaceId),
       );
+      window.localStorage.setItem("pamiac-open-library", PERSONAL_SPACE_ID);
+      router.push("/workspace");
     },
   });
 
@@ -33,10 +42,10 @@ export function WorkspaceLeave(props: Properties) {
   const message = mutation.error instanceof Error ? mutation.error.message : "";
 
   return (
-    <div className="workspace-leave">
-      {confirming ? <p>Leave {label}?</p> : null}
-      <button
-        className="btn danger small"
+    <div className="workspace-danger-actions">
+      {confirming ? <Paragraph>Leave {label}?</Paragraph> : null}
+      <Button
+        className="danger"
         disabled={mutation.isPending}
         onClick={() => {
           if (!confirming) {
@@ -48,18 +57,21 @@ export function WorkspaceLeave(props: Properties) {
         type="button"
       >
         {mutation.isPending ? "Leaving…" : confirming ? `Leave ${label}` : "Leave workspace"}
-      </button>
+      </Button>
       {confirming ? (
-        <button
-          className="btn ghost small"
+        <Button
+          className="ghost"
           disabled={mutation.isPending}
           onClick={() => setConfirming(false)}
           type="button"
         >
           Cancel
-        </button>
+        </Button>
       ) : null}
-      {message ? <p className="error">{message}</p> : null}
+      <Link className="workspace-members-link" href="/workspace/members">
+        Members
+      </Link>
+      {message ? <Alert>{message}</Alert> : null}
     </div>
   );
 }

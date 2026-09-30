@@ -55,20 +55,27 @@ describe("library dashboard chrome risks", () => {
     assert.match(foot, /password: "Password"/);
   });
 
-  it("offers invite only for a managed workspace and keeps support and the account email", () => {
+  it("keeps invite on the members page and support beside the account email", () => {
     const rail = read("../components/library/library-rail-links.tsx");
+    const invite = read("../components/workspace-members/workspace-members-invite.tsx");
+    const links = read("../components/library/library-workspace-links.tsx");
     const panel = read("../components/header/profile-menu-panel.tsx");
     const board = read("../components/library/document-board.tsx");
     const sidebar = read("../components/library/library-sidebar.tsx");
     const nav = read("../components/library/library-nav.tsx");
 
-    assert.match(rail, /\{managing \? <LibraryInviteLink onInvite=\{onManage\} \/> : null\}/);
+    assert.equal(/Invite teammates|LibraryInviteLink/.test(rail), false);
     assert.match(rail, /href="\/support"/);
+    assert.match(rail, /LibraryConnectLink/);
+    assert.match(invite, /Invite member/);
+    assert.match(invite, /managesWorkspace/);
+    assert.match(invite, /if \(!managing\) return null/);
     assert.match(board, /<ProfileMenu email=\{email\} \/>/);
     assert.match(panel, /className="profile-email"/);
     assert.match(panel, /\{email\}/);
     assert.equal(/LibraryAccount|library-account/.test(sidebar + board), false);
-    assert.equal(/Shared with me|Settings/.test(nav + rail + sidebar), false);
+    assert.equal(/Shared with me|Settings/.test(nav + rail + sidebar + links), false);
+    assert.match(links, /label="Workspace settings"/);
     assert.match(nav, /\["all", "Overview"\]/);
     assert.match(nav, /\["note", "Notes"\]/);
     assert.match(nav, /\["diagram", "Diagrams"\]/);

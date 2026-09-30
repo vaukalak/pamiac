@@ -29,11 +29,12 @@ describe("library board layout", () => {
     assert.equal(/Shared with me|All changes synced/.test(board + sidebar), false);
   });
 
-  it("switches Dashboard and Workspace management, with create beside connect and search beside the view", () => {
+  it("keeps the document dashboard, with create beside connect and search beside the view", () => {
     const board = read("../components/library/document-board.tsx");
     const dashboard = read("../components/library/library-dashboard.tsx");
-    const manage = read("../components/library/library-manage.tsx");
-    const danger = read("../components/library/library-manage-danger.tsx");
+    const danger = read("../components/workspace-settings/workspace-settings-danger.tsx");
+    const invite = read("../components/workspace-members/workspace-members-invite.tsx");
+    const links = read("../components/library/library-workspace-links.tsx");
     const tools = read("../components/library/library-tools.tsx");
     const search = read("../components/library/library-search.tsx");
     const filters = read("../components/library/library-filters.tsx");
@@ -41,19 +42,17 @@ describe("library board layout", () => {
     const actions = read("../components/library/library-heading-actions.tsx");
     const connect = read("../components/library/library-connect-link.tsx");
     const create = read("../components/library/library-create.tsx");
-    const switcher = read("../components/library/library-switcher.tsx");
     const documents = read("../components/library/library-documents.tsx");
     const column = read("../components/library/library-column.tsx");
 
-    assert.match(board, /useState<LibraryPanel>\("dashboard"\)/);
-    assert.match(
-      column,
-      /workspaceId === PERSONAL_SPACE_ID \? null : \(\s*<LibrarySwitcher mode=\{panel\} onMode=\{setPanel\} \/>/,
-    );
-    assert.match(column, /workspaceId !== PERSONAL_SPACE_ID && panel === "manage"/);
-    assert.match(switcher, />\s*Dashboard\s*</);
-    assert.match(switcher, />\s*Workspace management\s*</);
-    assert.equal(/PERSONAL_SPACE_ID/.test(switcher), false);
+    assert.equal(/LibraryPanel|LibrarySwitcher|LibraryManage/.test(board + column), false);
+    assert.match(column, /<LibraryDashboard/);
+    assert.match(links, /Workspace settings/);
+    assert.match(links, /href="\/workspace\/members"/);
+    assert.match(invite, /Invite member/);
+    assert.match(invite, /<WorkspaceMemberAdd/);
+    assert.match(danger, /<WorkspaceSettingsLeave \/>/);
+    assert.match(danger, /\{managing \? <WorkspaceSettingsDelete \/> : null\}/);
     assert.match(dashboard, /<LibraryHeading[\s\S]*workspaceId=\{workspaceId\}/);
     assert.match(dashboard, /<LibraryDocuments/);
     assert.ok(dashboard.indexOf("<LibraryFilters") < dashboard.indexOf("<LibraryTools"));
@@ -76,17 +75,8 @@ describe("library board layout", () => {
     assert.match(create, /New UML diagram/);
     assert.match(documents, /LibraryEmpty/);
     assert.match(documents, /className=\{layout === "grid" \? "doc-grid" : "doc-list"\}/);
-    assert.equal(/<details/.test(manage), false);
-    assert.equal(/Manage space/.test(manage), false);
-    assert.equal(/WorkspaceCreate/.test(manage), false);
-    assert.match(manage, /\{managing \? <WorkspaceMemberAdd/);
-    assert.match(manage, /<LibraryManageDanger/);
-    assert.match(danger, /<WorkspaceLeave key=\{workspaceId\} workspaceId=\{workspaceId\} \/>/);
-    assert.match(
-      danger,
-      /\{managing \? <WorkspaceDelete key=\{workspaceId\} workspaceId=\{workspaceId\} \/> : null\}/,
-    );
-    assert.equal(/WorkspacePaywall|plan-grid/.test(board + column + manage + dashboard), false);
+    assert.equal(/WorkspaceCreate/.test(danger + invite), false);
+    assert.equal(/WorkspacePaywall|plan-grid/.test(board + column + danger + dashboard), false);
     assert.match(
       board,
       /view === "grid" && filter === "all" && workspaceId === PERSONAL_SPACE_ID && query\.trim\(\) === ""/,

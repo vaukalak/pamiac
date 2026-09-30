@@ -67,6 +67,14 @@ export function openWorkspaceName(
   return workspaces?.find((workspace) => workspace.id === workspaceId)?.name?.trim() ?? "";
 }
 
+export function librarySpaceTitle(
+  workspaceId: string,
+  workspaces: readonly NamedWorkspace[] | undefined,
+) {
+  if (workspaceId === PERSONAL_SPACE_ID) return "Personal";
+  return openWorkspaceName(workspaceId, workspaces) || "Workspace";
+}
+
 export function workspaceName(input: string) {
   const name = input.trim();
   if (!name) throw new Error("Name the workspace");

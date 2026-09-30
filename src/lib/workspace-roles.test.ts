@@ -105,16 +105,16 @@ describe("workspace roles", () => {
       new URL("../components/library/library-column.tsx", import.meta.url),
       "utf8",
     );
-    const manage = readFileSync(
-      new URL("../components/library/library-manage.tsx", import.meta.url),
+    const invite = readFileSync(
+      new URL("../components/workspace-members/workspace-members-invite.tsx", import.meta.url),
+      "utf8",
+    );
+    const links = readFileSync(
+      new URL("../components/library/library-workspace-links.tsx", import.meta.url),
       "utf8",
     );
     const sidebar = readFileSync(
       new URL("../components/library/library-sidebar.tsx", import.meta.url),
-      "utf8",
-    );
-    const switcher = readFileSync(
-      new URL("../components/library/library-switcher.tsx", import.meta.url),
       "utf8",
     );
     const documents = readFileSync(new URL("./documents.ts", import.meta.url), "utf8");
@@ -122,16 +122,19 @@ describe("workspace roles", () => {
       documents.indexOf("async function memberLibraryId"),
       documents.indexOf("export async function placeDocumentInWorkspace"),
     );
-    assert.match(board, /managesWorkspace/);
-    assert.match(manage, /\{managing \? <WorkspaceMemberAdd/);
+    assert.equal(/managesWorkspace/.test(board), false);
+    assert.match(invite, /managesWorkspace/);
+    assert.match(invite, /if \(!managing\) return null/);
+    assert.match(invite, /<WorkspaceMemberAdd/);
     assert.equal(/WorkspacePaywall/.test(board), false);
-    assert.equal(/WorkspacePaywall/.test(manage), false);
+    assert.equal(/WorkspacePaywall/.test(invite), false);
     assert.match(sidebar, /<WorkspaceSelector/);
-    assert.match(column, /<LibrarySwitcher/);
-    assert.match(switcher, />\s*Dashboard\s*</);
-    assert.match(switcher, />\s*Workspace management\s*</);
-    assert.equal(/managing \?/.test(switcher), false);
-    assert.equal(/viewer/.test(board), false);
+    assert.match(sidebar, /<WorkspaceCreate/);
+    assert.equal(/LibrarySwitcher/.test(column), false);
+    assert.match(column, /<LibraryDashboard/);
+    assert.match(links, /Workspace settings/);
+    assert.match(links, /label="Members"/);
+    assert.equal(/viewer/.test(board + invite + links), false);
     assert.equal(/admin|editor|role/.test(gate), false);
   });
 });

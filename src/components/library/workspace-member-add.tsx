@@ -1,9 +1,9 @@
 "use client";
 
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { PERSONAL_SPACE_ID } from "@/lib/library-spaces";
-import { addWorkspacePerson } from "@/lib/library-workspaces";
+import { addWorkspacePerson, workspaceRosterQueryKey } from "@/lib/library-workspaces";
 import { Alert } from "@/ui/Alert";
 import { Button } from "@/ui/Button";
 import { Form } from "@/ui/Form";
@@ -19,19 +19,20 @@ interface MemberValues {
 
 export function WorkspaceMemberAdd(props: Properties) {
   const { workspaceId } = props;
+  const queryClient = useQueryClient();
   const form = useForm<MemberValues>({
     defaultValues: { email: "" },
   });
   const mutation = useMutation({
     mutationFn: (email: string) => addWorkspacePerson(workspaceId, email),
+    onSuccess: async () => {
+      form.reset();
+      await queryClient.invalidateQueries({ queryKey: workspaceRosterQueryKey(workspaceId) });
+    },
   });
 
   function submit(values: MemberValues) {
-    mutation.mutate(values.email, {
-      onSuccess: () => {
-        form.reset();
-      },
-    });
+    mutation.mutate(values.email);
   }
 
   if (workspaceId === PERSONAL_SPACE_ID) return null;

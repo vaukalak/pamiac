@@ -18,7 +18,7 @@ describe("library sidebar and create plus", () => {
       board.indexOf("function chooseView"),
     );
 
-    assert.match(board, /useState<LibraryPanel>\("dashboard"\)/);
+    assert.equal(/LibraryPanel/.test(board), false);
     assert.equal(/setPanel/.test(choose), false);
     assert.equal(/setPanel/.test(remember), false);
     assert.match(board, /pamiac-open-library/);
@@ -38,7 +38,7 @@ describe("library sidebar and create plus", () => {
   it("opens a named workspace form from the sidebar and rejects an empty name", () => {
     const sidebar = read("../components/library/library-sidebar.tsx");
     const form = read("../components/library/workspace-create.tsx");
-    const manage = read("../components/library/library-manage.tsx");
+    const manage = read("../components/workspace-settings/workspace-settings-screen.tsx");
 
     assert.match(sidebar, /Add workspace/);
     assert.match(sidebar, /<WorkspaceCreate onCreated=\{onSelect\} \/>/);
