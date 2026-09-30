@@ -1,4 +1,11 @@
 const SENT_ADDRESS_KEY = "pamiac.login.sentAddress";
+const SENT_PAINT_MARK = "data-login-sent";
+
+export function loginSentBootScript() {
+  const key = JSON.stringify(SENT_ADDRESS_KEY);
+  const mark = JSON.stringify(SENT_PAINT_MARK);
+  return `try{if(sessionStorage.getItem(${key}))document.documentElement.setAttribute(${mark},"")}catch(e){}`;
+}
 
 export function readSentLoginAddress() {
   const storage = sentLoginStorage();
@@ -25,12 +32,19 @@ export function rememberSentLoginAddress(address: string) {
 
 export function forgetSentLoginAddress() {
   const storage = sentLoginStorage();
-  if (!storage) return;
-  try {
-    storage.removeItem(SENT_ADDRESS_KEY);
-  } catch {
-    return;
+  if (storage) {
+    try {
+      storage.removeItem(SENT_ADDRESS_KEY);
+    } catch {
+      // The paint mark still has to come off so the form can show.
+    }
   }
+  releaseSentLoginPaint();
+}
+
+function releaseSentLoginPaint() {
+  if (typeof document === "undefined") return;
+  document.documentElement.removeAttribute(SENT_PAINT_MARK);
 }
 
 function sentLoginStorage() {

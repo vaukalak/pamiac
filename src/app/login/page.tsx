@@ -3,6 +3,7 @@ import { AppHeader } from "@/components/header/app-header";
 import { LoginForm } from "@/components/login-form";
 import { SetupScreen } from "@/components/setup-screen";
 import { safeNext } from "@/lib/config";
+import { loginSentBootScript } from "@/lib/login-sent-memory";
 import { oauthAuthorizeResumePath, oauthLoginReturnPath, toSearchParams } from "@/lib/oauth-return";
 import { getLibrarySession, getSession } from "@/lib/session";
 
@@ -28,6 +29,7 @@ export default async function LoginPage({
     <>
       <AppHeader />
       <main className="auth-wrap auth-door">
+        <script dangerouslySetInnerHTML={{ __html: loginSentBootScript() }} />
         <div className="auth-ground" aria-hidden="true">
           <svg className="auth-ground-note" viewBox="0 0 220 150" focusable="false">
             <path d="M11 11 H135 L167 43 V139 H11 Z" fill="var(--uml-note-shadow)" />
@@ -79,11 +81,6 @@ export default async function LoginPage({
         </div>
         <section className="auth-card">
           <p className="eyebrow">Notes, UML, and agents</p>
-          <h1>Sign in or register</h1>
-          <p>
-            We email you a link. There is no password. If the address is new, opening the link
-            creates the account.
-          </p>
           <LoginForm nextPath={formNext} />
         </section>
       </main>

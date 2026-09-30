@@ -9,7 +9,10 @@ const nav = readFileSync(
 );
 const form = readFileSync(new URL("../components/login-form.tsx", import.meta.url), "utf8");
 const locked = readFileSync(new URL("../components/locked-document.tsx", import.meta.url), "utf8");
-const login = readFileSync(new URL("../app/login/page.tsx", import.meta.url), "utf8");
+const login = readFileSync(
+  new URL("../components/login/login-sign-in-copy.tsx", import.meta.url),
+  "utf8",
+);
 
 function expect(actual: string) {
   return {

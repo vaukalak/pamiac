@@ -9,7 +9,7 @@ export function LoginLinkSent(props: Properties) {
 
   return (
     <div className="form-stack login-sent">
-      <h2>Check your email</h2>
+      <h1>Check your email</h1>
       <p className="hint">
         We sent a link to {address}.
         <br />

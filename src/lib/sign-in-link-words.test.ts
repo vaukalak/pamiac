@@ -4,6 +4,10 @@ import { describe, it } from "node:test";
 
 const home = readFileSync(new URL("../app/page.tsx", import.meta.url), "utf8");
 const login = readFileSync(new URL("../app/login/page.tsx", import.meta.url), "utf8");
+const copy = readFileSync(
+  new URL("../components/login/login-sign-in-copy.tsx", import.meta.url),
+  "utf8",
+);
 const form = readFileSync(new URL("../components/login-form.tsx", import.meta.url), "utf8");
 const sent = readFileSync(
   new URL("../components/login/login-link-sent.tsx", import.meta.url),
@@ -44,9 +48,10 @@ describe("sign-in link words", () => {
   it("explains the login card in ordinary words and leaves the form copy alone", () => {
     const card = slice(login, '<section className="auth-card">', "</section>");
 
-    expect(card).toMatch(
-      /We email you a link\. There is no password\. If the address is new, opening the link\s+creates the account\./,
+    expect(copy).toMatch(
+      /We email you a link\. There is no password\. If the address is new, opening the link\s+creates\s+the account\./,
     );
+    expect(copy).not.toMatch(/magic/i);
     expect(card).not.toMatch(/magic/i);
     expect(form).toMatch(/loginSendFailureSentence\(result\.error\.message\)/);
     expect(form).not.toMatch(/magic link/i);

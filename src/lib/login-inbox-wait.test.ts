@@ -42,7 +42,7 @@ describe("sign-in inbox wait", () => {
     expect(formBranch).toMatch(/<input[\s\S]*type="email"/);
     expect(formBranch).toMatch(/type="submit"/);
     expect(formBranch).not.toMatch(/status === "sent"/);
-    expect(sent).toMatch(/<h2>Check your email<\/h2>/);
+    expect(sent).toMatch(/<h1>Check your email<\/h1>/);
     expect(sent).toMatch(/We sent a link to \{address\}\./);
     expect(sent).toMatch(/Check your inbox, then spam, then promotions,/);
     expect(sent).toMatch(/and it can take a minute\./);
