@@ -6,5 +6,6 @@ export type AgentToken = {
   lastUsedAt: string | null;
   expiresAt: string | null;
   revokedAt: string | null;
-  workspaceId: string | null;
+  allScopes: boolean;
+  workspaceIds: string[];
 };

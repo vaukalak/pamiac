@@ -12,7 +12,7 @@ import type { NamedWorkspace } from "@/lib/library-spaces";
 import { useState } from "react";
 
 interface Properties {
-  filter: LibraryFilter;
+  filter: LibraryFilter | null;
   managing: boolean;
   onFilter: (filter: LibraryFilter) => void;
   onManage: () => void;

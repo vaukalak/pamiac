@@ -12,11 +12,13 @@ interface Choice {
 interface Properties {
   name: string;
   label: string;
+  id?: string;
   options: readonly Choice[];
 }
 
 export function FormSelect(props: Properties) {
-  const { name, label, options } = props;
+  const { name, label, id, options } = props;
+  const fieldId = id ?? name;
   const { formState } = useFormContext();
   const fieldError = formState.errors[name];
   const message = typeof fieldError?.message === "string" ? fieldError.message : null;
@@ -24,9 +26,10 @@ export function FormSelect(props: Properties) {
 
   return (
     <div>
-      <label htmlFor={name}>{label}</label>
+      <label htmlFor={fieldId}>{label}</label>
       <FormSelectMenu
         describedBy={message ? errorId : undefined}
+        id={fieldId}
         invalid={Boolean(message)}
         name={name}
         options={options}

@@ -1,5 +1,10 @@
 import { z } from "zod";
-import { presentDocument, requireAgentUser, searchDocuments } from "@/lib/documents";
+import {
+  presentDocument,
+  requireAgentUser,
+  searchAccountDocuments,
+  searchDocuments,
+} from "@/lib/documents";
 import { agentJson, corsHeaders, errorResponse, readJson } from "@/lib/http";
 
 export function OPTIONS() {
@@ -22,7 +27,9 @@ export async function POST(request: Request) {
   try {
     const agent = await requireAgentUser(request);
     const input = searchSchema.parse(await readJson(request));
-    const rows = await searchDocuments(agent.id, input.query, input.limit ?? 8, agent.workspaceId);
+    const rows = agent.scope.allScopes
+      ? await searchAccountDocuments(agent.id, input.query, input.limit ?? 8)
+      : await searchDocuments(agent.id, input.query, input.limit ?? 8, agent.scope);
     return agentJson({
       results: rows.map((row) => {
         const presented = presentDocument(row, origin(request));

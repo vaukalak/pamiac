@@ -170,7 +170,8 @@ export const agentTokens = pgTable(
     userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
-    workspaceId: text("workspace_id").references(() => workspaces.id, { onDelete: "cascade" }),
+    allScopes: boolean("all_scopes").notNull().default(false),
+    workspaceIds: text("workspace_ids").array().notNull().default([]),
     name: text("name").notNull(),
     tokenHash: text("token_hash").notNull().unique(),
     tokenPrefix: text("token_prefix").notNull(),

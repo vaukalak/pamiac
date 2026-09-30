@@ -9,6 +9,7 @@ import {
   inArray,
   isNull,
   or,
+  sql,
 } from "drizzle-orm";
 import { getDb } from "@/db";
 import {
@@ -37,6 +38,13 @@ import { hashPassword } from "@/lib/passwords";
 import { agentTokenStatus, createAgentToken, hashAgentToken } from "@/lib/tokens";
 import { listMemberWorkspaces } from "@/lib/workspaces";
 
+export type AgentScope = {
+  allScopes: boolean;
+  workspaceIds: string[];
+};
+
+export type TokenScopeInput = { all: true } | { all: false; workspaceIds: string[] };
+
 export async function listDocuments(ownerId: string) {
   return getDb()
     .select()
@@ -45,23 +53,58 @@ export async function listDocuments(ownerId: string) {
     .orderBy(asc(documents.sortIndex), asc(documents.createdAt));
 }
 
-function agentDocumentWhere(userId: string, workspaceId: string | null) {
-  if (!workspaceId) {
-    return and(eq(documents.ownerId, userId), isNull(documents.workspaceId));
-  }
-  const membership = getDb()
-    .select({ id: workspaceMembers.id })
-    .from(workspaceMembers)
-    .where(and(eq(workspaceMembers.workspaceId, workspaceId), eq(workspaceMembers.userId, userId)));
-  return and(eq(documents.workspaceId, workspaceId), exists(membership));
+function agentDocumentWhere(userId: string, scope: AgentScope) {
+  if (scope.allScopes) return accountDocumentWhere(userId);
+  return selectedDocumentWhere(userId, scope.workspaceIds);
 }
 
-export async function listAgentDocuments(userId: string, workspaceId: string | null) {
+function selectedDocumentWhere(userId: string, workspaceIds: readonly string[]) {
+  const personal = workspaceIds.includes(PERSONAL_SPACE_ID);
+  const selected = workspaceIds.filter((id) => id !== PERSONAL_SPACE_ID);
+  const personalWhere = and(eq(documents.ownerId, userId), isNull(documents.workspaceId));
+  const workspaceWhere =
+    selected.length === 0
+      ? null
+      : and(
+          inArray(documents.workspaceId, selected),
+          exists(
+            getDb()
+              .select({ id: workspaceMembers.id })
+              .from(workspaceMembers)
+              .where(
+                and(
+                  eq(workspaceMembers.workspaceId, documents.workspaceId),
+                  eq(workspaceMembers.userId, userId),
+                  inArray(workspaceMembers.workspaceId, selected),
+                ),
+              ),
+          ),
+        );
+  if (personal && workspaceWhere) return or(personalWhere, workspaceWhere);
+  if (personal) return personalWhere;
+  if (workspaceWhere) return workspaceWhere;
+  return sql`false`;
+}
+
+export async function listAgentDocuments(userId: string, scope: AgentScope) {
   return getDb()
     .select()
     .from(documents)
-    .where(agentDocumentWhere(userId, workspaceId))
+    .where(agentDocumentWhere(userId, scope))
     .orderBy(asc(documents.sortIndex), asc(documents.createdAt));
+}
+
+export async function agentCreateWorkspace(userId: string, scope: AgentScope) {
+  if (scope.allScopes || scope.workspaceIds.includes(PERSONAL_SPACE_ID)) {
+    return PERSONAL_SPACE_ID;
+  }
+  const selected = scope.workspaceIds.filter((id) => id !== PERSONAL_SPACE_ID);
+  if (selected.length === 1) return selected[0];
+  const memberships = await listMemberWorkspaces(userId);
+  const memberIds = new Set(memberships.map((workspace) => workspace.id));
+  const first = selected.find((id) => memberIds.has(id));
+  if (!first) throw new HttpError(404, "Workspace not found");
+  return first;
 }
 
 export async function listLibraryDocuments(ownerId: string) {
@@ -198,11 +241,11 @@ export async function getOwnedDocument(ownerId: string, id: string) {
   return document ?? null;
 }
 
-export async function getAgentDocument(userId: string, id: string, workspaceId: string | null) {
+export async function getAgentDocument(userId: string, id: string, scope: AgentScope) {
   const [document] = await getDb()
     .select()
     .from(documents)
-    .where(and(eq(documents.id, id), agentDocumentWhere(userId, workspaceId)));
+    .where(and(eq(documents.id, id), agentDocumentWhere(userId, scope)));
   return document ?? null;
 }
 
@@ -235,7 +278,7 @@ export async function updateDocumentContent(
   userId: string,
   id: string,
   input: { title?: string; content?: unknown; patch?: DiagramPatch },
-  boundWorkspaceId?: string | null,
+  scope?: AgentScope,
 ) {
   const db = getDb();
   const updated = await db.transaction(async (tx) => {
@@ -245,10 +288,7 @@ export async function updateDocumentContent(
     if (current.ownerId !== userId && !workspaceMember) {
       throw new HttpError(404, "Document not found");
     }
-    if (
-      boundWorkspaceId !== undefined &&
-      !documentInTokenWorkspace(current, userId, boundWorkspaceId, workspaceMember)
-    ) {
+    if (scope && !documentInTokenScope(current, userId, scope, workspaceMember)) {
       throw new HttpError(404, "Document not found");
     }
     const title = input.title?.trim() || current.title;
@@ -283,14 +323,20 @@ export async function updateDocumentContent(
   return updated;
 }
 
-function documentInTokenWorkspace(
+function documentInTokenScope(
   document: { ownerId: string; workspaceId: string | null },
   userId: string,
-  boundWorkspaceId: string | null,
+  scope: AgentScope,
   workspaceMember: boolean,
 ) {
-  if (!boundWorkspaceId) return document.ownerId === userId && !document.workspaceId;
-  return document.workspaceId === boundWorkspaceId && workspaceMember;
+  if (scope.allScopes) {
+    if (!document.workspaceId) return document.ownerId === userId;
+    return workspaceMember;
+  }
+  if (!document.workspaceId) {
+    return scope.workspaceIds.includes(PERSONAL_SPACE_ID) && document.ownerId === userId;
+  }
+  return scope.workspaceIds.includes(document.workspaceId) && workspaceMember;
 }
 
 export async function deleteDocument(ownerId: string, id: string) {
@@ -477,10 +523,10 @@ export async function searchDocuments(
   userId: string,
   query: string,
   limit: number,
-  workspaceId: string | null,
+  scope: AgentScope,
 ) {
-  const visible = agentDocumentWhere(userId, workspaceId);
-  return searchVisibleDocuments(query, limit, visible);
+  if (scope.allScopes) return searchAccountDocuments(userId, query, limit);
+  return searchVisibleDocuments(query, limit, agentDocumentWhere(userId, scope));
 }
 
 export async function searchAccountDocuments(userId: string, query: string, limit: number) {
@@ -541,7 +587,8 @@ async function authenticateAgentToken(token: string) {
       tokenHash: agentTokens.tokenHash,
       expiresAt: agentTokens.expiresAt,
       revokedAt: agentTokens.revokedAt,
-      workspaceId: agentTokens.workspaceId,
+      allScopes: agentTokens.allScopes,
+      workspaceIds: agentTokens.workspaceIds,
     })
     .from(agentTokens)
     .innerJoin(user, eq(user.id, agentTokens.userId))
@@ -555,7 +602,11 @@ async function authenticateAgentToken(token: string) {
     .where(eq(agentTokens.id, row.id));
   return {
     status: "ok" as const,
-    user: { id: row.userId, email: row.email, workspaceId: row.workspaceId },
+    user: {
+      id: row.userId,
+      email: row.email,
+      scope: scopeFromRow(row),
+    },
   };
 }
 
@@ -564,7 +615,7 @@ export async function requireAgentUser(request: Request) {
   const token = header.startsWith("Bearer ") ? header.slice("Bearer ".length).trim() : "";
   const result = await authenticateAgentToken(token);
   if (result.status === "ok") {
-    return { id: result.user.id, workspaceId: result.user.workspaceId };
+    return { id: result.user.id, scope: result.user.scope };
   }
   if (result.status === "expired") throw new HttpError(401, "Expired agent token");
   if (result.status === "invalid") throw new HttpError(401, "Invalid agent token");
@@ -591,32 +642,59 @@ export async function listTokens(userId: string) {
       lastUsedAt: agentTokens.lastUsedAt,
       expiresAt: agentTokens.expiresAt,
       revokedAt: agentTokens.revokedAt,
-      workspaceId: agentTokens.workspaceId,
+      allScopes: agentTokens.allScopes,
+      workspaceIds: agentTokens.workspaceIds,
     })
     .from(agentTokens)
     .where(eq(agentTokens.userId, userId))
     .orderBy(asc(agentTokens.createdAt));
 }
 
-async function boundTokenWorkspace(userId: string, workspaceId?: string) {
-  const value = workspaceId?.trim() ?? "";
-  if (!value || value === PERSONAL_SPACE_ID) return null;
+function scopeFromRow(row: { allScopes: boolean; workspaceIds: string[] | null }): AgentScope {
+  if (row.allScopes) return { allScopes: true, workspaceIds: [] };
+  return { allScopes: false, workspaceIds: row.workspaceIds ?? [] };
+}
+
+async function resolveTokenScope(userId: string, scope: TokenScopeInput) {
+  if (scope.all) return { allScopes: true, workspaceIds: [] as string[] };
+  const workspaceIds = uniqueScopeIds(scope.workspaceIds);
+  if (workspaceIds.length === 0) throw new HttpError(400, "Choose at least one space");
+  const selected = workspaceIds.filter((id) => id !== PERSONAL_SPACE_ID);
+  if (selected.length === 0) return { allScopes: false, workspaceIds };
   const memberships = await listMemberWorkspaces(userId);
-  if (!memberships.some((workspace) => workspace.id === value)) {
+  const memberIds = new Set(memberships.map((workspace) => workspace.id));
+  if (selected.some((id) => !memberIds.has(id))) {
     throw new HttpError(404, "Workspace not found");
   }
-  return value;
+  return { allScopes: false, workspaceIds };
+}
+
+function uniqueScopeIds(ids: readonly string[]) {
+  const seen = new Set<string>();
+  const unique: string[] = [];
+  for (const id of ids) {
+    const value = id.trim();
+    if (!value || seen.has(value)) continue;
+    seen.add(value);
+    unique.push(value);
+  }
+  return unique;
+}
+
+function tokenName(name: string) {
+  const trimmed = name.trim();
+  if (!trimmed || trimmed.length > 80) throw new HttpError(400, "Give the token a name");
+  return trimmed;
 }
 
 export async function issueToken(
   userId: string,
   name: string,
   expiresAt: Date | null,
-  workspaceId?: string,
+  scope: TokenScopeInput,
 ) {
-  const trimmed = name.trim();
-  if (!trimmed || trimmed.length > 80) throw new HttpError(400, "Give the token a name");
-  const boundWorkspaceId = await boundTokenWorkspace(userId, workspaceId);
+  const trimmed = tokenName(name);
+  const stored = await resolveTokenScope(userId, scope);
   const created = createAgentToken();
   const id = crypto.randomUUID();
   await getDb().insert(agentTokens).values({
@@ -627,9 +705,32 @@ export async function issueToken(
     tokenPrefix: created.tokenPrefix,
     secret: created.token,
     expiresAt,
-    workspaceId: boundWorkspaceId,
+    allScopes: stored.allScopes,
+    workspaceIds: stored.workspaceIds,
   });
   return { id, name: trimmed, token: created.token, tokenPrefix: created.tokenPrefix };
+}
+
+export async function updateToken(
+  userId: string,
+  id: string,
+  name: string | undefined,
+  scope: TokenScopeInput,
+) {
+  const stored = await resolveTokenScope(userId, scope);
+  const changes: { name?: string; allScopes: boolean; workspaceIds: string[] } = {
+    allScopes: stored.allScopes,
+    workspaceIds: stored.workspaceIds,
+  };
+  if (name !== undefined) changes.name = tokenName(name);
+  const [row] = await getDb()
+    .update(agentTokens)
+    .set(changes)
+    .where(
+      and(eq(agentTokens.id, id), eq(agentTokens.userId, userId), isNull(agentTokens.revokedAt)),
+    )
+    .returning({ id: agentTokens.id });
+  if (!row) throw new HttpError(404, "Token not found");
 }
 
 export async function revokeToken(userId: string, id: string) {

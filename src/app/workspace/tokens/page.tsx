@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation";
-import { AppHeader } from "@/components/header/app-header";
+import { QueryProvider } from "@/components/query-provider";
 import { SetupScreen } from "@/components/setup-screen";
-import { TokenManager } from "@/components/tokens/token-manager";
+import { TokenShell } from "@/components/tokens/token-shell";
 import { getSession } from "@/lib/session";
+import { listMemberWorkspaces } from "@/lib/workspaces";
 
 export const dynamic = "force-dynamic";
 
@@ -12,12 +13,17 @@ export default async function TokensPage() {
   if (result.status === "error") return <SetupScreen detail={result.message} />;
   if (!result.session) redirect("/login?next=/workspace/tokens");
 
+  let workspaces;
+  try {
+    workspaces = await listMemberWorkspaces(result.session.user.id);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Could not reach the database";
+    return <SetupScreen detail={message} />;
+  }
+
   return (
-    <>
-      <AppHeader email={result.session.user.email} />
-      <main className="workspace">
-        <TokenManager />
-      </main>
-    </>
+    <QueryProvider>
+      <TokenShell email={result.session.user.email} workspaces={workspaces} />
+    </QueryProvider>
   );
 }

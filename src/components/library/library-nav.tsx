@@ -2,7 +2,7 @@ import type { LibraryFilter } from "@/components/library/board-document";
 import { LibraryNavItem } from "@/components/library/library-nav-item";
 
 interface Properties {
-  filter: LibraryFilter;
+  filter: LibraryFilter | null;
   onFilter: (filter: LibraryFilter) => void;
 }
 
