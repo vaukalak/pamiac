@@ -2888,12 +2888,6 @@ code {
 .library-shell .workspace-name-form .btn {
   align-self: flex-end;
 }
-.library-shell .library-heading {
-  flex-wrap: wrap;
-}
-.library-shell .workspace-invite-action {
-  display: contents;
-}
 .library-shell .workspace-invite-form {
   flex: 1 0 100%;
   max-width: 720px;
