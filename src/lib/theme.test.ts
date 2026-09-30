@@ -151,7 +151,13 @@ test("diagram and note surfaces follow the scheme without a toggle", () => {
   assert.match(noteEditor, /useSyncExternalStore/);
   assert.match(noteEditor, /matchMedia\("\(prefers-color-scheme: dark\)"\)/);
   assert.match(noteEditor, /return false/);
-  assert.match(noteEditor, /theme=\{dark \? "dark" : "light"\}/);
+  assert.match(noteEditor, /libraryShell = false/);
+  assert.match(noteEditor, /theme=\{libraryShell \|\| dark \? "dark" : "light"\}/);
+  const noteDocument = readFileSync(
+    new URL("../components/document/note-document.tsx", import.meta.url),
+    "utf8",
+  );
+  assert.match(noteDocument, /libraryShell/);
   assert.doesNotMatch(noteEditor, /localStorage/);
   assert.match(layout, /\(prefers-color-scheme: light\)", color: "#f3efe4"/);
   assert.match(layout, /\(prefers-color-scheme: dark\)", color: "#141210"/);

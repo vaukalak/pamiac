@@ -19,6 +19,7 @@ interface Properties {
   version: number;
   editable: boolean;
   onChange: (markdown: string) => void;
+  libraryShell?: boolean;
 }
 
 function subscribeToColorScheme(onStoreChange: () => void) {
@@ -53,7 +54,7 @@ function scrollToBlock(id: string) {
 }
 
 export function NoteEditor(props: Properties) {
-  const { markdown, version, editable, onChange } = props;
+  const { markdown, version, editable, onChange, libraryShell = false } = props;
   const editor = useCreateBlockNote({ setIdAttribute: true });
   const ready = useRef(false);
   const applying = useRef(false);
@@ -129,7 +130,7 @@ export function NoteEditor(props: Properties) {
         editable={editable}
         editor={editor}
         onChange={handleChange}
-        theme={dark ? "dark" : "light"}
+        theme={libraryShell || dark ? "dark" : "light"}
       />
     </div>
   );
