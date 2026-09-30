@@ -15,13 +15,12 @@ export default function SupportPage() {
   return (
     <>
       <AppHeader />
-      <Page className="auth-wrap">
-        <Section className="auth-card">
-          <PageTitle
-            eyebrow="Support"
-            subtitle="This message goes to Pamiac support."
-            title="Contact support"
-          />
+      <Page className="hero">
+        <div>
+          <PageTitle eyebrow="Support" title="Contact support" />
+          <Paragraph className="lede">This message goes to Pamiac support.</Paragraph>
+        </div>
+        <Section className="feature form-stack">
           <Paragraph>Use the email you sign in with.</Paragraph>
           <SupportForm />
         </Section>

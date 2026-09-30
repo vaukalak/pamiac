@@ -43,7 +43,7 @@ describe("sign-in step name", () => {
       /We email you a link to sign in, draw UML, and write notes you can drag into shape\. Every\s+document has a direct link\./,
     );
     expect(home).not.toMatch(/magic/i);
-    expect(login).toMatch(/<h1>Sign in or register<\/h1>/);
+    expect(login).toMatch(/title="Sign in or register"/);
     expect(locked).toMatch(/<h1>Sign in to view<\/h1>/);
     expect(locked).toMatch(/>\s*Continue with email\s*</);
     expect(form).toMatch(/authClient\.signIn\.magicLink\(/);

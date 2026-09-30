@@ -325,61 +325,12 @@ h3 {
   margin: 0 0 8px;
   font-size: 40px;
 }
-.auth-door .auth-card h1 {
-  font-size: 24px;
-  line-height: 1.2;
-}
 .auth-card p {
   color: var(--ink-soft);
   margin-top: 0;
 }
-.auth-door .auth-card .eyebrow {
-  color: var(--teal);
-}
-
-.auth-door {
-  position: relative;
-  overflow: hidden;
-}
-.auth-door .auth-card {
-  position: relative;
-  z-index: 1;
-}
-.auth-ground {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  user-select: none;
-}
-.auth-ground-note,
-.auth-ground-diagram {
-  position: absolute;
-  display: block;
-}
-.auth-ground-note {
-  left: -36px;
-  bottom: -44px;
-  width: 210px;
-  height: 104px;
-}
-.auth-ground-diagram {
-  display: none;
-}
-@media (min-width: 1180px) {
-  .auth-ground-note {
-    left: -24px;
-    bottom: -32px;
-    width: min(280px, calc(50% - 290px));
-    height: 168px;
-  }
-  .auth-ground-diagram {
-    display: block;
-    top: -12px;
-    right: -140px;
-    width: 340px;
-    height: 228px;
-  }
+.sign-in .feature {
+  grid-column: 2;
 }
 
 label {
@@ -400,21 +351,21 @@ select {
   padding: 11px 12px;
   outline: none;
 }
-.auth-door .auth-card input[type="email"] {
+.sign-in .feature input[type="email"] {
   background: var(--card);
 }
-.auth-door .auth-card input[type="email"][aria-invalid="true"],
-.auth-door .auth-card input[type="email"][aria-invalid="true"]:focus {
+.sign-in .feature input[type="email"][aria-invalid="true"],
+.sign-in .feature input[type="email"][aria-invalid="true"]:focus {
   border-color: var(--danger);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 28%, transparent);
 }
-.auth-door .auth-card p.login-email-error {
+.sign-in .feature p.login-email-error {
   color: var(--danger);
   font-size: 14px;
   line-height: 1.4;
   margin: 8px 0 0;
 }
-.auth-door .auth-card p.error {
+.sign-in .feature p.error {
   color: var(--danger);
   font-size: 14px;
   line-height: 1.4;
@@ -438,15 +389,19 @@ select:focus {
 .login-sign-in-copy {
   display: contents;
 }
+.sign-in-column:empty,
+html[data-login-sent] .sign-in-column {
+  display: none;
+}
 html[data-login-sent] .login-sign-in-copy,
-html[data-login-sent] .auth-door .auth-card form.form-stack {
+html[data-login-sent] .sign-in .feature form.form-stack {
   display: none;
 }
 .hint {
   color: var(--ink-soft);
   font-size: 14px;
 }
-.auth-door .auth-card .login-sent h1 {
+.sign-in .feature .login-sent h1 {
   margin: 0;
   font-size: 22px;
   line-height: 1.25;
@@ -1803,6 +1758,9 @@ code {
   }
   .hero {
     margin-top: 28px;
+  }
+  .sign-in .feature {
+    grid-column: auto;
   }
   .note-title {
     font-size: 38px;

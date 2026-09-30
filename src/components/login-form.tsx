@@ -12,6 +12,8 @@ import {
   readSentLoginAddress,
   rememberSentLoginAddress,
 } from "@/lib/login-sent-memory";
+import { Button } from "@/ui/Button";
+import { Section } from "@/ui/Section";
 
 interface Properties {
   nextPath: string;
@@ -94,42 +96,46 @@ export function LoginForm(props: Properties) {
 
   return (
     <>
-      {status !== "sent" ? <LoginSignInCopy /> : null}
-      <div aria-atomic="true" aria-live="polite" className="login-announcement">
-        {announcement}
-      </div>
-      {status === "sent" ? (
-        <LoginLinkSent
-          address={email}
-          devUrl={devUrl}
-          onChooseDifferentEmail={chooseDifferentEmail}
-        />
-      ) : (
-        <form className="form-stack" noValidate onSubmit={onSubmit}>
-          <div>
-            <label htmlFor="email">Email</label>
-            <input
-              id="email"
-              type="email"
-              autoComplete="email"
-              required
-              aria-invalid={addressRejected}
-              aria-describedby={addressError ? "login-email-error" : undefined}
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-            />
-            {addressError ? (
-              <p id="login-email-error" className="login-email-error">
-                {addressError}
-              </p>
+      <div className="sign-in-column">{status !== "sent" ? <LoginSignInCopy /> : null}</div>
+      <Section className="feature">
+        <div aria-atomic="true" aria-live="polite" className="login-announcement">
+          {announcement}
+        </div>
+        {status === "sent" ? (
+          <LoginLinkSent
+            address={email}
+            devUrl={devUrl}
+            onChooseDifferentEmail={chooseDifferentEmail}
+          />
+        ) : (
+          <form className="form-stack" noValidate onSubmit={onSubmit}>
+            <div>
+              <label htmlFor="email">Email</label>
+              <input
+                id="email"
+                type="email"
+                autoComplete="email"
+                required
+                aria-invalid={addressRejected}
+                aria-describedby={addressError ? "login-email-error" : undefined}
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+              />
+              {addressError ? (
+                <p id="login-email-error" className="login-email-error">
+                  {addressError}
+                </p>
+              ) : null}
+            </div>
+            <Button disabled={status === "sending"} type="submit">
+              {status === "sending" ? "Sending link…" : "Email me a link"}
+            </Button>
+            {status === "error" && !addressRejected ? (
+              <LoginSendFailure happened={message} />
             ) : null}
-          </div>
-          <button className="btn" disabled={status === "sending"} type="submit">
-            {status === "sending" ? "Sending link…" : "Email me a link"}
-          </button>
-          {status === "error" && !addressRejected ? <LoginSendFailure happened={message} /> : null}
-        </form>
-      )}
+          </form>
+        )}
+      </Section>
     </>
   );
 }

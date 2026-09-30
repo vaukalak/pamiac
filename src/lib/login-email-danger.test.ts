@@ -68,7 +68,7 @@ describe("sign-in email danger", () => {
     expect(form).toMatch(/<form className="form-stack" noValidate onSubmit=\{onSubmit\}>/);
     expect(reset).toMatch(/setAttempted\(false\)/);
     expect(form).toMatch(
-      /status === "error" && !addressRejected \? <LoginSendFailure happened=\{message\} \/> : null/,
+      /status === "error" && !addressRejected \?\s*(?:\(\s*)?<LoginSendFailure happened=\{message\} \/>\s*(?:\)\s*)?: null/,
     );
     expect(form).toMatch(/rememberSentLoginAddress\(email\)/);
     expect(member).not.toMatch(/aria-invalid/);
@@ -77,10 +77,10 @@ describe("sign-in email danger", () => {
   it("paints the sign-in email border and glow with danger, including while focused", () => {
     const danger = block(
       css,
-      '.auth-door .auth-card input[type="email"][aria-invalid="true"],\n.auth-door .auth-card input[type="email"][aria-invalid="true"]:focus {',
+      '.sign-in .feature input[type="email"][aria-invalid="true"],\n.sign-in .feature input[type="email"][aria-invalid="true"]:focus {',
     );
     const focus = block(css, "input:focus,\ntextarea:focus,\nselect:focus {");
-    const sheet = block(css, '.auth-door .auth-card input[type="email"] {');
+    const sheet = block(css, '.sign-in .feature input[type="email"] {');
 
     expect(danger).toMatch(/border-color:\s*var\(--danger\)/);
     expect(danger).toMatch(/box-shadow:\s*0 0 0 3px color-mix\(in srgb, var\(--danger\)/);

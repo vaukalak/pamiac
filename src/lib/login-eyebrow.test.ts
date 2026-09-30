@@ -35,37 +35,35 @@ function slice(source: string, startMark: string, endMark: string) {
   return source.slice(start, end);
 }
 
-function eyebrowText(source: string) {
-  const match = source.match(/<p className="eyebrow">([^<]*)<\/p>/);
-  assert.ok(match, "eyebrow");
-  return match[1];
-}
-
 describe("login eyebrow", () => {
   it("names the product with the home page line", () => {
-    const card = slice(login, '<section className="auth-card">', "</section>");
+    const column = slice(form, '<div className="sign-in-column">', "</div>");
+    const homeEyebrow = home.match(/<p className="eyebrow">([^<]*)<\/p>/);
 
-    expect(eyebrowText(login)).toBe(eyebrowText(home));
-    expect(eyebrowText(login)).toBe("Notes, UML, and agents");
-    expect(card).not.toMatch(/>Account</);
-    expect(card).not.toMatch(/<h1>Sign in or register<\/h1>/);
-    expect(copy).toMatch(/<h1>Sign in or register<\/h1>/);
+    assert.ok(homeEyebrow, "home eyebrow");
+    expect(copy).toMatch(/eyebrow="Notes, UML, and agents"/);
+    expect(homeEyebrow[1]).toBe("Notes, UML, and agents");
+    expect(column).toMatch(/<LoginSignInCopy \/>/);
+    expect(column).not.toMatch(/className="feature"/);
+    expect(copy).toMatch(/title="Sign in or register"/);
     expect(copy).toMatch(
       /We email you a link\. There is no password\. If the address is new, opening the link\s+creates\s+the account\./,
     );
     expect(form).toMatch(/status !== "sent" \? <LoginSignInCopy \/> : null/);
-    expect(card).toMatch(/<LoginForm nextPath=\{formNext\} \/>/);
+    expect(login).toMatch(/<LoginForm nextPath=\{formNext\} \/>/);
     expect(login).toMatch(/<AppHeader \/>/);
-    expect(login).toMatch(/className="auth-ground"/);
+    expect(login).not.toMatch(/className="auth-ground"/);
+    expect(login).not.toMatch(/className="auth-card"/);
   });
 
   it("paints the sign-in label with the teal token over the card paragraph color", () => {
     const cardCopy = slice(css, ".auth-card p {", "}");
-    const label = slice(css, ".auth-door .auth-card .eyebrow {", "}");
+    const label = slice(css, ".eyebrow {", "}");
     const dark = slice(css, "@media (prefers-color-scheme: dark)", "color-scheme: dark");
 
-    expect(login).toMatch(/className="auth-wrap auth-door"/);
-    expect(login).toMatch(/<p className="eyebrow">/);
+    expect(login).toMatch(/className="hero sign-in"/);
+    expect(login).not.toMatch(/auth-door/);
+    expect(copy).toMatch(/eyebrow="Notes, UML, and agents"/);
     expect(cardCopy).toMatch(/color:\s*var\(--ink-soft\)/);
     expect(label).toMatch(/color:\s*var\(--teal\)/);
     expect(label).not.toMatch(/#[0-9a-fA-F]{3,8}/);

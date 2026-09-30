@@ -119,7 +119,7 @@ describe("sign-in send failure", () => {
   });
 
   it("paints the send failure with danger, ahead of the card paragraph color", () => {
-    const sentence = block(css, ".auth-door .auth-card p.error {");
+    const sentence = block(css, ".sign-in .feature p.error {");
     const card = block(css, ".auth-card p {");
 
     expect(sentence).toMatch(/color:\s*var\(--danger\)/);

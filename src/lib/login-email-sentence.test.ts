@@ -65,12 +65,12 @@ describe("sign-in email sentence", () => {
     expect(form).toMatch(/aria-live="polite"/);
     expect(form).not.toMatch(/aria-live="assertive"/);
     expect(form).toMatch(
-      /status === "error" && !addressRejected \? <LoginSendFailure happened=\{message\} \/> : null/,
+      /status === "error" && !addressRejected \?\s*(?:\(\s*)?<LoginSendFailure happened=\{message\} \/>\s*(?:\)\s*)?: null/,
     );
   });
 
   it("paints that sentence with danger, ahead of the card paragraph color", () => {
-    const sentence = block(css, ".auth-door .auth-card p.login-email-error {");
+    const sentence = block(css, ".sign-in .feature p.login-email-error {");
     const card = block(css, ".auth-card p {");
 
     expect(sentence).toMatch(/color:\s*var\(--danger\)/);

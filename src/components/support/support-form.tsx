@@ -48,7 +48,7 @@ export function SupportForm() {
 
   if (mutation.isSuccess) {
     return (
-      <div role="status">
+      <div className="form-stack" role="status">
         <Paragraph>Your message is with Pamiac support.</Paragraph>
         <Paragraph>We will reply to this email.</Paragraph>
       </div>

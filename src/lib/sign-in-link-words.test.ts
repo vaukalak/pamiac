@@ -46,13 +46,12 @@ describe("sign-in link words", () => {
   });
 
   it("explains the login card in ordinary words and leaves the form copy alone", () => {
-    const card = slice(login, '<section className="auth-card">', "</section>");
-
     expect(copy).toMatch(
       /We email you a link\. There is no password\. If the address is new, opening the link\s+creates\s+the account\./,
     );
     expect(copy).not.toMatch(/magic/i);
-    expect(card).not.toMatch(/magic/i);
+    expect(login).not.toMatch(/magic/i);
+    expect(login).not.toMatch(/className="auth-card"/);
     expect(form).toMatch(/loginSendFailureSentence\(result\.error\.message\)/);
     expect(form).not.toMatch(/magic link/i);
     expect(form).not.toMatch(/Could not send the magic link/);

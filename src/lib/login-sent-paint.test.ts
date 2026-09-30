@@ -115,13 +115,13 @@ describe("sent login first paint", () => {
     assert.ok(page.indexOf("loginSentBootScript()") < page.indexOf("<LoginForm"));
     expect(layout).toMatch(/suppressHydrationWarning/);
     expect(copy).toMatch(/className="login-sign-in-copy"/);
-    expect(copy).toMatch(/<h1>Sign in or register<\/h1>/);
+    expect(copy).toMatch(/title="Sign in or register"/);
     expect(form).toMatch(/<form className="form-stack" noValidate onSubmit=\{onSubmit\}>/);
     expect(block(css, ".login-sign-in-copy {")).toMatch(/display:\s*contents/);
     expect(
       block(
         css,
-        "html[data-login-sent] .login-sign-in-copy,\nhtml[data-login-sent] .auth-door .auth-card form.form-stack {",
+        "html[data-login-sent] .login-sign-in-copy,\nhtml[data-login-sent] .sign-in .feature form.form-stack {",
       ),
     ).toMatch(/display:\s*none/);
   });

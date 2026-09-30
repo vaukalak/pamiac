@@ -38,19 +38,18 @@ function block(source: string, header: string) {
 }
 
 describe("login title", () => {
-  it("keeps the sign-in heading a calm size on the door card only", () => {
-    const title = block(css, ".auth-door .auth-card h1 {");
+  it("uses the shared hero heading and leaves the auth card title at 40px", () => {
     const shared = block(css, ".auth-card h1 {");
     const headings = block(css, "h1,\nh2,\nh3 {");
+    const hero = block(css, ".hero h1 {");
 
-    expect(login).toMatch(/<h1>Sign in or register<\/h1>/);
-    expect(title).toMatch(/font-size:\s*24px/);
-    expect(title).toMatch(/line-height:\s*1\.2/);
-    expect(title).not.toMatch(/font-family:/);
+    expect(login).toMatch(/title="Sign in or register"/);
+    expect(css).not.toMatch(/\.auth-door \.auth-card h1/);
+    expect(hero).toMatch(/font-size:\s*clamp\(46px/);
+    expect(hero).not.toMatch(/font-family:/);
     expect(headings).toMatch(/font-family:\s*var\(--serif\)/);
     expect(shared).toMatch(/font-size:\s*40px/);
     expect(shared).not.toMatch(/line-height:/);
-    expect(block(css, ".hero h1 {")).toMatch(/font-size:\s*clamp\(46px/);
     expect(block(css, ".note-title {")).toMatch(/font-size:\s*48px/);
   });
 });

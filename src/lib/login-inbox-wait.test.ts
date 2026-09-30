@@ -60,7 +60,7 @@ describe("sign-in inbox wait", () => {
     expect(form).toMatch(/setEmail\(""\)/);
     expect(form).toMatch(/setStatus\("idle"\)/);
     expect(form).toMatch(
-      /status === "error" && !addressRejected \? <LoginSendFailure happened=\{message\} \/> : null/,
+      /status === "error" && !addressRejected \?\s*(?:\(\s*)?<LoginSendFailure happened=\{message\} \/>\s*(?:\)\s*)?: null/,
     );
   });
 });

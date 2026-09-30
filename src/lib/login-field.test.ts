@@ -50,7 +50,7 @@ describe("sign-in email fill", () => {
       css,
       'input[type="text"],\ninput[type="email"],\ninput[type="password"],\ntextarea,\nselect {',
     );
-    const email = block(css, '.auth-door .auth-card input[type="email"] {');
+    const email = block(css, '.sign-in .feature input[type="email"] {');
     const focus = block(css, "input:focus,\ntextarea:focus,\nselect:focus {");
     const light = css.slice(0, css.indexOf("@media (prefers-color-scheme: dark)"));
     const dark = css.slice(css.indexOf("@media (prefers-color-scheme: dark)"));
