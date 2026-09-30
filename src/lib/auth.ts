@@ -1,5 +1,6 @@
 import { cimd } from "@better-auth/cimd";
 import { fetchClientMetadataResource } from "@better-auth/cimd/node";
+import { dash } from "@better-auth/infra";
 import { mcp } from "@better-auth/mcp";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
@@ -60,6 +61,9 @@ function buildAuth() {
         sendMagicLink: async ({ email, url }) => {
           await sendMagicLink({ email, url });
         },
+      }),
+      dash({
+        apiKey: process.env.BETTER_AUTH_API_KEY,
       }),
       nextCookies(),
     ],
