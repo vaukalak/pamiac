@@ -75,6 +75,14 @@ export function librarySpaceTitle(
   return openWorkspaceName(workspaceId, workspaces) || "Workspace";
 }
 
+export function documentSpaceLabel(
+  workspaceId: string | null,
+  workspaces: readonly NamedWorkspace[],
+): string | null {
+  if (!workspaceId) return "Personal";
+  return openWorkspaceName(workspaceId, workspaces) || null;
+}
+
 export function workspaceName(input: string) {
   const name = input.trim();
   if (!name) throw new Error("Name the workspace");

@@ -13,7 +13,7 @@ export function LibraryNavItem(props: Properties) {
 
   if (href) {
     return (
-      <Link className="library-nav-item" href={href}>
+      <Link className="library-nav-item" href={href} onClick={onSelect}>
         {label}
       </Link>
     );

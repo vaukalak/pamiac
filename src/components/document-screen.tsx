@@ -1,15 +1,16 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { DiagramTitle } from "@/components/document/diagram-title";
+import { DiagramChrome } from "@/components/document/diagram-chrome";
+import { DocumentBreadcrumb } from "@/components/document/document-breadcrumb";
 import { DocumentOwnerActions } from "@/components/document/document-owner-actions";
 import { NoteDocument } from "@/components/document/note-document";
 import { SaveState } from "@/components/document/save-state";
 import { ShareModal } from "@/components/share/share-modal";
 import type { Visibility } from "@/lib/access";
+import { Page } from "@/ui/Page";
 
 const UmlEditor = dynamic(() => import("@/components/uml-editor").then((mod) => mod.UmlEditor), {
   ssr: false,
@@ -27,6 +28,7 @@ interface Properties {
   workspaceId: string | null;
   canEdit: boolean;
   isOwner: boolean;
+  spaceName: string | null;
 }
 
 export function DocumentScreen(props: Properties) {
@@ -42,44 +44,50 @@ export function DocumentScreen(props: Properties) {
     workspaceId,
     canEdit,
     isOwner,
+    spaceName,
   } = props;
   const router = useRouter();
   const [sharing, setSharing] = useState(false);
   const [shareState, setShareState] = useState({ visibility, emails, hasPassword, workspaceId });
-  const wide = type === "diagram";
+  const crumb = <DocumentBreadcrumb kind={type} spaceName={spaceName} />;
+  const tools = (
+    <div className="library-heading-actions topbar-tools">
+      <SaveState canEdit={canEdit} id={id} />
+      {isOwner ? (
+        <DocumentOwnerActions id={id} onShare={() => setSharing(true)} />
+      ) : (
+        <span className="badge">{shareState.visibility}</span>
+      )}
+    </div>
+  );
 
   return (
-    <>
-      <div className={wide ? "topbar wide" : "topbar"}>
-        {type === "note" ? (
-          <Link className="library-link" href="/workspace">
-            Library
-          </Link>
-        ) : (
-          <DiagramTitle canEdit={canEdit} id={id} title={title} version={version} />
-        )}
-        <div className="topbar-tools">
-          <SaveState canEdit={canEdit} id={id} />
-          {isOwner ? (
-            <DocumentOwnerActions id={id} onShare={() => setSharing(true)} />
-          ) : (
-            <span className="badge">{shareState.visibility}</span>
-          )}
-        </div>
-      </div>
-      <div className={wide ? "editor-shell wide" : "editor-shell"}>
-        {type === "note" ? (
-          <NoteDocument
-            canEdit={canEdit}
-            content={content}
-            id={id}
-            title={title}
-            version={version}
-          />
-        ) : (
+    <Page className="library-main">
+      {type === "note" ? (
+        <NoteDocument
+          canEdit={canEdit}
+          content={content}
+          crumb={crumb}
+          id={id}
+          title={title}
+          tools={tools}
+          version={version}
+        />
+      ) : (
+        <DiagramChrome
+          canEdit={canEdit}
+          crumb={crumb}
+          id={id}
+          title={title}
+          tools={tools}
+          version={version}
+        />
+      )}
+      {type === "diagram" ? (
+        <div className="editor-shell wide">
           <UmlEditor editable={canEdit} id={id} initial={content} version={version} />
-        )}
-      </div>
+        </div>
+      ) : null}
       {sharing ? (
         <ShareModal
           emails={shareState.emails}
@@ -94,6 +102,6 @@ export function DocumentScreen(props: Properties) {
           workspaceId={shareState.workspaceId}
         />
       ) : null}
-    </>
+    </Page>
   );
 }

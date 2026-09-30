@@ -17,6 +17,7 @@ import { LibrarySidebar } from "@/components/library/library-sidebar";
 import { LibraryStatus } from "@/components/library/library-status";
 import { documentPreview } from "@/lib/content";
 import { libraryItemsQueryKey, libraryItemsQueryOptions } from "@/lib/library-items";
+import { LIBRARY_FILTER_KEY, libraryFilter } from "@/lib/library-memory";
 import { libraryQueryMatches, libraryTypeCounts } from "@/lib/library-query";
 import {
   documentsInSpace,
@@ -94,8 +95,13 @@ export function DocumentBoard(props: Properties) {
     window.localStorage.setItem(VIEW_KEY, next);
   }
 
+  useEffect(() => {
+    setFilter(libraryFilter(window.localStorage.getItem(LIBRARY_FILTER_KEY)));
+  }, []);
+
   function chooseFilter(next: LibraryFilter) {
     setFilter(next);
+    window.localStorage.setItem(LIBRARY_FILTER_KEY, next);
   }
 
   function chooseWorkspace(nextId: string) {

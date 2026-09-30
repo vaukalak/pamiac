@@ -1,0 +1,8 @@
+---
+description: Do not use Cursor Fast mode for this agent or its subagents
+alwaysApply: true
+---
+
+Do not use Cursor Fast mode.
+
+Do not select Fast in the model picker. Do not pass `fast`, or any model slug that ends in `-fast`, when launching a subagent. Omit `model`, or set it to `inherit`, so the parent model is used. If a specific model is requested, use that model's non-fast slug.
