@@ -121,8 +121,8 @@ describe("share workspace choice", () => {
       new URL("../components/library/library-create.tsx", import.meta.url),
       "utf8",
     );
-    const tools = readFileSync(
-      new URL("../components/library/library-tools.tsx", import.meta.url),
+    const actions = readFileSync(
+      new URL("../components/library/library-heading-actions.tsx", import.meta.url),
       "utf8",
     );
     const create = store.slice(
@@ -169,7 +169,7 @@ describe("share workspace choice", () => {
     );
     assert.equal(/input\.workspaceId/.test(agentRoute), false);
     assert.match(libraryCreate, /JSON\.stringify\(\{ type, workspaceId \}\)/);
-    assert.match(tools, /<LibraryCreate workspaceId=\{workspaceId\} \/>/);
+    assert.match(actions, /<LibraryCreate workspaceId=\{workspaceId\} \/>/);
     assert.equal((store.match(/placeDocumentInWorkspace\(/g) ?? []).length, 2);
     assert.match(apply, /placeDocumentInWorkspace\(/);
     assert.equal((store.match(/applyDocumentWorkspace\(/g) ?? []).length, 2);

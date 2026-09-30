@@ -49,20 +49,23 @@ describe("library sidebar and create plus", () => {
     assert.equal(/WorkspaceCreate/.test(manage), false);
   });
 
-  it("marks the open space and paints the document plus with the teal accent", () => {
+  it("marks the open space and paints document create with the home lime", () => {
     const selector = read("../components/library/workspace-selector.tsx");
     const css = read("../app/globals.css");
-    const plus = css.slice(css.indexOf(".library-plus {"), css.indexOf(".library-plus:hover"));
+    const plus = css.slice(
+      css.indexOf(".library-shell .library-create .library-plus {"),
+      css.indexOf(".library-shell .library-create .library-plus:hover"),
+    );
     const pressed = css.slice(
-      css.indexOf('.workspace-selector button[aria-pressed="true"]'),
-      css.indexOf('.workspace-selector button[aria-pressed="true"]:hover'),
+      css.indexOf('.library-shell .workspace-selector button[aria-pressed="true"]'),
+      css.indexOf('.library-shell .workspace-selector button[aria-pressed="true"]:hover'),
     );
 
     assert.match(selector, /librarySpaces/);
     assert.match(selector, /pressed=\{selectedId === space\.id\}/);
-    assert.match(pressed, /background:\s*var\(--ink\)/);
-    assert.match(plus, /background:\s*var\(--teal\)/);
-    assert.match(plus, /color:\s*var\(--on-ink\)/);
+    assert.match(pressed, /background:\s*var\(--home-lime\)/);
+    assert.match(plus, /background:\s*var\(--home-lime\)/);
+    assert.match(plus, /color:\s*var\(--home-on-lime\)/);
   });
 
   it("keeps the pending label on the note and diagram choices", () => {

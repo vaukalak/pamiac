@@ -5,14 +5,22 @@ interface Properties {
   type?: "button" | "submit" | "reset";
   disabled?: boolean;
   className?: string;
+  onClick?: () => void;
+  pressed?: boolean;
 }
 
 export function Button(props: Properties) {
-  const { children, type = "button", disabled = false, className } = props;
+  const { children, type = "button", disabled = false, className, onClick, pressed } = props;
   const classes = className ? `btn ${className}` : "btn";
 
   return (
-    <button className={classes} disabled={disabled} type={type}>
+    <button
+      aria-pressed={pressed}
+      className={classes}
+      disabled={disabled}
+      onClick={onClick}
+      type={type}
+    >
       {children}
     </button>
   );

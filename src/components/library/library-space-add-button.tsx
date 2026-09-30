@@ -19,6 +19,7 @@ export function LibrarySpaceAddButton(props: Properties) {
       type="button"
     >
       <LibraryPlusIcon />
+      {label}
     </button>
   );
 }

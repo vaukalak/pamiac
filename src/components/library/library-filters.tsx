@@ -2,6 +2,7 @@ import type { LibraryFilter } from "@/components/library/board-document";
 import { FilterChip } from "@/components/library/filter-chip";
 
 interface Properties {
+  counts: Record<LibraryFilter, number>;
   filter: LibraryFilter;
   onChange: (filter: LibraryFilter) => void;
 }
@@ -13,12 +14,13 @@ const FILTERS = [
 ] as const;
 
 export function LibraryFilters(props: Properties) {
-  const { filter, onChange } = props;
+  const { counts, filter, onChange } = props;
 
   return (
-    <div className="filters">
+    <div aria-label="Document types" className="filters" role="group">
       {FILTERS.map(([value, label]) => (
         <FilterChip
+          count={counts[value]}
           key={value}
           label={label}
           onSelect={() => onChange(value)}

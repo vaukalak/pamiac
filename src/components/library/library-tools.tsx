@@ -1,26 +1,21 @@
-import type { LibraryFilter, LibraryView } from "@/components/library/board-document";
-import { LibraryCreate } from "@/components/library/library-create";
-import { LibraryFilters } from "@/components/library/library-filters";
+import type { LibraryView } from "@/components/library/board-document";
+import { LibrarySearch, type LibrarySearchValues } from "@/components/library/library-search";
 import { ViewToggle } from "@/components/library/view-toggle";
+import type { UseFormReturn } from "react-hook-form";
 
 interface Properties {
-  filter: LibraryFilter;
-  onFilter: (filter: LibraryFilter) => void;
+  form: UseFormReturn<LibrarySearchValues>;
   onView: (view: LibraryView) => void;
   view: LibraryView;
-  workspaceId: string;
 }
 
 export function LibraryTools(props: Properties) {
-  const { filter, onFilter, onView, view, workspaceId } = props;
+  const { form, onView, view } = props;
 
   return (
     <div className="library-tools">
-      <LibraryFilters filter={filter} onChange={onFilter} />
-      <div className="library-tool-actions">
-        <LibraryCreate workspaceId={workspaceId} />
-        <ViewToggle onChange={onView} view={view} />
-      </div>
+      <LibrarySearch form={form} />
+      <ViewToggle onChange={onView} view={view} />
     </div>
   );
 }
