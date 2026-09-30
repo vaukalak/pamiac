@@ -398,6 +398,10 @@ html[data-login-sent] .home-sign-in-panel form.form-stack {
   --home-hair-strong: rgba(185, 245, 66, 0.55);
   --home-line: rgba(238, 243, 232, 0.12);
   --home-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+  --share-public: #5ad8ef;
+  --share-emails: #f0c56a;
+  --share-password: #c9a6ff;
+  --share-private: #c5d4be;
   position: relative;
   isolation: isolate;
   display: grid;
@@ -2817,11 +2821,30 @@ code {
 .library-shell .doc-card p {
   color: var(--home-soft);
 }
-.library-shell .doc-type {
+.library-shell .doc-card-title {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+}
+.library-shell .doc-card-title h2 {
+  min-width: 0;
+}
+.library-shell .doc-type-icon {
+  flex: none;
+  margin-top: 4px;
   color: var(--home-lime);
-  font-size: 11px;
-  font-weight: 650;
-  letter-spacing: 0.16em;
+}
+.library-shell .doc-card.list .doc-card-title {
+  align-items: center;
+}
+.library-shell .doc-card.list .doc-type-icon {
+  margin-top: 0;
+}
+.library-shell .doc-card-body:focus-visible {
+  outline: 2px solid var(--home-lime);
+  outline-offset: 3px;
+  border-radius: 8px;
 }
 .library-shell .doc-card-foot {
   display: flex;
@@ -2836,9 +2859,25 @@ code {
   font-size: 12px;
 }
 .library-shell .badge {
-  border-color: var(--home-hair-strong);
-  background: transparent;
-  color: var(--home-lime);
+  border-color: color-mix(in srgb, var(--share-private) 45%, transparent);
+  background: color-mix(in srgb, var(--share-private) 12%, transparent);
+  color: var(--share-private);
+  white-space: nowrap;
+}
+.library-shell .badge.is-public {
+  border-color: color-mix(in srgb, var(--share-public) 55%, transparent);
+  background: color-mix(in srgb, var(--share-public) 14%, transparent);
+  color: var(--share-public);
+}
+.library-shell .badge.is-emails {
+  border-color: color-mix(in srgb, var(--share-emails) 55%, transparent);
+  background: color-mix(in srgb, var(--share-emails) 14%, transparent);
+  color: var(--share-emails);
+}
+.library-shell .badge.is-password {
+  border-color: color-mix(in srgb, var(--share-password) 55%, transparent);
+  background: color-mix(in srgb, var(--share-password) 14%, transparent);
+  color: var(--share-password);
 }
 .library-shell .doc-sketch {
   display: flex;
@@ -2846,9 +2885,6 @@ code {
   gap: 6px;
   align-items: center;
   min-height: 64px;
-}
-.library-shell .doc-card.list .doc-sketch {
-  min-height: 0;
 }
 .library-shell .doc-sketch-node {
   border: 1px solid var(--home-hair-strong);
@@ -3025,11 +3061,72 @@ code {
     grid-row: 2;
   }
 }
+.library-shell .doc-list {
+  gap: 6px;
+}
 .library-shell .doc-card.list {
   align-items: center;
+  padding: 8px 10px 8px 12px;
+  border-radius: 12px;
+}
+.library-shell .doc-card.list:hover {
+  transform: none;
+  box-shadow: none;
+}
+.library-shell .doc-card.list .doc-card-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 2px 16px;
+}
+.library-shell .doc-card.list .doc-card-title {
+  grid-column: 1;
+  grid-row: 1;
+}
+.library-shell .doc-card.list .doc-card-foot {
+  grid-column: 2;
+  grid-row: 1;
+  margin-top: 0;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.library-shell .doc-card.list .badge {
+  padding: 0 6px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
 }
 .library-shell .doc-card.list h2 {
-  font-size: 18px;
+  font-size: 16px;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.library-shell .doc-card.list .doc-edited {
+  white-space: nowrap;
+}
+.library-shell .doc-card.list .doc-menu {
+  margin-left: 4px;
+}
+@media (max-width: 640px) {
+  .library-shell .doc-card.list .doc-card-body {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: "title badge" "edited edited";
+  }
+  .library-shell .doc-card.list .doc-card-foot {
+    display: contents;
+  }
+  .library-shell .doc-card.list .doc-card-title {
+    grid-area: title;
+  }
+  .library-shell .doc-card.list .badge {
+    grid-area: badge;
+    justify-self: end;
+  }
+  .library-shell .doc-card.list .doc-edited {
+    grid-area: edited;
+  }
 }
 
 .home .home-sign-in {

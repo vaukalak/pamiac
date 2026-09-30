@@ -19,7 +19,9 @@ export function DocumentCardFoot(props: Properties) {
   return (
     <div className="doc-card-foot">
       <p className="doc-edited">Edited {editedLabel(document.updatedAt)}</p>
-      <span className="badge">{VISIBILITY_LABEL[document.visibility]}</span>
+      <span className={`badge is-${document.visibility}`}>
+        {VISIBILITY_LABEL[document.visibility]}
+      </span>
     </div>
   );
 }

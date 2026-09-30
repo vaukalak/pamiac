@@ -35,7 +35,7 @@ export function DocumentCard(props: Properties) {
         onDrop(document.id);
       }}
     >
-      <DocumentCardBody document={document} />
+      <DocumentCardBody document={document} layout={layout} />
       <DocumentMenu document={document} onChange={onChange} />
     </article>
   );
