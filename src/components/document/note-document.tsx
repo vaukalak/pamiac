@@ -195,6 +195,7 @@ export function NoteDocument(props: Properties) {
       <div className="note-sheet">
         <NoteEditor
           editable={canEdit}
+          libraryShell
           markdown={remote.markdown}
           version={remote.version}
           onChange={(markdown) => schedule({ content: markdown })}

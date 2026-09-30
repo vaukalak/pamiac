@@ -3022,29 +3022,55 @@ code {
   margin: 0;
 }
 .library-shell .document-note {
-  width: min(100%, calc(72ch + 108px));
+  width: 100%;
 }
 .library-shell .document-note .library-heading-copy {
-  padding-inline: 54px;
+  padding-inline: 0;
 }
 .library-shell .note-sheet {
   width: 100%;
-  padding-top: 12px;
-  background: var(--card);
-  color: var(--ink);
-  border-color: var(--home-hair);
-  box-shadow: var(--home-shadow);
+  min-height: calc(100vh - 280px);
+  margin-top: 4px;
+  padding: 22px 28px 48px;
+  background: color-mix(in srgb, var(--home-ground) 72%, #101610);
+  color: var(--home-text);
+  border: 1px solid var(--home-hair);
+  border-radius: 16px;
+  box-shadow: none;
+  caret-color: var(--home-lime);
 }
-.library-shell .note-editor .bn-container {
-  --bn-colors-editor-text: var(--ink);
+.library-shell .note-editor .bn-container[data-color-scheme] {
+  --bn-colors-editor-text: var(--home-text);
   --bn-colors-editor-background: transparent;
+  --bn-colors-menu-text: var(--home-text);
+  --bn-colors-menu-background: var(--home-panel);
+  --bn-colors-tooltip-text: var(--home-text);
+  --bn-colors-tooltip-background: var(--home-panel);
+  --bn-colors-hovered-text: var(--home-text);
+  --bn-colors-hovered-background: color-mix(in srgb, var(--home-lime) 16%, #101610);
+  --bn-colors-selected-text: var(--home-on-lime);
+  --bn-colors-selected-background: var(--home-lime);
+  --bn-colors-disabled-text: var(--home-soft);
+  --bn-colors-disabled-background: #101610;
+  --bn-colors-shadow: rgba(0, 0, 0, 0.45);
+  --bn-colors-border: var(--home-hair);
+  --bn-colors-side-menu: var(--home-soft);
 }
 .library-shell .note-editor .bn-editor {
-  color: var(--ink);
+  max-width: 72ch;
+  background: transparent;
+  color: var(--home-text);
+  caret-color: var(--home-lime);
+}
+.library-shell .note-editor .bn-inline-content::before {
+  color: var(--home-soft);
+}
+.library-shell .note-editor .bn-side-menu .mantine-UnstyledButton-root:hover svg {
+  color: var(--home-lime);
 }
 .library-shell .note-sheet ::selection {
-  background: var(--teal);
-  color: var(--on-ink);
+  background: var(--home-lime);
+  color: var(--home-on-lime);
 }
 .library-shell .palette,
 .library-shell .inspector {
@@ -3075,8 +3101,175 @@ code {
   outline-color: var(--home-lime);
 }
 .library-shell .canvas-wrap {
+  --canvas: var(--home-ground);
+  --canvas-grid: rgba(185, 245, 66, 0.16);
+  --flow-grid: transparent;
+  --uml-fill: #121814;
+  --uml-ink: var(--home-text);
+  --uml-note: #1c2414;
+  --uml-note-edge: rgba(185, 245, 66, 0.45);
   border-color: var(--home-hair);
-  box-shadow: var(--home-shadow);
+  background:
+    linear-gradient(var(--canvas-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--canvas-grid) 1px, transparent 1px), var(--canvas);
+  background-size: 24px 24px;
+  box-shadow: none;
+}
+.library-shell .canvas-empty {
+  color: var(--home-soft);
+}
+.library-shell .uml-card {
+  background: var(--uml-fill);
+  border: 1px solid var(--home-hair);
+  color: var(--home-text);
+  box-shadow: none;
+}
+.library-shell .uml-card.is-selected {
+  border-color: var(--home-lime);
+  box-shadow: none;
+}
+.library-shell .uml-card header,
+.library-shell .uml-card ul {
+  border-color: var(--home-hair);
+}
+.library-shell .uml-card .stereo {
+  color: var(--home-soft);
+}
+.library-shell .uml-card .react-flow__handle {
+  background: var(--home-lime);
+}
+.library-shell .uml-card.kind-note {
+  background: var(--uml-note);
+  border-color: var(--uml-note-edge);
+  box-shadow: none;
+  color: var(--home-text);
+}
+.library-shell .uml-card.kind-actor {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+.library-shell .uml-card.kind-actor.is-selected {
+  border: none;
+  box-shadow: none;
+  outline: 2px solid var(--home-lime);
+}
+.library-shell .uml-card.kind-relationship,
+.library-shell .uml-card.kind-decision {
+  border: none;
+  background: var(--uml-fill);
+  box-shadow: inset 0 0 0 1px var(--home-hair);
+  filter: none;
+}
+.library-shell .uml-card.kind-relationship.is-selected,
+.library-shell .uml-card.kind-decision.is-selected {
+  box-shadow: inset 0 0 0 1.5px var(--home-lime);
+  filter: none;
+}
+.library-shell .uml-card.kind-document {
+  border: none;
+  background: var(--uml-fill);
+  box-shadow: inset 0 0 0 1px var(--home-hair);
+  filter: none;
+}
+.library-shell .uml-card.kind-document.is-selected {
+  box-shadow: inset 0 0 0 1.5px var(--home-lime);
+  filter: none;
+}
+.library-shell .uml-card.kind-role {
+  box-shadow: inset 0 0 0 1px var(--home-hair);
+}
+.library-shell .uml-card.kind-role.is-selected {
+  box-shadow: inset 0 0 0 1px var(--home-lime);
+}
+.library-shell .uml-card.kind-participant {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+.library-shell .uml-card.kind-participant header {
+  border-color: var(--home-hair);
+  background: var(--uml-fill);
+  box-shadow: none;
+}
+.library-shell .uml-card.kind-participant.is-selected,
+.library-shell .uml-card.kind-participant.is-selected header {
+  border-color: var(--home-lime);
+  box-shadow: none;
+}
+.library-shell .uml-card.kind-activation {
+  background: var(--home-text);
+  color: var(--home-on-lime);
+  box-shadow: none;
+}
+.library-shell .uml-card.kind-activation.is-selected {
+  background: var(--home-lime);
+  border-color: var(--home-lime);
+  color: var(--home-on-lime);
+  box-shadow: none;
+}
+.library-shell .uml-card.kind-database.is-selected::before,
+.library-shell .uml-card.kind-fragment.is-selected header {
+  border-color: var(--home-lime);
+}
+.library-shell .uml-card.kind-package,
+.library-shell .uml-card.kind-department {
+  border-top-color: var(--home-hair-strong);
+}
+.library-shell .react-flow {
+  --xy-background-color: transparent;
+  --xy-minimap-background-color: #0c100c;
+  --xy-minimap-mask-background-color: rgba(7, 9, 10, 0.62);
+  --xy-minimap-mask-stroke-color: var(--home-lime);
+  --xy-minimap-mask-stroke-width: 1;
+  --xy-minimap-node-background-color: rgba(185, 245, 66, 0.72);
+  --xy-minimap-node-stroke-color: transparent;
+  --xy-controls-button-background-color: #101610;
+  --xy-controls-button-background-color-hover: color-mix(in srgb, var(--home-lime) 18%, #101610);
+  --xy-controls-button-color: var(--home-text);
+  --xy-controls-button-color-hover: var(--home-lime);
+  --xy-controls-button-border-color: var(--home-hair);
+  --xy-controls-box-shadow: none;
+  --xy-connectionline-stroke: var(--home-lime);
+  --xy-connectionline-stroke-width: 1.6;
+  --xy-edge-stroke: var(--home-soft);
+  --xy-edge-stroke-selected: var(--home-lime);
+  --xy-selection-background-color: rgba(185, 245, 66, 0.12);
+  --xy-selection-border: 1px solid var(--home-lime);
+  --xy-attribution-background-color: transparent;
+  color: var(--home-text);
+}
+.library-shell .react-flow__minimap {
+  border: 1px solid var(--home-hair);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.library-shell .react-flow__attribution,
+.library-shell .react-flow__attribution a {
+  color: var(--home-soft);
+  background: transparent;
+}
+.library-shell .inspector label,
+.library-shell .palette-group summary {
+  color: var(--home-text);
+  font-family: var(--sans);
+}
+.library-shell .inspector input,
+.library-shell .inspector textarea,
+.library-shell .inspector select {
+  width: 100%;
+  border: 1px solid var(--home-hair);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--home-ground) 72%, transparent);
+  color: var(--home-text);
+  caret-color: var(--home-lime);
+}
+.library-shell .inspector input:focus,
+.library-shell .inspector textarea:focus,
+.library-shell .inspector select:focus {
+  border-color: var(--home-lime);
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--home-lime) 28%, transparent);
 }
 .library-shell .uml-layout {
   height: calc(100vh - 240px);
