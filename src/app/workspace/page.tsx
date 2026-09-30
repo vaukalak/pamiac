@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
 function setupDetail(error: unknown) {
   const message = error instanceof Error ? error.message : "Could not reach the database";
   if (/relation|does not exist|column/i.test(message)) {
-    return `${message}. Run npm run db:push.`;
+    return `${message}. Run npm run db:migrate.`;
   }
   return message;
 }

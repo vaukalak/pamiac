@@ -10,6 +10,7 @@
     "test": "node --experimental-strip-types --test src/lib/*.test.ts",
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\"",
+    "db:migrate": "node --experimental-strip-types scripts/enable-vector.ts && drizzle-kit migrate",
     "db:push": "node --experimental-strip-types scripts/enable-vector.ts && drizzle-kit push",
     "db:studio": "drizzle-kit studio"
   },
