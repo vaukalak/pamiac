@@ -2879,16 +2879,39 @@ code {
   font-weight: 700;
 }
 .library-shell .workspace-name-form,
-.library-shell .workspace-name-readout,
-.library-shell .workspace-invite-action {
+.library-shell .workspace-name-readout {
   display: flex;
   flex-direction: column;
   align-items: stretch;
   gap: 8px;
 }
-.library-shell .workspace-name-form .btn,
-.library-shell .workspace-invite-action .btn {
+.library-shell .workspace-name-form .btn {
   align-self: flex-end;
+}
+.library-shell .library-heading {
+  flex-wrap: wrap;
+}
+.library-shell .workspace-invite-action {
+  display: contents;
+}
+.library-shell .workspace-invite-form {
+  flex: 1 0 100%;
+  max-width: 720px;
+  margin: 8px 0 0;
+  padding: 18px;
+  border: 1px solid var(--home-hair);
+  border-radius: 16px;
+  background: var(--home-panel);
+}
+.library-shell .workspace-invite-form .workspace-create {
+  max-width: none;
+  margin: 0;
+}
+.library-shell .workspace-invite-form .btn {
+  background: var(--home-lime);
+  border-color: var(--home-lime);
+  color: var(--home-on-lime);
+  font-weight: 700;
 }
 .library-shell .btn.library-lime {
   background: var(--home-lime);

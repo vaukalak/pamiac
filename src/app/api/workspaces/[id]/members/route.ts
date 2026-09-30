@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { requireUserId } from "@/lib/documents";
+import { requireLibraryUser, requireUserId } from "@/lib/documents";
 import { errorResponse, json, readJson } from "@/lib/http";
 import { addWorkspacePerson } from "@/lib/workspace-people";
 import { listWorkspaceRoster } from "@/lib/workspace-roster";
@@ -12,7 +12,7 @@ type Context = { params: Promise<{ id: string }> };
 
 export async function GET(_request: Request, context: Context) {
   try {
-    const user = await requireUserId();
+    const user = await requireLibraryUser();
     const { id } = await context.params;
     const roster = await listWorkspaceRoster(user.id, id);
     return json(roster);

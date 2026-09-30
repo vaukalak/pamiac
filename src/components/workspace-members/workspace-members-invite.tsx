@@ -25,7 +25,11 @@ export function WorkspaceMembersInvite() {
       <Button className="library-lime" onClick={() => setOpen(true)} type="button">
         Invite member
       </Button>
-      {open ? <WorkspaceMemberAdd key={shell.workspaceId} workspaceId={shell.workspaceId} /> : null}
+      {open ? (
+        <div className="workspace-invite-form">
+          <WorkspaceMemberAdd key={shell.workspaceId} workspaceId={shell.workspaceId} />
+        </div>
+      ) : null}
     </div>
   );
 }
