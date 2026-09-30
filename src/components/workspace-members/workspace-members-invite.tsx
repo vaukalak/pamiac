@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useLibraryShell } from "@/components/library/library-shell";
 import { WorkspaceMemberAdd } from "@/components/library/workspace-member-add";
-import { WorkspaceMembersHeading } from "@/components/workspace-members/workspace-members-heading";
+import { WorkspaceMembersInviteDialog } from "@/components/workspace-members/workspace-members-invite-dialog";
 import { managesWorkspace, PERSONAL_SPACE_ID } from "@/lib/library-spaces";
 import { workspacesQueryOptions } from "@/lib/library-workspaces";
 import { Button } from "@/ui/Button";
@@ -19,24 +19,21 @@ export function WorkspaceMembersInvite() {
   const named = shell.workspaceId !== PERSONAL_SPACE_ID;
   const managing = named && managesWorkspace(shell.workspaceId, spaces.data ?? []);
 
+  function close() {
+    setOpen(false);
+  }
+
+  if (!managing) return null;
+
   return (
     <>
-      <div className="library-heading">
-        <WorkspaceMembersHeading />
-        {managing ? (
-          <Button
-            className="library-lime"
-            onClick={() => setOpen((current) => !current)}
-            type="button"
-          >
-            Invite member
-          </Button>
-        ) : null}
-      </div>
-      {managing && open ? (
-        <div className="workspace-invite-form">
-          <WorkspaceMemberAdd key={shell.workspaceId} workspaceId={shell.workspaceId} />
-        </div>
+      <Button className="library-lime" onClick={() => setOpen(true)} type="button">
+        Invite member
+      </Button>
+      {open ? (
+        <WorkspaceMembersInviteDialog onClose={close}>
+          <WorkspaceMemberAdd workspaceId={shell.workspaceId} />
+        </WorkspaceMembersInviteDialog>
       ) : null}
     </>
   );

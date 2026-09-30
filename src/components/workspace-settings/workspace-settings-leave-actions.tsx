@@ -1,7 +1,6 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useLibraryShell } from "@/components/library/library-shell";
@@ -68,9 +67,6 @@ export function WorkspaceSettingsLeaveActions() {
           Cancel
         </Button>
       ) : null}
-      <Link className="workspace-members-link" href="/workspace/members">
-        Members
-      </Link>
       {message ? <Alert>{message}</Alert> : null}
     </div>
   );
