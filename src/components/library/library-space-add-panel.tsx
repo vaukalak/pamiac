@@ -55,7 +55,7 @@ export function LibrarySpaceAddPanel(props: Properties) {
     <div
       aria-labelledby="workspace-create-title"
       aria-modal="true"
-      className="share-dialog"
+      className="share-dialog workspace-add-dialog"
       onPointerDown={(event) => {
         event.stopPropagation();
       }}

@@ -398,6 +398,10 @@ html[data-login-sent] .home-sign-in-panel form.form-stack {
   --home-hair-strong: rgba(185, 245, 66, 0.55);
   --home-line: rgba(238, 243, 232, 0.12);
   --home-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+  --share-public: #5ad8ef;
+  --share-emails: #f0c56a;
+  --share-password: #c9a6ff;
+  --share-private: #c5d4be;
   position: relative;
   isolation: isolate;
   display: grid;
@@ -1711,9 +1715,6 @@ code {
     border-right: 0;
     border-bottom: 1px solid var(--home-hair);
   }
-  .library-main {
-    padding: 24px 16px 32px;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -2504,6 +2505,7 @@ code {
   font-family: var(--sans);
   font-weight: 600;
   letter-spacing: -0.02em;
+  padding-right: 64px;
 }
 .library-shell .brand-mark {
   background: transparent;
@@ -2559,20 +2561,14 @@ code {
   color: var(--home-on-lime);
   background: var(--home-lime);
 }
-.library-shell .library-account {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: auto;
-  padding-top: 12px;
-  border-top: 1px solid var(--home-line);
+.library-shell > .profile {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 3;
 }
-.library-shell .library-email {
-  margin: 0;
-  min-width: 0;
-  color: var(--home-soft);
-  font-size: 13px;
-  overflow-wrap: anywhere;
+.library-shell:has(.share-backdrop) > .profile {
+  z-index: 1;
 }
 .library-shell .profile-button {
   background: transparent;
@@ -2583,10 +2579,10 @@ code {
   background: color-mix(in srgb, var(--home-lime) 14%, transparent);
 }
 .library-shell .profile-menu {
-  top: auto;
-  right: auto;
-  bottom: calc(100% + 8px);
-  left: 0;
+  top: calc(100% + 8px);
+  right: 0;
+  bottom: auto;
+  left: auto;
   background: var(--home-panel);
   border-color: var(--home-hair);
   color: var(--home-text);
@@ -2634,6 +2630,7 @@ code {
   background: var(--home-lime);
   border-color: var(--home-lime);
   color: var(--home-on-lime);
+  font-weight: 700;
 }
 .library-shell .workspace-selector button[aria-pressed="true"]:hover {
   color: var(--home-on-lime);
@@ -2658,7 +2655,12 @@ code {
   background: color-mix(in srgb, var(--home-lime) 8%, transparent);
 }
 .library-shell .library-main {
-  padding: 28px 32px 40px;
+  padding: 72px 72px 40px 32px;
+}
+@media (max-width: 760px) {
+  .library-shell > .library-main {
+    padding: 24px 16px 32px;
+  }
 }
 .library-shell .library-crumb {
   margin: 0 0 14px;
@@ -2821,11 +2823,30 @@ code {
 .library-shell .doc-card p {
   color: var(--home-soft);
 }
-.library-shell .doc-type {
+.library-shell .doc-card-title {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+}
+.library-shell .doc-card-title h2 {
+  min-width: 0;
+}
+.library-shell .doc-type-icon {
+  flex: none;
+  margin-top: 4px;
   color: var(--home-lime);
-  font-size: 11px;
-  font-weight: 650;
-  letter-spacing: 0.16em;
+}
+.library-shell .doc-card.list .doc-card-title {
+  align-items: center;
+}
+.library-shell .doc-card.list .doc-type-icon {
+  margin-top: 0;
+}
+.library-shell .doc-card-body:focus-visible {
+  outline: 2px solid var(--home-lime);
+  outline-offset: 3px;
+  border-radius: 8px;
 }
 .library-shell .doc-card-foot {
   display: flex;
@@ -2840,9 +2861,25 @@ code {
   font-size: 12px;
 }
 .library-shell .badge {
-  border-color: var(--home-hair-strong);
-  background: transparent;
-  color: var(--home-lime);
+  border-color: color-mix(in srgb, var(--share-private) 45%, transparent);
+  background: color-mix(in srgb, var(--share-private) 12%, transparent);
+  color: var(--share-private);
+  white-space: nowrap;
+}
+.library-shell .badge.is-public {
+  border-color: color-mix(in srgb, var(--share-public) 55%, transparent);
+  background: color-mix(in srgb, var(--share-public) 14%, transparent);
+  color: var(--share-public);
+}
+.library-shell .badge.is-emails {
+  border-color: color-mix(in srgb, var(--share-emails) 55%, transparent);
+  background: color-mix(in srgb, var(--share-emails) 14%, transparent);
+  color: var(--share-emails);
+}
+.library-shell .badge.is-password {
+  border-color: color-mix(in srgb, var(--share-password) 55%, transparent);
+  background: color-mix(in srgb, var(--share-password) 14%, transparent);
+  color: var(--share-password);
 }
 .library-shell .doc-sketch {
   display: flex;
@@ -2850,9 +2887,6 @@ code {
   gap: 6px;
   align-items: center;
   min-height: 64px;
-}
-.library-shell .doc-card.list .doc-sketch {
-  min-height: 0;
 }
 .library-shell .doc-sketch-node {
   border: 1px solid var(--home-hair-strong);
@@ -3324,6 +3358,75 @@ code {
 .library-shell .document-gate .error {
   color: #ffb4ab;
 }
+
+.library-shell .workspace-add-dialog {
+  width: min(460px, 100%);
+  padding: 28px;
+  border-radius: 16px;
+  box-shadow: var(--home-shadow);
+}
+.library-shell .workspace-add-dialog .share-dialog-head {
+  align-items: baseline;
+  margin-bottom: 20px;
+}
+.library-shell .workspace-add-dialog h2 {
+  margin: 0;
+  color: var(--home-text);
+  font-family: var(--sans);
+  font-size: 32px;
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+}
+.library-shell .workspace-add-dialog .btn.ghost {
+  color: var(--home-soft);
+}
+.library-shell .workspace-add-dialog .workspace-create {
+  grid-template-columns: 1fr;
+  gap: 0;
+  max-width: none;
+  margin: 0;
+}
+.library-shell .workspace-add-dialog .workspace-create label {
+  margin-bottom: 6px;
+}
+.library-shell .workspace-add-dialog .workspace-create button,
+.library-shell .workspace-add-dialog .workspace-create .error {
+  grid-column: 1;
+}
+.library-shell .workspace-add-dialog .workspace-create button {
+  grid-row: 3;
+  justify-self: stretch;
+  width: 100%;
+  margin-top: 14px;
+  border-color: var(--home-lime);
+  background: var(--home-lime);
+  color: var(--home-on-lime);
+}
+.library-shell .workspace-add-dialog .workspace-create button:hover:not(:disabled) {
+  border-color: var(--home-lime-deep);
+  background: var(--home-lime-deep);
+  color: var(--home-on-lime);
+}
+.library-shell .workspace-add-dialog .workspace-create button:focus-visible {
+  outline: 2px solid var(--home-text);
+  outline-offset: 3px;
+}
+.library-shell .workspace-add-dialog .workspace-create button:disabled {
+  opacity: 0.45;
+  cursor: progress;
+}
+.library-shell .workspace-add-dialog .workspace-create .error {
+  grid-row: 4;
+  margin-top: 12px;
+  color: #ffb4ab;
+}
+@media (max-width: 480px) {
+  .library-shell .workspace-add-dialog h2 {
+    font-size: 28px;
+  }
+}
+
 .library-status {
   grid-column: 1 / -1;
   margin: 0;
@@ -3347,11 +3450,72 @@ code {
     grid-row: 2;
   }
 }
+.library-shell .doc-list {
+  gap: 6px;
+}
 .library-shell .doc-card.list {
   align-items: center;
+  padding: 8px 10px 8px 12px;
+  border-radius: 12px;
+}
+.library-shell .doc-card.list:hover {
+  transform: none;
+  box-shadow: none;
+}
+.library-shell .doc-card.list .doc-card-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 2px 16px;
+}
+.library-shell .doc-card.list .doc-card-title {
+  grid-column: 1;
+  grid-row: 1;
+}
+.library-shell .doc-card.list .doc-card-foot {
+  grid-column: 2;
+  grid-row: 1;
+  margin-top: 0;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.library-shell .doc-card.list .badge {
+  padding: 0 6px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
 }
 .library-shell .doc-card.list h2 {
-  font-size: 18px;
+  font-size: 16px;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.library-shell .doc-card.list .doc-edited {
+  white-space: nowrap;
+}
+.library-shell .doc-card.list .doc-menu {
+  margin-left: 4px;
+}
+@media (max-width: 640px) {
+  .library-shell .doc-card.list .doc-card-body {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: "title badge" "edited edited";
+  }
+  .library-shell .doc-card.list .doc-card-foot {
+    display: contents;
+  }
+  .library-shell .doc-card.list .doc-card-title {
+    grid-area: title;
+  }
+  .library-shell .doc-card.list .badge {
+    grid-area: badge;
+    justify-self: end;
+  }
+  .library-shell .doc-card.list .doc-edited {
+    grid-area: edited;
+  }
 }
 
 .home .home-sign-in {

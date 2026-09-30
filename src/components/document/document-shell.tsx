@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { DocumentSidebar } from "@/components/document/document-sidebar";
+import { ProfileMenu } from "@/components/header/profile-menu";
 import { CircuitBoard } from "@/components/home/circuit-board";
 import type { NamedWorkspace } from "@/lib/library-spaces";
 
@@ -24,11 +25,11 @@ export function DocumentShell(props: Properties) {
       {signedIn ? (
         <DocumentSidebar
           documentType={documentType}
-          email={email}
           workspaceId={workspaceId}
           workspaces={workspaces}
         />
       ) : null}
+      {email ? <ProfileMenu email={email} /> : null}
       {children}
     </div>
   );

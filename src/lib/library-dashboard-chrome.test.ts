@@ -40,7 +40,14 @@ describe("library dashboard chrome risks", () => {
     assert.match(sketch, /node\.name/);
     assert.equal(/User input|Planner|Synthesis/.test(sketch), false);
     assert.match(preview, /documentPreview\(document\.type, document\.content\)/);
-    assert.match(meta, /document\.type === "note" \? "NOTE" : "DIAGRAM"/);
+    assert.match(preview, /if \(layout === "list"\) return null/);
+    assert.ok(
+      preview.indexOf('if (layout === "list") return null') <
+        preview.indexOf('document.type === "note"'),
+    );
+    assert.match(meta, /DocumentTypeIcon/);
+    assert.equal(/\bNOTE\b|\bDIAGRAM\b/.test(meta), false);
+    assert.match(foot, /badge is-\$\{document\.visibility\}/);
     assert.match(foot, /Edited \{editedLabel\(document\.updatedAt\)\}/);
     assert.match(foot, /private: "Only me"/);
     assert.match(foot, /public: "Public"/);
@@ -50,14 +57,17 @@ describe("library dashboard chrome risks", () => {
 
   it("offers invite only for a managed workspace and keeps support and the account email", () => {
     const rail = read("../components/library/library-rail-links.tsx");
-    const account = read("../components/library/library-account.tsx");
+    const panel = read("../components/header/profile-menu-panel.tsx");
+    const board = read("../components/library/document-board.tsx");
     const sidebar = read("../components/library/library-sidebar.tsx");
     const nav = read("../components/library/library-nav.tsx");
 
     assert.match(rail, /\{managing \? <LibraryInviteLink onInvite=\{onManage\} \/> : null\}/);
     assert.match(rail, /href="\/support"/);
-    assert.match(account, /<ProfileMenu email=\{email\} \/>/);
-    assert.match(account, /\{email\}/);
+    assert.match(board, /<ProfileMenu email=\{email\} \/>/);
+    assert.match(panel, /className="profile-email"/);
+    assert.match(panel, /\{email\}/);
+    assert.equal(/LibraryAccount|library-account/.test(sidebar + board), false);
     assert.equal(/Shared with me|Settings/.test(nav + rail + sidebar), false);
     assert.match(nav, /\["all", "Overview"\]/);
     assert.match(nav, /\["note", "Notes"\]/);

@@ -1,6 +1,5 @@
 "use client";
 
-import { LibraryAccount } from "@/components/library/library-account";
 import { LibraryBrand } from "@/components/library/library-brand";
 import { LibraryNav } from "@/components/library/library-nav";
 import { LibraryRailLinks } from "@/components/library/library-rail-links";
@@ -13,7 +12,6 @@ import type { NamedWorkspace } from "@/lib/library-spaces";
 import { useState } from "react";
 
 interface Properties {
-  email: string;
   filter: LibraryFilter;
   managing: boolean;
   onFilter: (filter: LibraryFilter) => void;
@@ -25,7 +23,6 @@ interface Properties {
 
 export function LibrarySidebar(props: Properties) {
   const {
-    email,
     filter,
     managing,
     onFilter,
@@ -65,7 +62,6 @@ export function LibrarySidebar(props: Properties) {
       <p className="library-rail-label">Library</p>
       <LibraryNav filter={filter} onFilter={onFilter} />
       <LibraryRailLinks managing={managing} onManage={onManage} />
-      <LibraryAccount email={email} />
     </aside>
   );
 }
