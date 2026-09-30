@@ -25,11 +25,12 @@ function expect(actual: string) {
 }
 
 describe("sign-in step name", () => {
-  it("uses Email me a link on the home action, the header, and the login button", () => {
-    expect(home).toMatch(/<Link className="btn" href="\/login">\s*Email me a link\s*<\/Link>/);
+  it("uses Sign in on the header and Email me a link on the login button", () => {
+    expect(home).not.toMatch(/hero-actions/);
+    expect(home).not.toMatch(/href="\/login"/);
+    expect(home).not.toMatch(/Open the library/);
     expect(home).not.toMatch(/Continue with email/);
-    expect(nav).toMatch(/<Link className="btn" href="\/login">\s*Email me a link\s*<\/Link>/);
-    expect(nav).not.toMatch(/>\s*Sign in\s*</);
+    expect(nav).toMatch(/<Link className="btn" href="\/login">\s*Sign in\s*<\/Link>/);
     expect(form).toMatch(/status === "sending" \? "Sending link…" : "Email me a link"/);
     expect(form).not.toMatch(/Email me a magic link/);
   });

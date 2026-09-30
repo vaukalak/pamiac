@@ -14,7 +14,7 @@ export function AppHeaderNav(props: Properties) {
       {email ? <ProfileMenu email={email} /> : null}
       {showSignIn ? (
         <Link className="btn" href="/login">
-          Email me a link
+          Sign in
         </Link>
       ) : null}
     </nav>
