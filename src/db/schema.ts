@@ -106,6 +106,9 @@ export const workspaceInvites = pgTable(
       .notNull()
       .references(() => workspaces.id, { onDelete: "cascade" }),
     email: text("email").notNull(),
+    role: text("role", { enum: ["admin", "editor"] })
+      .notNull()
+      .default("editor"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [uniqueIndex("workspace_invite_email_idx").on(table.workspaceId, table.email)],

@@ -12,6 +12,7 @@ export interface WorkspaceRosterMember {
 export interface WorkspaceRosterPending {
   id: string;
   email: string;
+  role: WorkspaceRole;
   createdAt: string;
 }
 
@@ -55,11 +56,12 @@ export async function createWorkspace(name: string): Promise<NamedWorkspace> {
 export async function addWorkspacePerson(
   workspaceId: string,
   email: string,
+  role: WorkspaceRole,
 ): Promise<WorkspacePerson> {
   const response = await fetch(`/api/workspaces/${encodeURIComponent(workspaceId)}/members`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email }),
+    body: JSON.stringify({ email, role }),
   });
   const body = (await response.json()) as { person?: WorkspacePerson; error?: string };
   if (!response.ok || !body.person) {

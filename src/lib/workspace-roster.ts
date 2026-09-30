@@ -51,6 +51,7 @@ export async function listWorkspaceRoster(actorId: string, workspaceId: string) 
     .select({
       id: workspaceInvites.id,
       email: workspaceInvites.email,
+      role: workspaceInvites.role,
       createdAt: workspaceInvites.createdAt,
     })
     .from(workspaceInvites)
@@ -68,6 +69,7 @@ export async function listWorkspaceRoster(actorId: string, workspaceId: string) 
     invites: pending.map((row) => ({
       id: row.id,
       email: row.email,
+      role: row.role,
       createdAt: isoTime(row.createdAt),
     })),
   };

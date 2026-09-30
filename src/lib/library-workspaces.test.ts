@@ -65,13 +65,13 @@ describe("saved workspaces", () => {
       });
     };
     try {
-      assert.deepEqual(await addWorkspacePerson("ws 1", "ada@example.com"), {
+      assert.deepEqual(await addWorkspacePerson("ws 1", "ada@example.com", "editor"), {
         status: "pending",
         workspaceId: "ws-1",
         email: "ada@example.com",
       });
       assert.equal(url, "/api/workspaces/ws%201/members");
-      assert.deepEqual(JSON.parse(body), { email: "ada@example.com" });
+      assert.deepEqual(JSON.parse(body), { email: "ada@example.com", role: "editor" });
     } finally {
       globalThis.fetch = original;
     }
@@ -83,7 +83,7 @@ describe("saved workspaces", () => {
       Response.json({ error: "Personal space cannot receive members" }, { status: 400 });
     try {
       await assert.rejects(
-        addWorkspacePerson("personal", "ada@example.com"),
+        addWorkspacePerson("personal", "ada@example.com", "admin"),
         /Personal space cannot receive members/,
       );
     } finally {

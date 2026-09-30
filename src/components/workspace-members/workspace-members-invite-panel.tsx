@@ -29,7 +29,7 @@ export function WorkspaceMembersInvitePanel(props: Properties) {
         return;
       }
       if (event.key !== "Tab") return;
-      const focusable = [...node.querySelectorAll<HTMLElement>("button, input")].filter(
+      const focusable = [...node.querySelectorAll<HTMLElement>("button, input, select")].filter(
         (item) => !item.hasAttribute("disabled"),
       );
       if (focusable.length === 0) return;

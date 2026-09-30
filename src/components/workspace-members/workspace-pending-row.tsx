@@ -1,5 +1,6 @@
 import { WorkspacePendingWhen } from "@/components/workspace-members/workspace-pending-when";
 import type { WorkspaceRosterPending } from "@/lib/library-workspaces";
+import { memberRoleLabel } from "@/lib/workspace-member-view";
 
 interface Properties {
   managing: boolean;
@@ -13,7 +14,7 @@ export function WorkspacePendingRow(props: Properties) {
   return (
     <tr>
       <td>{pending.email}</td>
-      <td>Invited</td>
+      <td>{memberRoleLabel(pending.role)}</td>
       <WorkspacePendingWhen
         createdAt={pending.createdAt}
         managing={managing}

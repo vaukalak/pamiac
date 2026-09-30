@@ -6,6 +6,7 @@ import { listWorkspaceRoster } from "@/lib/workspace-roster";
 
 const addSchema = z.object({
   email: z.string().max(320),
+  role: z.string().optional().nullable(),
 });
 
 type Context = { params: Promise<{ id: string }> };
@@ -26,7 +27,7 @@ export async function POST(request: Request, context: Context) {
     const user = await requireUserId();
     const { id } = await context.params;
     const input = addSchema.parse(await readJson(request));
-    const person = await addWorkspacePerson(user.id, id, input.email);
+    const person = await addWorkspacePerson(user.id, id, input.email, input.role ?? "");
     return json({ person }, 201);
   } catch (error) {
     return errorResponse(error);

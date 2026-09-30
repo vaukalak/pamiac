@@ -37,16 +37,19 @@ describe("workspace roles", () => {
     assert.equal(managesWorkspace("ws-3", [{ id: "ws-3", name: "Bare" }]), false);
   });
 
-  it("stores admin or editor on membership and not on the invite", () => {
+  it("stores admin or editor on membership and on the invite", () => {
     const schema = readFileSync(new URL("../db/schema.ts", import.meta.url), "utf8");
     const member = schema.slice(
       schema.indexOf('"workspace_member"'),
       schema.indexOf('"workspace_invite"'),
     );
     const invite = schema.slice(schema.indexOf('"workspace_invite"'));
-    assert.match(member, /role: text\("role", \{ enum: \["admin", "editor"\] \}\)\.notNull\(\)/);
+    const roleColumn = /role: text\("role", \{ enum: \["admin", "editor"\] \}\)\s*\.notNull\(\)/;
+    assert.match(member, roleColumn);
+    assert.match(invite, roleColumn);
+    assert.match(invite, /\.default\("editor"\)/);
     assert.equal(/viewer/.test(member), false);
-    assert.equal(/role/i.test(invite), false);
+    assert.equal(/viewer/.test(invite), false);
   });
 
   it("keeps every member, including an editor, on the library list", () => {
@@ -65,7 +68,7 @@ describe("workspace roles", () => {
     assert.equal(/viewer/.test(store), false);
   });
 
-  it("refuses editors before an invite is sent and stores added people as editors", () => {
+  it("refuses editors before an invite is sent and stores the chosen admin or editor role", () => {
     const people = readFileSync(new URL("./workspace-people.ts", import.meta.url), "utf8");
     const route = readFileSync(
       new URL("../app/api/workspaces/[id]/members/route.ts", import.meta.url),
@@ -74,23 +77,29 @@ describe("workspace roles", () => {
     const add = people.slice(people.indexOf("export async function addWorkspacePerson"));
     assert.match(add, /isWorkspaceAdmin/);
     assert.match(add, /Only an admin can add people/);
-    assert.match(add, /workspaceRole\("added"\)/);
+    assert.match(add, /addedMemberRole\(role\)/);
+    assert.match(add, /role: memberRole/);
     assert.ok(add.indexOf("isWorkspaceAdmin") < add.indexOf("sendWorkspaceInvite"));
-    assert.ok(add.indexOf("Only an admin can add people") < add.indexOf('workspaceRole("added")'));
+    assert.ok(add.indexOf("Only an admin can add people") < add.indexOf("addedMemberRole(role)"));
     assert.equal(/workspaceRole\("creator"\)/.test(add), false);
+    assert.equal(/workspaceRole\("added"\)/.test(add), false);
     assert.equal(/viewer/.test(add), false);
     assert.match(route, /addWorkspacePerson/);
+    assert.match(route, /input\.role \?\? ""/);
     assert.equal(/workspaceMembers/.test(route), false);
   });
 
-  it("joins an accepted invite as an editor", () => {
+  it("joins an accepted invite with the stored role and treats a missing role as editor", () => {
     const source = readFileSync(new URL("./workspace-invites.ts", import.meta.url), "utf8");
     const accept = source.slice(
       source.indexOf("export async function acceptWorkspaceInvite"),
       source.indexOf("export async function rejectWorkspaceInvite"),
     );
     const reject = source.slice(source.indexOf("export async function rejectWorkspaceInvite"));
-    assert.match(accept, /workspaceRole\("added"\)/);
+    assert.match(source, /workspaceInvites\.role/);
+    assert.match(source, /role === "admin" \|\| role === "editor"/);
+    assert.match(accept, /inviteMemberRole\(allowed\.role\)/);
+    assert.match(source, /workspaceRole\("added"\)/);
     assert.equal(/workspaceRole\("creator"\)/.test(accept), false);
     assert.equal(/viewer/.test(source), false);
     assert.equal(/workspaceMembers/.test(reject), false);
