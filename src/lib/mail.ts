@@ -1,5 +1,4 @@
-import { getDb } from "@/db";
-import { devMagicLinks } from "@/db/schema";
+import { SUPPORT_INBOX, SUPPORT_SUBJECT, supportRequestSchema } from "./support.ts";
 
 function escapeHtml(value: string) {
   return value
@@ -16,25 +15,32 @@ function singleLine(value: string) {
 
 async function deliverEmail(input: {
   email: string;
-  url: string;
+  url?: string;
   subject: string;
   html: string;
   missingKey: string;
   log: string;
   failure: string;
+  replyTo?: string;
+  storeDevLink?: boolean;
 }) {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
     if (process.env.NODE_ENV === "production") {
       throw new Error(input.missingKey);
     }
-    await getDb()
-      .insert(devMagicLinks)
-      .values({ email: input.email.toLowerCase(), url: input.url, createdAt: new Date() })
-      .onConflictDoUpdate({
-        target: devMagicLinks.email,
-        set: { url: input.url, createdAt: new Date() },
-      });
+    if (input.storeDevLink !== false) {
+      const { getDb } = await import("../db");
+      const { devMagicLinks } = await import("../db/schema");
+      const url = input.url ?? "";
+      await getDb()
+        .insert(devMagicLinks)
+        .values({ email: input.email.toLowerCase(), url, createdAt: new Date() })
+        .onConflictDoUpdate({
+          target: devMagicLinks.email,
+          set: { url, createdAt: new Date() },
+        });
+    }
     console.info(input.log);
     return;
   }
@@ -51,6 +57,7 @@ async function deliverEmail(input: {
     body: JSON.stringify({
       from,
       to: input.email,
+      reply_to: input.replyTo,
       subject: input.subject,
       html: input.html,
     }),
@@ -90,5 +97,21 @@ export async function sendWorkspaceInvite({
     missingKey: "RESEND_API_KEY is required to send workspace invitations",
     log: `Workspace invite for ${email}: ${url}`,
     failure: "Could not send the invitation email",
+  });
+}
+
+export async function sendSupportRequest(input: { email: string; message: string }) {
+  const request = supportRequestSchema.parse(input);
+  const safeEmail = escapeHtml(request.email);
+  const safeMessage = escapeHtml(request.message).replace(/\r?\n/g, "<br>");
+  await deliverEmail({
+    email: SUPPORT_INBOX,
+    replyTo: request.email,
+    storeDevLink: false,
+    subject: SUPPORT_SUBJECT,
+    html: `<p>Pamiac support request from ${safeEmail}.</p><p>${safeMessage}</p>`,
+    missingKey: "RESEND_API_KEY is required to send support requests",
+    log: `Support request from ${request.email}: ${request.message}`,
+    failure: "Could not send the support request",
   });
 }
