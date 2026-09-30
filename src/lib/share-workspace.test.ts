@@ -163,11 +163,11 @@ describe("share workspace choice", () => {
       /createDocument\(\s*user\.id,\s*input\.type,\s*input\.title,\s*input\.workspaceId\s*\)/,
     );
     assert.equal(agentSchema.includes("workspaceId"), false);
-    assert.match(agentRoute, /createDocument\(userId, input\.type, input\.title\)/);
-    assert.equal(
-      /createDocument\(\s*userId,\s*input\.type,\s*input\.title,/.test(agentRoute),
-      false,
+    assert.match(
+      agentRoute,
+      /createDocument\(\s*agent\.id,\s*input\.type,\s*input\.title,\s*agent\.workspaceId \?\? PERSONAL_SPACE_ID,\s*\)/,
     );
+    assert.equal(/input\.workspaceId/.test(agentRoute), false);
     assert.match(libraryCreate, /JSON\.stringify\(\{ type, workspaceId \}\)/);
     assert.match(tools, /<LibraryCreate workspaceId=\{workspaceId\} \/>/);
     assert.equal((store.match(/placeDocumentInWorkspace\(/g) ?? []).length, 2);
@@ -196,7 +196,8 @@ describe("share workspace choice", () => {
     assert.match(createRoute, /workspaceId: z\.string\(\)\.min\(1\)\.optional\(\)/);
     assert.equal(createRoute.includes("placeDocumentInWorkspace"), false);
     assert.equal(createRoute.includes("updateShare"), false);
-    assert.equal(agentRoute.includes("workspaceId"), false);
+    assert.match(agentRoute, /agent\.workspaceId \?\? PERSONAL_SPACE_ID/);
+    assert.equal(/input\.workspaceId/.test(agentRoute), false);
     assert.equal(agentRoute.includes("placeDocumentInWorkspace"), false);
     assert.equal(agentRoute.includes("updateShare"), false);
     assert.equal(saved.includes("workspaceId"), false);

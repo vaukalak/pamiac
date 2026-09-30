@@ -20,9 +20,9 @@ const searchSchema = z.object({
 
 export async function POST(request: Request) {
   try {
-    const userId = await requireAgentUser(request);
+    const agent = await requireAgentUser(request);
     const input = searchSchema.parse(await readJson(request));
-    const rows = await searchDocuments(userId, input.query, input.limit ?? 8);
+    const rows = await searchDocuments(agent.id, input.query, input.limit ?? 8, agent.workspaceId);
     return agentJson({
       results: rows.map((row) => {
         const presented = presentDocument(row, origin(request));

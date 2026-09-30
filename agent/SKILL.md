@@ -27,7 +27,7 @@ Base: `/api/agent/v1`
 { "query": "checkout payment classes", "limit": 8 }
 ```
 
-Search uses embeddings for this user's personal documents and the documents in workspaces where this user is a member. Results include `id`, `type`, `title`, `url`, `score`, and `excerpt`.
+Search reaches the workspace this token was bound to, and a personal binding reaches only that user's personal documents. Results include `id`, `type`, `title`, `url`, `score`, and `excerpt`.
 
 ## List, read, create, update
 

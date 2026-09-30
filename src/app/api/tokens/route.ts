@@ -15,6 +15,7 @@ export async function GET() {
 const createSchema = z.object({
   name: z.string(),
   expiration: z.unknown(),
+  workspaceId: z.string().optional(),
 });
 
 export async function POST(request: Request) {
@@ -28,7 +29,7 @@ export async function POST(request: Request) {
       const message = error instanceof Error ? error.message : "Invalid expiration";
       throw new HttpError(400, message);
     }
-    const token = await issueToken(user.id, input.name, expiresAt);
+    const token = await issueToken(user.id, input.name, expiresAt, input.workspaceId);
     return json(token, 201);
   } catch (error) {
     return errorResponse(error);
