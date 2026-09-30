@@ -53,12 +53,19 @@ describe("create in the open library", () => {
     assert.equal(/useState/.test(create), false);
   });
 
-  it("leaves agent and MCP creates on the personal library", () => {
+  it("creates an agent document in the bound workspace and leaves MCP creates personal", () => {
     const agent = read("../app/api/agent/v1/documents/route.ts");
     const mcp = read("./mcp-server.ts");
+    const schema = agent.slice(
+      agent.indexOf("const createSchema"),
+      agent.indexOf("export async function POST"),
+    );
 
-    assert.match(agent, /createDocument\(userId, input\.type, input\.title\)/);
-    assert.equal(/workspaceId/.test(agent), false);
+    assert.match(
+      agent,
+      /createDocument\(\s*agent\.id,\s*input\.type,\s*input\.title,\s*agent\.workspaceId \?\? PERSONAL_SPACE_ID,\s*\)/,
+    );
+    assert.equal(schema.includes("workspaceId"), false);
     assert.match(mcp, /createDocument\(userId, "note", title\)/);
     assert.match(mcp, /createDocument\(userId, "diagram", title\)/);
     assert.equal(/createDocument\([^)]*workspaceId/.test(mcp), false);

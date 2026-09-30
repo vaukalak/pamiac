@@ -9,7 +9,7 @@ import {
   getOwnedDocument,
   listDocuments,
   presentDocument,
-  searchDocuments,
+  searchAccountDocuments,
   updateDocumentContent,
 } from "@/lib/documents";
 import { UML_KINDS, UML_RELATIONS } from "@/lib/diagram";
@@ -200,7 +200,7 @@ export function createPamiacMcpServer(userId: string, origin: string) {
     async ({ query, limit }) => {
       if (!userId) return errorResult("Sign-in required");
       try {
-        const rows = await searchDocuments(userId, query, limit);
+        const rows = await searchAccountDocuments(userId, query, limit);
         return textResult({
           results: rows.map((row) => presentSearchHit(presentDocument(row, origin), row.score)),
         });

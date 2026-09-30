@@ -11,8 +11,8 @@ function slice(source: string, start: string, end?: string) {
   return source.slice(from, to);
 }
 
-describe("agent documents in the user's workspaces", () => {
-  it("lists and reads personal documents and current workspace documents", () => {
+describe("agent documents in the token workspace", () => {
+  it("lists and reads only the workspace the token is bound to", () => {
     const store = readFileSync(new URL("./documents.ts", import.meta.url), "utf8");
     const owned = slice(
       store,
@@ -50,23 +50,29 @@ describe("agent documents in the user's workspaces", () => {
       /and\(eq\(documents\.ownerId, userId\), isNull\(documents\.workspaceId\)\)/,
     );
     assert.match(where, /exists\(membership\)/);
-    assert.match(where, /eq\(workspaceMembers\.workspaceId, documents\.workspaceId\)/);
+    assert.match(where, /eq\(workspaceMembers\.workspaceId, workspaceId\)/);
     assert.match(where, /eq\(workspaceMembers\.userId, userId\)/);
+    assert.equal(/eq\(workspaceMembers\.workspaceId, documents\.workspaceId\)/.test(where), false);
     assert.equal(/\brole\b|isWorkspaceAdmin|visibility|updateShare/.test(where), false);
-    assert.match(list, /where\(agentDocumentWhere\(userId\)\)/);
+    assert.match(list, /where\(agentDocumentWhere\(userId, workspaceId\)\)/);
     assert.equal(/eq\(documents\.ownerId/.test(list), false);
-    assert.match(read, /agentDocumentWhere\(userId\)/);
+    assert.match(read, /agentDocumentWhere\(userId, workspaceId\)/);
     assert.equal(/eq\(documents\.ownerId|visibility/.test(read), false);
     assert.match(library, /listDocuments\(ownerId\)/);
     assert.equal(/listAgentDocuments|agentDocumentWhere/.test(library), false);
   });
 
-  it("searches the same documents and leaves a former workspace out", () => {
+  it("searches the bound workspace and leaves a former member with nothing", () => {
     const store = readFileSync(new URL("./documents.ts", import.meta.url), "utf8");
     const search = slice(
       store,
       "export async function searchDocuments",
-      "export function presentDocument",
+      "export async function searchAccountDocuments",
+    );
+    const visible = slice(
+      store,
+      "async function searchVisibleDocuments",
+      "export async function searchDocuments",
     );
     const where = slice(
       store,
@@ -74,12 +80,13 @@ describe("agent documents in the user's workspaces", () => {
       "export async function listAgentDocuments",
     );
 
-    assert.match(search, /const visible = agentDocumentWhere\(userId\)/);
-    assert.match(search, /\.where\(visible\)/);
-    assert.match(search, /and\(\s*visible,/);
+    assert.match(search, /const visible = agentDocumentWhere\(userId, workspaceId\)/);
+    assert.match(visible, /\.where\(visible\)/);
+    assert.match(visible, /and\(\s*visible,/);
     assert.equal(/eq\(documents\.ownerId/.test(search), false);
     assert.match(where, /isNull\(documents\.workspaceId\)/);
-    assert.match(where, /workspaceMembers/);
+    assert.match(where, /exists\(membership\)/);
+    assert.match(where, /eq\(documents\.workspaceId, workspaceId\)/);
     assert.equal(/workspaceInvites/.test(where), false);
   });
 
@@ -107,13 +114,15 @@ describe("agent documents in the user's workspaces", () => {
     const patch = slice(idRoute, "export async function PATCH");
     const create = slice(listRoute, "const createSchema", "export async function POST");
 
-    assert.match(listRoute, /listAgentDocuments\(userId\)/);
+    assert.match(listRoute, /listAgentDocuments\(agent\.id, agent\.workspaceId\)/);
     assert.equal(/listDocuments\(/.test(listRoute), false);
-    assert.equal(listRoute.includes("workspaceId"), false);
     assert.equal(create.includes("workspaceId"), false);
-    assert.match(listRoute, /createDocument\(userId, input\.type, input\.title\)/);
-    assert.match(idRoute, /getAgentDocument\(userId, id\)/);
-    assert.equal(/getOwnedDocument|updateShare|visibility|workspaceId/.test(idRoute), false);
+    assert.match(
+      listRoute,
+      /createDocument\(\s*agent\.id,\s*input\.type,\s*input\.title,\s*agent\.workspaceId \?\? PERSONAL_SPACE_ID,\s*\)/,
+    );
+    assert.match(idRoute, /getAgentDocument\(agent\.id, id, agent\.workspaceId\)/);
+    assert.equal(/getOwnedDocument|updateShare|visibility|input\.workspaceId/.test(idRoute), false);
     assert.match(
       patch,
       /if \(!current\) return agentJson\(\{ error: "Document not found" \}, 404\)/,
@@ -121,26 +130,35 @@ describe("agent documents in the user's workspaces", () => {
     assert.ok(patch.indexOf("getAgentDocument") < patch.indexOf("updateDocumentContent"));
     assert.match(
       patch,
-      /updateDocumentContent\(userId, id, \{\s*title: input\.title,\s*content: input\.content,\s*patch: input\.patch,\s*\}\)/,
+      /updateDocumentContent\(\s*agent\.id,\s*id,\s*\{\s*title: input\.title,\s*content: input\.content,\s*patch: input\.patch,\s*\},\s*agent\.workspaceId,\s*\)/,
     );
-    assert.match(searchRoute, /searchDocuments\(userId, input\.query, input\.limit \?\? 8\)/);
+    assert.match(
+      searchRoute,
+      /searchDocuments\(agent\.id, input\.query, input\.limit \?\? 8, agent\.workspaceId\)/,
+    );
     assert.equal(/listAgentDocuments|getAgentDocument/.test(humanList), false);
     assert.match(humanId, /getEditableDocument\(user\.id, id\)/);
     assert.equal(/getAgentDocument/.test(humanId), false);
   });
 
-  it("tells the agent skill that search includes workspace documents", () => {
+  it("tells the agent skill that search reaches the bound workspace", () => {
     const published = readFileSync(new URL("../../agent/SKILL.md", import.meta.url), "utf8");
     const cursorSkill = readFileSync(
       new URL("../../.cursor/skills/pamiac/SKILL.md", import.meta.url),
       "utf8",
     );
     const sentence =
-      "Search uses embeddings for this user's personal documents and the documents in workspaces where this user is a member.";
+      "Search reaches the workspace this token was bound to, and a personal binding reaches only that user's personal documents.";
 
     assert.equal(cursorSkill, published);
     assert.equal(published.includes(sentence), true);
     assert.equal(published.includes("Search uses this user's document embeddings."), false);
+    assert.equal(
+      published.includes(
+        "Search uses embeddings for this user's personal documents and the documents in workspaces where this user is a member.",
+      ),
+      false,
+    );
     assert.equal(published.includes("PAMIAC_TOKEN"), true);
   });
 });

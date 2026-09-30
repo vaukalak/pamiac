@@ -35,6 +35,7 @@ import {
 import { currentPlan, currentWorkspacePlan, documentRoom } from "@/lib/plans";
 import { hashPassword } from "@/lib/passwords";
 import { agentTokenStatus, createAgentToken, hashAgentToken } from "@/lib/tokens";
+import { listMemberWorkspaces } from "@/lib/workspaces";
 
 export async function listDocuments(ownerId: string) {
   return getDb()
@@ -44,24 +45,22 @@ export async function listDocuments(ownerId: string) {
     .orderBy(asc(documents.sortIndex), asc(documents.createdAt));
 }
 
-function agentDocumentWhere(userId: string) {
+function agentDocumentWhere(userId: string, workspaceId: string | null) {
+  if (!workspaceId) {
+    return and(eq(documents.ownerId, userId), isNull(documents.workspaceId));
+  }
   const membership = getDb()
     .select({ id: workspaceMembers.id })
     .from(workspaceMembers)
-    .where(
-      and(
-        eq(workspaceMembers.workspaceId, documents.workspaceId),
-        eq(workspaceMembers.userId, userId),
-      ),
-    );
-  return or(and(eq(documents.ownerId, userId), isNull(documents.workspaceId)), exists(membership));
+    .where(and(eq(workspaceMembers.workspaceId, workspaceId), eq(workspaceMembers.userId, userId)));
+  return and(eq(documents.workspaceId, workspaceId), exists(membership));
 }
 
-export async function listAgentDocuments(userId: string) {
+export async function listAgentDocuments(userId: string, workspaceId: string | null) {
   return getDb()
     .select()
     .from(documents)
-    .where(agentDocumentWhere(userId))
+    .where(agentDocumentWhere(userId, workspaceId))
     .orderBy(asc(documents.sortIndex), asc(documents.createdAt));
 }
 
@@ -199,11 +198,11 @@ export async function getOwnedDocument(ownerId: string, id: string) {
   return document ?? null;
 }
 
-export async function getAgentDocument(userId: string, id: string) {
+export async function getAgentDocument(userId: string, id: string, workspaceId: string | null) {
   const [document] = await getDb()
     .select()
     .from(documents)
-    .where(and(eq(documents.id, id), agentDocumentWhere(userId)));
+    .where(and(eq(documents.id, id), agentDocumentWhere(userId, workspaceId)));
   return document ?? null;
 }
 
@@ -236,6 +235,7 @@ export async function updateDocumentContent(
   userId: string,
   id: string,
   input: { title?: string; content?: unknown; patch?: DiagramPatch },
+  boundWorkspaceId?: string | null,
 ) {
   const db = getDb();
   const updated = await db.transaction(async (tx) => {
@@ -243,6 +243,12 @@ export async function updateDocumentContent(
     if (!current) throw new HttpError(404, "Document not found");
     const workspaceMember = await isDocumentWorkspaceMember(userId, current.workspaceId);
     if (current.ownerId !== userId && !workspaceMember) {
+      throw new HttpError(404, "Document not found");
+    }
+    if (
+      boundWorkspaceId !== undefined &&
+      !documentInTokenWorkspace(current, userId, boundWorkspaceId, workspaceMember)
+    ) {
       throw new HttpError(404, "Document not found");
     }
     const title = input.title?.trim() || current.title;
@@ -275,6 +281,16 @@ export async function updateDocumentContent(
   });
   await upsertEmbedding(updated);
   return updated;
+}
+
+function documentInTokenWorkspace(
+  document: { ownerId: string; workspaceId: string | null },
+  userId: string,
+  boundWorkspaceId: string | null,
+  workspaceMember: boolean,
+) {
+  if (!boundWorkspaceId) return document.ownerId === userId && !document.workspaceId;
+  return document.workspaceId === boundWorkspaceId && workspaceMember;
 }
 
 export async function deleteDocument(ownerId: string, id: string) {
@@ -404,10 +420,26 @@ async function upsertEmbedding(document: {
     });
 }
 
-export async function searchDocuments(userId: string, query: string, limit: number) {
+function accountDocumentWhere(userId: string) {
+  const membership = getDb()
+    .select({ id: workspaceMembers.id })
+    .from(workspaceMembers)
+    .where(
+      and(
+        eq(workspaceMembers.workspaceId, documents.workspaceId),
+        eq(workspaceMembers.userId, userId),
+      ),
+    );
+  return or(and(eq(documents.ownerId, userId), isNull(documents.workspaceId)), exists(membership));
+}
+
+async function searchVisibleDocuments(
+  query: string,
+  limit: number,
+  visible: ReturnType<typeof agentDocumentWhere>,
+) {
   const db = getDb();
   const embedding = embedText(query);
-  const visible = agentDocumentWhere(userId);
   try {
     const distance = cosineDistance(documentEmbeddings.embedding, embedding);
     const rows = await db
@@ -439,6 +471,20 @@ export async function searchDocuments(userId: string, query: string, limit: numb
       .limit(limit);
     return rows.map((row) => ({ ...row, score: 0, distance: null }));
   }
+}
+
+export async function searchDocuments(
+  userId: string,
+  query: string,
+  limit: number,
+  workspaceId: string | null,
+) {
+  const visible = agentDocumentWhere(userId, workspaceId);
+  return searchVisibleDocuments(query, limit, visible);
+}
+
+export async function searchAccountDocuments(userId: string, query: string, limit: number) {
+  return searchVisibleDocuments(query, limit, accountDocumentWhere(userId));
 }
 
 export function presentDocument(
@@ -495,6 +541,7 @@ async function authenticateAgentToken(token: string) {
       tokenHash: agentTokens.tokenHash,
       expiresAt: agentTokens.expiresAt,
       revokedAt: agentTokens.revokedAt,
+      workspaceId: agentTokens.workspaceId,
     })
     .from(agentTokens)
     .innerJoin(user, eq(user.id, agentTokens.userId))
@@ -506,14 +553,19 @@ async function authenticateAgentToken(token: string) {
     .update(agentTokens)
     .set({ lastUsedAt: new Date() })
     .where(eq(agentTokens.id, row.id));
-  return { status: "ok" as const, user: { id: row.userId, email: row.email } };
+  return {
+    status: "ok" as const,
+    user: { id: row.userId, email: row.email, workspaceId: row.workspaceId },
+  };
 }
 
 export async function requireAgentUser(request: Request) {
   const header = request.headers.get("authorization") ?? "";
   const token = header.startsWith("Bearer ") ? header.slice("Bearer ".length).trim() : "";
   const result = await authenticateAgentToken(token);
-  if (result.status === "ok") return result.user.id;
+  if (result.status === "ok") {
+    return { id: result.user.id, workspaceId: result.user.workspaceId };
+  }
   if (result.status === "expired") throw new HttpError(401, "Expired agent token");
   if (result.status === "invalid") throw new HttpError(401, "Invalid agent token");
   throw new HttpError(401, "Missing agent token");
@@ -539,15 +591,32 @@ export async function listTokens(userId: string) {
       lastUsedAt: agentTokens.lastUsedAt,
       expiresAt: agentTokens.expiresAt,
       revokedAt: agentTokens.revokedAt,
+      workspaceId: agentTokens.workspaceId,
     })
     .from(agentTokens)
     .where(eq(agentTokens.userId, userId))
     .orderBy(asc(agentTokens.createdAt));
 }
 
-export async function issueToken(userId: string, name: string, expiresAt: Date | null) {
+async function boundTokenWorkspace(userId: string, workspaceId?: string) {
+  const value = workspaceId?.trim() ?? "";
+  if (!value || value === PERSONAL_SPACE_ID) return null;
+  const memberships = await listMemberWorkspaces(userId);
+  if (!memberships.some((workspace) => workspace.id === value)) {
+    throw new HttpError(404, "Workspace not found");
+  }
+  return value;
+}
+
+export async function issueToken(
+  userId: string,
+  name: string,
+  expiresAt: Date | null,
+  workspaceId?: string,
+) {
   const trimmed = name.trim();
   if (!trimmed || trimmed.length > 80) throw new HttpError(400, "Give the token a name");
+  const boundWorkspaceId = await boundTokenWorkspace(userId, workspaceId);
   const created = createAgentToken();
   const id = crypto.randomUUID();
   await getDb().insert(agentTokens).values({
@@ -558,6 +627,7 @@ export async function issueToken(userId: string, name: string, expiresAt: Date |
     tokenPrefix: created.tokenPrefix,
     secret: created.token,
     expiresAt,
+    workspaceId: boundWorkspaceId,
   });
   return { id, name: trimmed, token: created.token, tokenPrefix: created.tokenPrefix };
 }

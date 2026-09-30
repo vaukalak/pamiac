@@ -6,7 +6,7 @@ import { Alert } from "@/ui/Alert";
 interface Properties {
   name: string;
   label: string;
-  type?: "text" | "email" | "password";
+  type?: "text" | "email" | "password" | "date";
   autoComplete?: string;
   placeholder?: string;
 }
