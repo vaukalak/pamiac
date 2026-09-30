@@ -1818,6 +1818,7 @@ code {
 }
 .home > .app-header,
 .home-main,
+.home > .home-support,
 .home-foot {
   position: relative;
   z-index: 1;
@@ -2396,6 +2397,91 @@ code {
     white-space: normal;
     text-align: center;
   }
+}
+
+.home .home-support {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: safe center;
+  width: min(460px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 32px 0 16px;
+}
+.home .home-support-panel {
+  width: 100%;
+  padding: 28px;
+  border: 1px solid var(--home-hair);
+  border-radius: 16px;
+  background: var(--home-panel);
+  box-shadow: var(--home-shadow);
+  color: var(--home-text);
+}
+.home .home-support-panel h1 {
+  margin: 0 0 8px;
+  color: var(--home-text);
+  font-family: var(--sans);
+  font-size: 32px;
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+}
+.home .home-support-panel p {
+  margin: 0 0 12px;
+  color: var(--home-soft);
+}
+.home .home-support-panel .form-stack p,
+.home .home-support-panel [role="status"] p:last-child {
+  margin-bottom: 0;
+}
+.home .home-support-panel label {
+  color: var(--home-text);
+}
+.home .home-support-panel input,
+.home .home-support-panel textarea {
+  border-color: var(--home-line);
+  background: #101410;
+  color: var(--home-text);
+  caret-color: var(--home-lime);
+}
+.home .home-support-panel input::placeholder,
+.home .home-support-panel textarea::placeholder {
+  color: var(--home-soft);
+}
+.home .home-support-panel input:focus,
+.home .home-support-panel textarea:focus {
+  border-color: var(--home-lime);
+  box-shadow: 0 0 0 3px rgba(185, 245, 66, 0.35);
+}
+.home .home-support-panel input:-webkit-autofill,
+.home .home-support-panel input:-webkit-autofill:focus {
+  border-color: var(--home-line);
+  -webkit-text-fill-color: var(--home-text);
+  caret-color: var(--home-lime);
+  box-shadow: 0 0 0 1000px #101410 inset;
+}
+.home .home-support-panel .error {
+  color: #ffb4ab;
+}
+.home .home-support-panel .btn {
+  width: 100%;
+  border-color: var(--home-lime);
+  background: var(--home-lime);
+  color: var(--home-on-lime);
+}
+.home .home-support-panel .btn:hover:not(:disabled) {
+  border-color: var(--home-lime-deep);
+  background: var(--home-lime-deep);
+  color: var(--home-on-lime);
+}
+.home .home-support-panel .btn:focus-visible {
+  outline: 2px solid var(--home-text);
+  outline-offset: 3px;
+}
+.home .home-support-panel .btn:disabled {
+  opacity: 0.45;
+  cursor: progress;
 }
 
 @media (prefers-reduced-motion: reduce) {
