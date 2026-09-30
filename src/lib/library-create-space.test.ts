@@ -37,13 +37,14 @@ describe("create in the open library", () => {
 
   it("threads the open space into the create buttons and shows the API error", () => {
     const board = read("../components/library/document-board.tsx");
-    const dashboard = read("../components/library/library-dashboard.tsx");
+    const column = read("../components/library/library-column.tsx");
+    const actions = read("../components/library/library-heading-actions.tsx");
     const tools = read("../components/library/library-tools.tsx");
     const create = read("../components/library/library-create.tsx");
 
-    assert.match(board, /<LibraryDashboard[\s\S]*workspaceId=\{workspaceId\}/);
-    assert.match(dashboard, /<LibraryTools[\s\S]*workspaceId=\{workspaceId\}/);
-    assert.match(tools, /<LibraryCreate workspaceId=\{workspaceId\} \/>/);
+    assert.match(board, /<LibraryColumn[\s\S]*workspaceId=\{workspaceId\}/);
+    assert.match(column, /<LibraryDashboard[\s\S]*workspaceId=\{workspaceId\}/);
+    assert.match(actions, /<LibraryCreate workspaceId=\{workspaceId\} \/>/);
     assert.match(tools, /<ViewToggle/);
     assert.match(create, /JSON\.stringify\(\{ type, workspaceId \}\)/);
     assert.match(create, /body\?\.error \?\? "Could not create the document"/);

@@ -17,7 +17,10 @@ export function WorkspaceSpace(props: Properties) {
       onClick={onSelect}
       type="button"
     >
-      <span aria-hidden="true">{spaceInitial(label)}</span>
+      <span aria-hidden="true" className="workspace-space-mark">
+        {spaceInitial(label)}
+      </span>
+      <span className="workspace-space-name">{label}</span>
       <span className="workspace-space-tip">{spaceTip(label)}</span>
     </button>
   );

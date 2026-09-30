@@ -1,24 +1,21 @@
 import type { BoardDocument } from "@/components/library/board-document";
-import type { Visibility } from "@/lib/access";
+import { DocumentCardFoot } from "@/components/library/document-card-foot";
+import { DocumentCardPreview } from "@/components/library/document-card-preview";
 
 interface Properties {
   document: BoardDocument;
 }
 
-const VISIBILITY_LABEL: Record<Visibility, string> = {
-  private: "Only me",
-  emails: "Email",
-  password: "Password",
-  public: "Public",
-};
-
 export function DocumentCardMeta(props: Properties) {
   const { document } = props;
+  const typeLabel = document.type === "note" ? "NOTE" : "DIAGRAM";
 
   return (
-    <div className="meta">
-      <span>{document.type === "note" ? "Note" : "UML"}</span>
-      <span className="badge">{VISIBILITY_LABEL[document.visibility]}</span>
-    </div>
+    <>
+      <span className="doc-type">{typeLabel}</span>
+      <h2>{document.title}</h2>
+      <DocumentCardPreview document={document} />
+      <DocumentCardFoot document={document} />
+    </>
   );
 }
