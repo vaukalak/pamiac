@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 
-const home = readFileSync(new URL("../app/page.tsx", import.meta.url), "utf8");
+const home = readFileSync(new URL("../components/home/home-hero.tsx", import.meta.url), "utf8");
 const login = readFileSync(new URL("../app/login/page.tsx", import.meta.url), "utf8");
 const copy = readFileSync(
   new URL("../components/login/login-sign-in-copy.tsx", import.meta.url),
@@ -36,11 +36,11 @@ function slice(source: string, startMark: string, endMark: string) {
 }
 
 describe("sign-in link words", () => {
-  it("keeps the rest of the home lede after the sign-in clause", () => {
+  it("keeps the home lede in ordinary words", () => {
     const lede = slice(home, '<p className="lede">', "</p>");
 
     expect(lede).toMatch(
-      /We email you a link to sign in, draw UML, and write notes you can drag into shape\.\s+Every\s+document has a direct link\. Share it by email, password, or in public, and give an agent\s+a token so it can search and edit your library\./,
+      /Write notes, map ideas, and give your agents the context to move work forward\./,
     );
     expect(lede).not.toMatch(/magic/i);
   });
