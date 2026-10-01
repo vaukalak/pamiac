@@ -10,6 +10,56 @@ function source(path: string) {
   return readFileSync(new URL(path, root), "utf8");
 }
 
+function tableTags(bytes: Buffer) {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const count = view.getUint16(4);
+  const tags: string[] = [];
+  for (let index = 0; index < count; index += 1) {
+    const record = 12 + index * 16;
+    tags.push(
+      String.fromCharCode(bytes[record], bytes[record + 1], bytes[record + 2], bytes[record + 3]),
+    );
+  }
+  return tags;
+}
+
+function cmapHas(bytes: Buffer, letter: string) {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const tags = tableTags(bytes);
+  const cmapIndex = tags.indexOf("cmap");
+  assert.ok(cmapIndex >= 0);
+  const cmapOffset = view.getUint32(12 + cmapIndex * 16 + 8);
+  const encodingCount = view.getUint16(cmapOffset + 2);
+  let subtable = -1;
+  for (let index = 0; index < encodingCount; index += 1) {
+    const record = cmapOffset + 4 + index * 8;
+    const platform = view.getUint16(record);
+    const encoding = view.getUint16(record + 2);
+    if (platform === 3 && (encoding === 1 || encoding === 10)) {
+      subtable = cmapOffset + view.getUint32(record + 4);
+    }
+  }
+  assert.ok(subtable >= 0);
+  const format = view.getUint16(subtable);
+  const code = letter.codePointAt(0) ?? 0;
+  if (format !== 4) return false;
+  const segCount = view.getUint16(subtable + 6) / 2;
+  const endCode = subtable + 14;
+  const startCode = endCode + segCount * 2 + 2;
+  const idDelta = startCode + segCount * 2;
+  const idRangeOffset = idDelta + segCount * 2;
+  for (let segment = 0; segment < segCount; segment += 1) {
+    const end = view.getUint16(endCode + segment * 2);
+    const start = view.getUint16(startCode + segment * 2);
+    if (code < start || code > end) continue;
+    const rangeOffset = view.getUint16(idRangeOffset + segment * 2);
+    if (rangeOffset === 0) return ((code + view.getUint16(idDelta + segment * 2)) & 0xffff) !== 0;
+    const glyphOffset = idRangeOffset + segment * 2 + rangeOffset + (code - start) * 2;
+    return view.getUint16(glyphOffset) !== 0;
+  }
+  return false;
+}
+
 const shareSources = [
   "src/components/share-preview/share-card.tsx",
   "src/components/share-preview/note-share-card.tsx",
@@ -74,14 +124,19 @@ describe("share card theme", () => {
   it("loads Outfit 400 and 600 from static files and drops Fraunces", async () => {
     const regularPath = new URL("assets/Outfit-Regular.ttf", root);
     const semiboldPath = new URL("assets/Outfit-SemiBold.ttf", root);
+    const cyrillicRegularPath = new URL("assets/Manrope-Regular.ttf", root);
+    const cyrillicSemiboldPath = new URL("assets/Manrope-SemiBold.ttf", root);
     const fonts = await shareImageFonts();
 
     assert.equal(existsSync(regularPath), true);
     assert.equal(existsSync(semiboldPath), true);
+    assert.equal(existsSync(cyrillicRegularPath), true);
+    assert.equal(existsSync(cyrillicSemiboldPath), true);
     assert.equal(existsSync(new URL("assets/Fraunces-Regular.ttf", root)), false);
     assert.equal(existsSync(new URL("assets/Fraunces-SemiBold.ttf", root)), false);
 
     const outfitName = Buffer.from("Outfit", "utf16le").swap16();
+    const manropeName = Buffer.from("Manrope", "utf16le").swap16();
     const frauncesName = Buffer.from("Fraunces", "utf16le").swap16();
 
     for (const path of [regularPath, semiboldPath]) {
@@ -91,20 +146,50 @@ describe("share card theme", () => {
       assert.equal(bytes.includes(frauncesName), false);
     }
 
+    for (const path of [cyrillicRegularPath, cyrillicSemiboldPath]) {
+      const bytes = readFileSync(path);
+      assert.equal(bytes.subarray(0, 4).toString("hex"), "00010000");
+      assert.equal(bytes.includes(manropeName), true);
+      assert.equal(bytes.includes(frauncesName), false);
+    }
+
     assert.deepEqual(
       fonts.map((font) => ({ name: font.name, style: font.style, weight: font.weight })),
       [
         { name: "Outfit", style: "normal", weight: 400 },
         { name: "Outfit", style: "normal", weight: 600 },
+        { name: "Manrope", style: "normal", weight: 400 },
+        { name: "Manrope", style: "normal", weight: 600 },
       ],
     );
     assert.equal(fonts[0].data.equals(readFileSync(regularPath)), true);
     assert.equal(fonts[1].data.equals(readFileSync(semiboldPath)), true);
+    assert.equal(fonts[2].data.equals(readFileSync(cyrillicRegularPath)), true);
+    assert.equal(fonts[3].data.equals(readFileSync(cyrillicSemiboldPath)), true);
 
     const license = source("assets/OFL.txt");
     assert.match(license, /Copyright 2021 The Outfit Project Authors/);
+    assert.match(
+      license,
+      /Copyright 2018 The Manrope Project Authors \(https:\/\/github.com\/googlefonts\/manrope\)/,
+    );
     assert.match(license, /SIL OPEN FONT LICENSE/);
     assert.equal(license.includes("Fraunces"), false);
+  });
+
+  it("keeps Belarusian letters in Manrope and out of Outfit", () => {
+    const letters = ["ў", "і", "ё", "Ў", "І", "Ё"];
+
+    for (const path of ["assets/Manrope-Regular.ttf", "assets/Manrope-SemiBold.ttf"]) {
+      const bytes = readFileSync(new URL(path, root));
+      for (const letter of letters) assert.equal(cmapHas(bytes, letter), true, path);
+      assert.equal(tableTags(bytes).includes("fvar"), false);
+    }
+
+    for (const path of ["assets/Outfit-Regular.ttf", "assets/Outfit-SemiBold.ttf"]) {
+      const bytes = readFileSync(new URL(path, root));
+      for (const letter of letters) assert.equal(cmapHas(bytes, letter), false, path);
+    }
   });
 
   it("draws the circuit behind the type with trace and lime strokes", () => {
