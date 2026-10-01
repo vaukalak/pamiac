@@ -2,6 +2,7 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import { CircuitBoard } from "@/components/home/circuit-board";
 import type { LibraryFilter } from "@/components/library/board-document";
 import { LibrarySidebar, type LibraryPage } from "@/components/library/library-sidebar";
@@ -39,6 +40,7 @@ interface Properties {
 
 export function LibraryShell(props: Properties) {
   const { children, email, page, workspaces } = props;
+  const router = useRouter();
   const queryClient = useQueryClient();
   const spacesQuery = useQuery({
     ...workspacesQueryOptions(),
@@ -57,7 +59,7 @@ export function LibraryShell(props: Properties) {
     const known = librarySpaces(stored).some((space) => space.id === nextId);
     if (!known) return;
     window.localStorage.setItem(OPEN_LIBRARY_KEY, nextId);
-    setWorkspaceId(nextId);
+    router.push("/workspace");
   }
 
   function onFilter(_next: LibraryFilter) {}

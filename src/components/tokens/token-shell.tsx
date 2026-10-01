@@ -48,7 +48,7 @@ export function TokenShell(props: Properties) {
     const known = librarySpaces(stored).some((space) => space.id === nextId);
     if (!known) return;
     window.localStorage.setItem(OPEN_LIBRARY_KEY, nextId);
-    setWorkspaceId(nextId);
+    router.push("/workspace");
   }
 
   function chooseFilter(next: LibraryFilter) {
