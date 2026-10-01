@@ -11,7 +11,7 @@ import { getDocumentBundle, isDocumentWorkspaceMember } from "@/lib/documents";
 import { documentSpaceLabel, type NamedWorkspace } from "@/lib/library-spaces";
 import { loadSharePreview } from "@/lib/load-share-preview";
 import { unlockCookieName, unlockMatches } from "@/lib/passwords";
-import { sharePageMetadata } from "@/lib/share-preview";
+import { documentShareTarget, sharePageMetadata } from "@/lib/share-preview";
 import { getLibrarySession } from "@/lib/session";
 import { listMemberWorkspaces } from "@/lib/workspaces";
 
@@ -24,7 +24,7 @@ interface Properties {
 export async function generateMetadata(props: Properties): Promise<Metadata> {
   const { params } = props;
   const { id } = await params;
-  return sharePageMetadata(await loadSharePreview(id));
+  return sharePageMetadata(await loadSharePreview(id), documentShareTarget(id));
 }
 
 export default async function DocumentPage(props: Properties) {
