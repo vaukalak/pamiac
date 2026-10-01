@@ -2569,6 +2569,9 @@ code {
   position: relative;
   z-index: 1;
 }
+.library-shell:has(.doc-menu .menu-panel) > .library-main {
+  z-index: 6;
+}
 .library-shell ::selection {
   background: var(--home-lime);
   color: var(--home-on-lime);
