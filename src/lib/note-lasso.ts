@@ -13,11 +13,8 @@ export interface Rect {
 export interface BlockBox {
   id: string;
   rect: Rect;
-}
-
-export interface LassoSelection {
-  firstId: string;
-  lastId: string;
+  contentRect?: Rect | null;
+  parentId?: string | null;
 }
 
 export interface LassoStart {
@@ -53,18 +50,49 @@ export function rectsIntersect(first: Rect, second: Rect): boolean {
   );
 }
 
-export function lassoSelection(blocks: readonly BlockBox[], lasso: Rect): LassoSelection | null {
-  let firstId: string | null = null;
-  let lastId: string | null = null;
-
+function childrenByParent(blocks: readonly BlockBox[]) {
+  const children = new Map<string, string[]>();
   for (const block of blocks) {
-    if (!rectsIntersect(block.rect, lasso)) continue;
-    if (firstId === null) firstId = block.id;
-    lastId = block.id;
+    if (!block.parentId) continue;
+    const list = children.get(block.parentId);
+    if (list) list.push(block.id);
+    else children.set(block.parentId, [block.id]);
   }
+  return children;
+}
 
-  if (firstId === null || lastId === null) return null;
-  return { firstId, lastId };
+function descendantIntersects(
+  id: string,
+  intersectingIds: ReadonlySet<string>,
+  children: ReadonlyMap<string, readonly string[]>,
+) {
+  const pending = [...(children.get(id) ?? [])];
+  const seen = new Set<string>();
+  while (pending.length > 0) {
+    const next = pending.pop();
+    if (!next || seen.has(next)) continue;
+    seen.add(next);
+    if (intersectingIds.has(next)) return true;
+    const nested = children.get(next);
+    if (nested) pending.push(...nested);
+  }
+  return false;
+}
+
+export function lassoSelection(blocks: readonly BlockBox[], lasso: Rect): string[] | null {
+  const intersecting = blocks.filter((block) => rectsIntersect(block.rect, lasso));
+  if (intersecting.length === 0) return null;
+
+  const intersectingIds = new Set(intersecting.map((block) => block.id));
+  const children = childrenByParent(blocks);
+  const ids = intersecting
+    .filter((block) => {
+      if (!descendantIntersects(block.id, intersectingIds, children)) return true;
+      return block.contentRect != null && rectsIntersect(block.contentRect, lasso);
+    })
+    .map((block) => block.id);
+
+  return ids.length > 0 ? ids : null;
 }
 
 export function dragPastThreshold(
@@ -85,4 +113,23 @@ export function lassoStartAllowed(start: LassoStart): boolean {
   }
   if (start.onSideMenu || start.onDragHandle) return false;
   return true;
+}
+
+export function collapseLeftoverSelection<Position, Mark, Transaction>(
+  view:
+    | {
+        state: {
+          selection: { empty: boolean; from: number };
+          doc: { resolve: (position: number) => Position };
+          tr: { setSelection: (selection: Mark) => Transaction };
+        };
+        dispatch: (transaction: Transaction) => void;
+      }
+    | null
+    | undefined,
+  near: (position: Position) => Mark,
+) {
+  if (!view || view.state.selection.empty) return;
+  const collapsed = near(view.state.doc.resolve(view.state.selection.from));
+  view.dispatch(view.state.tr.setSelection(collapsed));
 }
