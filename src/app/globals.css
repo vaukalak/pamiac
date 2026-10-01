@@ -675,6 +675,7 @@ input.title-input:focus {
 .note-lasso {
   position: fixed;
   z-index: 20;
+  display: none;
   box-sizing: border-box;
   pointer-events: none;
   border: 1px solid var(--bn-colors-selected-background, var(--teal));
@@ -684,6 +685,12 @@ input.title-input:focus {
   background: var(--note-lasso-fill);
 }
 .note-editor .bn-block.note-lasso-block:not(:has(> .bn-block-content)) {
+  background: var(--note-lasso-fill);
+}
+.note-editor .bn-block:hover:not(:has(.bn-block:hover)) > .bn-block-content {
+  background: var(--note-lasso-fill);
+}
+.note-editor .bn-block:hover:not(:has(.bn-block:hover)):not(:has(> .bn-block-content)) {
   background: var(--note-lasso-fill);
 }
 
