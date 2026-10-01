@@ -159,4 +159,24 @@ describe("library mobile menu", () => {
     assert.match(css, /\.library-shell:has\(\.share-backdrop\) \.library-menu-button/);
     assert.match(narrow, /padding-top:\s*72px/);
   });
+
+  it("raises library main above the sidebar only while a document card menu is open", () => {
+    const css = read("../app/globals.css");
+    const base = block(
+      css,
+      ".library-shell > .library-main,\n.library-shell > .library-status {",
+      ".library-shell:has(.doc-menu .menu-panel) > .library-main",
+    );
+    const raised = block(
+      css,
+      ".library-shell:has(.doc-menu .menu-panel) > .library-main {",
+      ".library-shell ::selection",
+    );
+
+    assert.match(base, /z-index:\s*1/);
+    assert.match(raised, /z-index:\s*6/);
+    assert.equal(/\.library-create/.test(raised), false);
+    assert.equal(/\.library-status/.test(raised), false);
+    assert.equal(/\.library-sidebar/.test(raised), false);
+  });
 });
