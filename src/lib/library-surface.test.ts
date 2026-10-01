@@ -53,7 +53,7 @@ describe("library shell writing surfaces", () => {
     assert.match(sheet, /caret-color:\s*var\(--home-lime\)/);
     assert.doesNotMatch(sheet, /var\(--card\)|var\(--ink\)/);
     assert.match(colors, /--bn-colors-editor-text:\s*var\(--home-text\)/);
-    assert.match(colors, /--bn-colors-menu-background:\s*var\(--home-panel\)/);
+    assert.match(colors, /--bn-colors-menu-background:\s*#0d110e/);
     assert.match(colors, /--bn-colors-tooltip-background:\s*var\(--home-panel\)/);
     assert.match(colors, /--bn-colors-hovered-text:\s*var\(--home-text\)/);
     assert.match(colors, /--bn-colors-selected-background:\s*var\(--home-lime\)/);

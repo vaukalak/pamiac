@@ -3308,7 +3308,7 @@ code {
   --bn-colors-editor-text: var(--home-text);
   --bn-colors-editor-background: transparent;
   --bn-colors-menu-text: var(--home-text);
-  --bn-colors-menu-background: var(--home-panel);
+  --bn-colors-menu-background: #0d110e;
   --bn-colors-tooltip-text: var(--home-text);
   --bn-colors-tooltip-background: var(--home-panel);
   --bn-colors-hovered-text: var(--home-text);
@@ -3320,6 +3320,11 @@ code {
   --bn-colors-shadow: rgba(0, 0, 0, 0.45);
   --bn-colors-border: var(--home-hair);
   --bn-colors-side-menu: var(--home-soft);
+}
+.library-shell .note-editor .bn-suggestion-menu,
+.library-shell .note-editor .bn-menu-dropdown,
+.library-shell .note-editor .bn-drag-handle-menu {
+  background-color: #0d110e;
 }
 .library-shell .note-editor {
   --bn-colors-selected-background: var(--home-lime);
