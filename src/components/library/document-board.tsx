@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { useForm } from "react-hook-form";
 import { CircuitBoard } from "@/components/home/circuit-board";
 import {
@@ -16,7 +16,15 @@ import { LibrarySidebar } from "@/components/library/library-sidebar";
 import { LibraryStatus } from "@/components/library/library-status";
 import { documentPreview } from "@/lib/content";
 import { libraryItemsQueryKey, libraryItemsQueryOptions } from "@/lib/library-items";
-import { LIBRARY_FILTER_KEY, libraryFilter } from "@/lib/library-memory";
+import {
+  LIBRARY_FILTER_KEY,
+  libraryFilter,
+  OPEN_LIBRARY_PENDING,
+  openLibraryServerSnapshot,
+  openLibrarySnapshot,
+  publishOpenLibrary,
+  subscribeOpenLibrary,
+} from "@/lib/library-memory";
 import { libraryQueryMatches, libraryTypeCounts } from "@/lib/library-query";
 import {
   documentsInSpace,
@@ -27,6 +35,7 @@ import {
   type NamedWorkspace,
 } from "@/lib/library-spaces";
 import { workspacesQueryKey, workspacesQueryOptions } from "@/lib/library-workspaces";
+import { Page } from "@/ui/Page";
 
 export type { BoardDocument };
 
@@ -62,9 +71,16 @@ export function DocumentBoard(props: Properties) {
   const [filter, setFilter] = useState<LibraryFilter>("all");
   const [view, setView] = useState<LibraryView>("grid");
   const [dragging, setDragging] = useState<string | null>(null);
-  const [workspaceId, setWorkspaceId] = useState(PERSONAL_SPACE_ID);
+  const storedLibraryId = useSyncExternalStore(
+    subscribeOpenLibrary,
+    openLibrarySnapshot,
+    openLibraryServerSnapshot,
+  );
+  const workspaceReady = storedLibraryId !== OPEN_LIBRARY_PENDING;
+  const listed = queryClient.getQueryData<NamedWorkspace[]>(workspacesQueryKey) ?? spacesQuery.data;
+  const workspaceId = workspaceReady ? openLibraryId(storedLibraryId, listed) : null;
   const query = searchForm.watch("query") ?? "";
-  const library = documentsInSpace(workspaceId, items, spacesQuery.data);
+  const library = documentsInSpace(workspaceId ?? PERSONAL_SPACE_ID, items, listed);
   const counts = libraryTypeCounts(library);
   const visible = useMemo(
     () =>
@@ -77,17 +93,12 @@ export function DocumentBoard(props: Properties) {
   );
   const reorder =
     view === "grid" && filter === "all" && workspaceId === PERSONAL_SPACE_ID && query.trim() === "";
-  const spaceName = spaceTitle(workspaceId, spacesQuery.data);
+  const spaceName = spaceTitle(workspaceId ?? PERSONAL_SPACE_ID, listed);
 
   useEffect(() => {
     const stored = window.localStorage.getItem(VIEW_KEY);
     if (stored === "grid" || stored === "list") setView(stored);
   }, []);
-
-  useEffect(() => {
-    const next = openLibraryId(window.localStorage.getItem(OPEN_LIBRARY_KEY), spacesQuery.data);
-    setWorkspaceId(next);
-  }, [spacesQuery.data]);
 
   function chooseView(next: LibraryView) {
     setView(next);
@@ -109,7 +120,7 @@ export function DocumentBoard(props: Properties) {
     const known = librarySpaces(stored).some((space) => space.id === nextId);
     if (!known) return;
     window.localStorage.setItem(OPEN_LIBRARY_KEY, nextId);
-    setWorkspaceId(nextId);
+    publishOpenLibrary();
     searchForm.reset({ query: "" });
   }
 
@@ -157,30 +168,34 @@ export function DocumentBoard(props: Properties) {
         onFilter={chooseFilter}
         onSelect={chooseWorkspace}
         page="library"
-        selectedId={workspaceId}
+        selectedId={workspaceId ?? ""}
         workspaces={workspaces}
       />
-      <LibraryColumn
-        className="library-main"
-        counts={counts}
-        dragging={dragging}
-        filter={filter}
-        form={searchForm}
-        libraryCount={library.length}
-        onChange={apply}
-        onDragStart={setDragging}
-        onDrop={(id) => {
-          void dropOn(id);
-        }}
-        onFilter={chooseFilter}
-        onView={chooseView}
-        reorder={reorder}
-        spaceName={spaceName}
-        view={view}
-        visible={visible}
-        workspaceId={workspaceId}
-      />
-      <LibraryStatus count={library.length} />
+      {workspaceId ? (
+        <LibraryColumn
+          className="library-main"
+          counts={counts}
+          dragging={dragging}
+          filter={filter}
+          form={searchForm}
+          libraryCount={library.length}
+          onChange={apply}
+          onDragStart={setDragging}
+          onDrop={(id) => {
+            void dropOn(id);
+          }}
+          onFilter={chooseFilter}
+          onView={chooseView}
+          reorder={reorder}
+          spaceName={spaceName}
+          view={view}
+          visible={visible}
+          workspaceId={workspaceId}
+        />
+      ) : (
+        <Page className="library-main">{null}</Page>
+      )}
+      {workspaceId ? <LibraryStatus count={library.length} /> : null}
     </div>
   );
 }
