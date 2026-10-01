@@ -2,7 +2,6 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { ProfileMenu } from "@/components/header/profile-menu";
 import { CircuitBoard } from "@/components/home/circuit-board";
 import type { LibraryFilter } from "@/components/library/board-document";
 import { LibrarySidebar, type LibraryPage } from "@/components/library/library-sidebar";
@@ -67,6 +66,7 @@ export function LibraryShell(props: Properties) {
     <div className="library-shell">
       <CircuitBoard />
       <LibrarySidebar
+        email={email}
         filter="all"
         onFilter={onFilter}
         onSelect={chooseWorkspace}
@@ -74,7 +74,6 @@ export function LibraryShell(props: Properties) {
         selectedId={workspaceId}
         workspaces={workspaces}
       />
-      <ProfileMenu email={email} />
       <LibraryShellContext.Provider value={{ workspaceId, workspaces }}>
         <Page className="library-main">{children}</Page>
       </LibraryShellContext.Provider>

@@ -123,7 +123,7 @@ describe("workspace roles", () => {
       "utf8",
     );
     const sidebar = readFileSync(
-      new URL("../components/library/library-sidebar.tsx", import.meta.url),
+      new URL("../components/library/library-sidebar-panel.tsx", import.meta.url),
       "utf8",
     );
     const documents = readFileSync(new URL("./documents.ts", import.meta.url), "utf8");

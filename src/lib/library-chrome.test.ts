@@ -93,7 +93,7 @@ describe("library chrome", () => {
   });
 
   it("opens workspace creation in a modal and closes it after create", () => {
-    const sidebar = read("../components/library/library-sidebar.tsx");
+    const sidebar = read("../components/library/library-sidebar-panel.tsx");
     const dialog = read("../components/library/library-space-add-dialog.tsx");
     const panel = read("../components/library/library-space-add-panel.tsx");
     const heading = read("../components/library/library-space-add-heading.tsx");

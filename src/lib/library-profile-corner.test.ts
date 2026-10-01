@@ -14,18 +14,29 @@ function block(source: string, start: string, end: string) {
 }
 
 describe("library profile corner", () => {
-  it("renders the account menu once beside the sidebar, not in the rail", () => {
+  it("renders the account menu once in the shared header, not in the rail", () => {
     const board = read("../components/library/document-board.tsx");
-    const sidebar = read("../components/library/library-sidebar.tsx");
-    const shell = block(board, '<div className="library-shell">', "</div>");
+    const documentShell = read("../components/document/document-shell.tsx");
+    const libraryShell = read("../components/library/library-shell.tsx");
+    const tokenShell = read("../components/tokens/token-shell.tsx");
+    const panel = read("../components/library/library-sidebar-panel.tsx");
+    const header = read("../components/library/library-mobile-header.tsx");
+    const menu = read("../components/library/library-sidebar.tsx");
 
-    assert.equal(board.match(/<ProfileMenu /g)?.length, 1);
-    assert.match(shell, /<LibrarySidebar[\s\S]*\/>\s*<ProfileMenu email=\{email\} \/>/);
-    assert.match(sidebar, /<LibraryBrand \/>/);
-    assert.ok(
-      sidebar.indexOf("<LibraryBrand />") < sidebar.indexOf('className="library-rail-label"'),
-    );
-    assert.equal(/ProfileMenu|library-email|email/.test(sidebar), false);
+    assert.equal(board.match(/<ProfileMenu /g)?.length ?? 0, 0);
+    assert.equal(documentShell.match(/<ProfileMenu /g)?.length ?? 0, 0);
+    assert.equal(libraryShell.match(/<ProfileMenu /g)?.length ?? 0, 0);
+    assert.equal(tokenShell.match(/<ProfileMenu /g)?.length ?? 0, 0);
+    assert.equal(header.match(/<ProfileMenu /g)?.length, 1);
+    assert.match(board, /<LibrarySidebar[\s\S]*email=\{email\}/);
+    assert.match(menu, /<LibraryMobileHeader[\s\S]*email=\{email\}/);
+    assert.match(documentShell, /email !== null/);
+    assert.match(documentShell, /<DocumentSidebar[\s\S]*email=\{email\}/);
+    assert.ok(header.indexOf("<LibraryMenuButton") < header.indexOf("<LibraryBrand"));
+    assert.ok(header.indexOf("<LibraryBrand") < header.indexOf("<ProfileMenu"));
+    assert.match(panel, /<LibraryBrand \/>/);
+    assert.ok(panel.indexOf("<LibraryBrand />") < panel.indexOf('className="library-rail-label"'));
+    assert.equal(/ProfileMenu|library-email|email/.test(panel), false);
     assert.equal(
       existsSync(new URL("../components/library/library-account.tsx", import.meta.url)),
       false,
@@ -34,7 +45,7 @@ describe("library profile corner", () => {
 
   it("pins the lime account button to the viewport corner and opens the menu downward", () => {
     const css = read("../app/globals.css");
-    const corner = block(css, ".library-shell > .profile {", ".library-shell:has(.share-backdrop)");
+    const corner = block(css, ".library-mobile-header {", ".library-mobile-header .brand");
     const menu = block(css, ".library-shell .profile-menu {", ".library-shell .profile-email {");
     const button = block(
       css,

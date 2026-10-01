@@ -62,6 +62,7 @@ describe("library dashboard chrome risks", () => {
     const panel = read("../components/header/profile-menu-panel.tsx");
     const board = read("../components/library/document-board.tsx");
     const sidebar = read("../components/library/library-sidebar.tsx");
+    const header = read("../components/library/library-mobile-header.tsx");
     const nav = read("../components/library/library-nav.tsx");
 
     assert.equal(/Invite teammates|LibraryInviteLink/.test(rail), false);
@@ -70,7 +71,9 @@ describe("library dashboard chrome risks", () => {
     assert.match(invite, /Invite member/);
     assert.match(invite, /managesWorkspace/);
     assert.match(invite, /if \(!managing\) return null/);
-    assert.match(board, /<ProfileMenu email=\{email\} \/>/);
+    assert.match(header, /<ProfileMenu email=\{email\} \/>/);
+    assert.match(sidebar, /email=\{email\}/);
+    assert.equal(/<ProfileMenu/.test(board), false);
     assert.match(panel, /className="profile-email"/);
     assert.match(panel, /\{email\}/);
     assert.equal(/LibraryAccount|library-account/.test(sidebar + board), false);

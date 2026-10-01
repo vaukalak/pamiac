@@ -1634,15 +1634,10 @@ code {
   .doc-grid {
     grid-template-columns: minmax(0, 1fr);
   }
-  .library-sidebar,
   .library-main,
   .library-status {
     grid-column: 1;
     grid-row: auto;
-  }
-  .library-sidebar {
-    border-right: 0;
-    border-bottom: 1px solid var(--home-hair);
   }
 }
 
@@ -2416,6 +2411,135 @@ code {
   position: relative;
   z-index: 2;
 }
+.library-mobile-header {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 7;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.library-mobile-header .brand {
+  display: none;
+}
+.library-mobile-header .profile {
+  flex: none;
+}
+.library-shell .library-menu-button {
+  display: none;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid var(--home-lime);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--home-lime);
+  cursor: pointer;
+}
+.library-shell .library-menu-button:hover {
+  background: color-mix(in srgb, var(--home-lime) 14%, transparent);
+}
+.library-shell .library-menu-close {
+  display: none;
+  position: absolute;
+  top: 16px;
+  right: 12px;
+  z-index: 1;
+  margin: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--home-hair);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--home-text);
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+}
+.library-shell .library-menu-close:hover {
+  border-color: var(--home-lime);
+  background: color-mix(in srgb, var(--home-lime) 8%, transparent);
+}
+.library-shell .library-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 4;
+  background: rgba(0, 0, 0, 0.55);
+}
+@media (max-width: 760px) {
+  .library-shell .library-menu-button {
+    display: inline-flex;
+  }
+  .library-shell .library-mobile-header {
+    top: 0;
+    left: 0;
+    right: 0;
+    justify-content: flex-start;
+    gap: 12px;
+    height: 56px;
+    padding: 0 16px;
+    border-bottom: 1px solid var(--home-hair);
+    background: var(--home-ground);
+  }
+  .library-shell .library-mobile-header .brand {
+    display: flex;
+    min-width: 0;
+    padding-right: 0;
+  }
+  .library-shell .library-mobile-header .profile {
+    margin-left: auto;
+  }
+  .library-shell .library-menu-backdrop {
+    top: 56px;
+  }
+  .library-shell > .library-sidebar {
+    position: fixed;
+    z-index: 5;
+    top: 56px;
+    bottom: 0;
+    width: min(240px, calc(100vw - 56px));
+    min-height: 0;
+    height: auto;
+    overflow: auto;
+    overscroll-behavior: contain;
+    padding-top: 64px;
+    border-bottom: 0;
+    background: var(--home-ground);
+    box-shadow: var(--home-shadow);
+    left: calc(min(240px, 100vw - 56px) * -1);
+    visibility: hidden;
+    transition:
+      left 180ms ease,
+      visibility 0s linear 180ms;
+  }
+  .library-shell > .library-sidebar.is-open {
+    left: 0;
+    visibility: visible;
+    transition:
+      left 180ms ease,
+      visibility 0s linear 0s;
+  }
+  .library-shell > .library-sidebar .library-menu-close {
+    display: inline-flex;
+  }
+  .library-shell > .library-sidebar .brand {
+    display: none;
+  }
+}
+@media (max-width: 760px) and (prefers-reduced-motion: reduce) {
+  .library-shell > .library-sidebar,
+  .library-shell > .library-sidebar.is-open {
+    transition: none;
+  }
+}
 .library-shell > .library-main,
 .library-shell > .library-status {
   position: relative;
@@ -2496,13 +2620,8 @@ code {
   color: var(--home-on-lime);
   background: var(--home-lime);
 }
-.library-shell > .profile {
-  position: fixed;
-  top: 16px;
-  right: 16px;
-  z-index: 3;
-}
-.library-shell:has(.share-backdrop) > .profile {
+.library-shell:has(.share-backdrop) .library-mobile-header,
+.library-shell:has(.share-backdrop) .library-menu-button {
   z-index: 1;
 }
 .library-shell:has(.library-main .share-backdrop) > .library-main {
@@ -2598,6 +2717,7 @@ code {
 @media (max-width: 760px) {
   .library-shell > .library-main {
     padding: 24px 16px 32px;
+    padding-top: 72px;
   }
 }
 .library-shell .library-crumb {

@@ -9,7 +9,7 @@ function read(path: string) {
 describe("library board layout", () => {
   it("lists spaces in a left sidebar that owns workspace creation", () => {
     const board = read("../components/library/document-board.tsx");
-    const sidebar = read("../components/library/library-sidebar.tsx");
+    const sidebar = read("../components/library/library-sidebar-panel.tsx");
     const page = read("../app/workspace/page.tsx");
     const css = read("../app/globals.css");
     const shell = css.slice(css.indexOf(".library-shell {"), css.indexOf(".library-main"));

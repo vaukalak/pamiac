@@ -3,7 +3,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ProfileMenu } from "@/components/header/profile-menu";
 import { CircuitBoard } from "@/components/home/circuit-board";
 import type { LibraryFilter } from "@/components/library/board-document";
 import { LibrarySidebar } from "@/components/library/library-sidebar";
@@ -61,6 +60,7 @@ export function TokenShell(props: Properties) {
     <div className="library-shell">
       <CircuitBoard />
       <LibrarySidebar
+        email={email}
         filter="all"
         onFilter={chooseFilter}
         onSelect={chooseWorkspace}
@@ -68,7 +68,6 @@ export function TokenShell(props: Properties) {
         selectedId={workspaceId}
         workspaces={workspaces}
       />
-      <ProfileMenu email={email} />
       <TokenMain spaceName={spaceTitle(workspaceId, spacesQuery.data)} />
     </div>
   );

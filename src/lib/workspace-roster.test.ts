@@ -92,7 +92,12 @@ describe("workspace roster", () => {
     assert.match(library, /getLibrarySession\(/);
     assert.match(shell, /pamiac-open-library/);
     assert.match(shell, /openLibraryId/);
-    assert.match(shell, /<ProfileMenu email=\{email\} \/>/);
+    assert.match(shell, /email=\{email\}/);
+    assert.equal(/<ProfileMenu/.test(shell), false);
+    assert.match(
+      read("../components/library/library-mobile-header.tsx"),
+      /<ProfileMenu email=\{email\} \/>/,
+    );
     assert.match(read("../components/library/library-nav.tsx"), /linked \? "\/workspace"/);
   });
 });
