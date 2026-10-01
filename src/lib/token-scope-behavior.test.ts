@@ -79,7 +79,7 @@ describe("token scope behavior", () => {
 
   it("migrates old rows to a selected list and ignores stored ids when all scopes is set", () => {
     const migration = readFileSync(
-      new URL("../../drizzle/0002_agent-token-scope.sql", import.meta.url),
+      new URL("../../drizzle/0003_agent-token-scope.sql", import.meta.url),
       "utf8",
     );
     const store = readFileSync(new URL("./documents.ts", import.meta.url), "utf8");

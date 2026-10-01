@@ -2,14 +2,20 @@ import { eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { workspaceInvites, workspaceMembers, workspaces } from "@/db/schema";
 import { HttpError } from "@/lib/http";
-import { workspaceRole } from "@/lib/library-spaces";
+import { workspaceRole, type WorkspaceRole } from "@/lib/library-spaces";
 import { sameInviteEmail } from "@/lib/workspace-invite-link";
+
+function inviteMemberRole(role: string | null | undefined): WorkspaceRole {
+  if (role === "admin" || role === "editor") return role;
+  return workspaceRole("added");
+}
 
 async function loadInvite(inviteId: string) {
   const [invite] = await getDb()
     .select({
       id: workspaceInvites.id,
       email: workspaceInvites.email,
+      role: workspaceInvites.role,
       workspaceId: workspaceInvites.workspaceId,
       workspaceName: workspaces.name,
     })
@@ -47,7 +53,7 @@ export async function acceptWorkspaceInvite(userId: string, email: string, invit
       id: crypto.randomUUID(),
       workspaceId: allowed.workspaceId,
       userId,
-      role: workspaceRole("added"),
+      role: inviteMemberRole(allowed.role),
     })
     .onConflictDoNothing({
       target: [workspaceMembers.workspaceId, workspaceMembers.userId],

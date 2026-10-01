@@ -2,7 +2,8 @@ import type { LibraryFilter } from "@/components/library/board-document";
 import { LibraryNavItem } from "@/components/library/library-nav-item";
 
 interface Properties {
-  filter: LibraryFilter | null;
+  filter: LibraryFilter;
+  linked: boolean;
   onFilter: (filter: LibraryFilter) => void;
 }
 
@@ -13,16 +14,17 @@ const ITEMS = [
 ] as const;
 
 export function LibraryNav(props: Properties) {
-  const { filter, onFilter } = props;
+  const { filter, linked, onFilter } = props;
 
   return (
     <nav aria-label="Library" className="library-nav">
       {ITEMS.map(([value, label]) => (
         <LibraryNavItem
           key={value}
+          href={linked ? "/workspace" : undefined}
           label={label}
           onSelect={() => onFilter(value)}
-          pressed={filter === value}
+          pressed={!linked && filter === value}
         />
       ))}
     </nav>

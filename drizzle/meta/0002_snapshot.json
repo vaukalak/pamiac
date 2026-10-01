@@ -1,5 +1,5 @@
 {
-  "id": "cfde403f-b2a5-40f1-ba27-b14744c16c88",
+  "id": "05190453-4dfe-49c2-9049-39d451313cdd",
   "prevId": "6506fc29-4281-4ada-a681-051497bca944",
   "version": "7",
   "dialect": "postgresql",
@@ -143,19 +143,11 @@
           "primaryKey": false,
           "notNull": true
         },
-        "all_scopes": {
-          "name": "all_scopes",
-          "type": "boolean",
+        "workspace_id": {
+          "name": "workspace_id",
+          "type": "text",
           "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "workspace_ids": {
-          "name": "workspace_ids",
-          "type": "text[]",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'{}'"
+          "notNull": false
         },
         "name": {
           "name": "name",
@@ -231,6 +223,19 @@
           "tableTo": "user",
           "columnsFrom": [
             "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "agent_token_workspace_id_workspace_id_fk": {
+          "name": "agent_token_workspace_id_workspace_id_fk",
+          "tableFrom": "agent_token",
+          "tableTo": "workspace",
+          "columnsFrom": [
+            "workspace_id"
           ],
           "columnsTo": [
             "id"
@@ -2006,6 +2011,13 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "role": {
+          "name": "role",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'editor'"
         },
         "created_at": {
           "name": "created_at",

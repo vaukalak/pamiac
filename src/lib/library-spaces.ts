@@ -67,6 +67,14 @@ export function openWorkspaceName(
   return workspaces?.find((workspace) => workspace.id === workspaceId)?.name?.trim() ?? "";
 }
 
+export function librarySpaceTitle(
+  workspaceId: string,
+  workspaces: readonly NamedWorkspace[] | undefined,
+) {
+  if (workspaceId === PERSONAL_SPACE_ID) return "Personal";
+  return openWorkspaceName(workspaceId, workspaces) || "Workspace";
+}
+
 export function documentSpaceLabel(
   workspaceId: string | null,
   workspaces: readonly NamedWorkspace[],

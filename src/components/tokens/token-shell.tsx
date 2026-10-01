@@ -8,10 +8,9 @@ import { CircuitBoard } from "@/components/home/circuit-board";
 import type { LibraryFilter } from "@/components/library/board-document";
 import { LibrarySidebar } from "@/components/library/library-sidebar";
 import { TokenMain } from "@/components/tokens/token-main";
-import { LIBRARY_FILTER_KEY, LIBRARY_PANEL_KEY, OPEN_LIBRARY_KEY } from "@/lib/library-memory";
+import { LIBRARY_FILTER_KEY, OPEN_LIBRARY_KEY } from "@/lib/library-memory";
 import {
   librarySpaces,
-  managesWorkspace,
   openLibraryId,
   openWorkspaceName,
   PERSONAL_SPACE_ID,
@@ -38,7 +37,6 @@ export function TokenShell(props: Properties) {
     initialData: workspaces,
   });
   const [workspaceId, setWorkspaceId] = useState(PERSONAL_SPACE_ID);
-  const managing = managesWorkspace(workspaceId, spacesQuery.data);
 
   useEffect(() => {
     const next = openLibraryId(window.localStorage.getItem(OPEN_LIBRARY_KEY), spacesQuery.data);
@@ -56,13 +54,6 @@ export function TokenShell(props: Properties) {
 
   function chooseFilter(next: LibraryFilter) {
     window.localStorage.setItem(LIBRARY_FILTER_KEY, next);
-    window.localStorage.setItem(LIBRARY_PANEL_KEY, "dashboard");
-    router.push("/workspace");
-  }
-
-  function openManage() {
-    window.localStorage.setItem(OPEN_LIBRARY_KEY, workspaceId);
-    window.localStorage.setItem(LIBRARY_PANEL_KEY, "manage");
     router.push("/workspace");
   }
 
@@ -70,11 +61,10 @@ export function TokenShell(props: Properties) {
     <div className="library-shell">
       <CircuitBoard />
       <LibrarySidebar
-        filter={null}
-        managing={managing}
+        filter="all"
         onFilter={chooseFilter}
-        onManage={openManage}
         onSelect={chooseWorkspace}
+        page="connections"
         selectedId={workspaceId}
         workspaces={workspaces}
       />

@@ -19,8 +19,15 @@
     {
       "idx": 2,
       "version": "7",
-      "when": 1790780000000,
-      "tag": "0002_agent-token-scope",
+      "when": 1790810154371,
+      "tag": "0002_workspace-invite-role",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1790810200000,
+      "tag": "0003_agent-token-scope",
       "breakpoints": true
     }
   ]

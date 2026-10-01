@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { DocumentScreen } from "@/components/document-screen";
@@ -8,7 +9,9 @@ import { resolveAccess, type Visibility } from "@/lib/access";
 import { appSecret } from "@/lib/config";
 import { getDocumentBundle, isDocumentWorkspaceMember } from "@/lib/documents";
 import { documentSpaceLabel, type NamedWorkspace } from "@/lib/library-spaces";
+import { loadSharePreview } from "@/lib/load-share-preview";
 import { unlockCookieName, unlockMatches } from "@/lib/passwords";
+import { sharePageMetadata } from "@/lib/share-preview";
 import { getLibrarySession } from "@/lib/session";
 import { listMemberWorkspaces } from "@/lib/workspaces";
 
@@ -16,6 +19,12 @@ export const dynamic = "force-dynamic";
 
 interface Properties {
   params: Promise<{ id: string }>;
+}
+
+export async function generateMetadata(props: Properties): Promise<Metadata> {
+  const { params } = props;
+  const { id } = await params;
+  return sharePageMetadata(await loadSharePreview(id));
 }
 
 export default async function DocumentPage(props: Properties) {

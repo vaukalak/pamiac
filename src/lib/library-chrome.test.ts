@@ -34,13 +34,15 @@ describe("library chrome", () => {
     assert.equal(openWorkspaceName("ws-1", undefined), "");
   });
 
-  it("keeps the personal library on the dashboard while management stays armed", () => {
+  it("keeps the library column on the document dashboard", () => {
     const column = read("../components/library/library-column.tsx");
+    const settings = read("../app/workspace/settings/page.tsx");
+    const members = read("../app/workspace/members/page.tsx");
 
-    assert.match(
-      column,
-      /workspaceId !== PERSONAL_SPACE_ID && panel === "manage" \? \(\s*<LibraryManage[\s\S]*?\) : \(\s*<LibraryDashboard/,
-    );
+    assert.match(column, /<LibraryDashboard/);
+    assert.equal(/LibraryManage|LibrarySwitcher/.test(column), false);
+    assert.match(settings, /WorkspaceSettingsScreen/);
+    assert.match(members, /WorkspaceMembersScreen/);
   });
 
   it("closes the new-document menu on Escape and still closes it from outside", () => {
@@ -76,7 +78,7 @@ describe("library chrome", () => {
       css.indexOf(".workspace-space-tip {"),
       css.indexOf(".workspace-selector button:hover .workspace-space-tip"),
     );
-    const sidebar = css.slice(css.indexOf(".library-sidebar {"), css.indexOf(".library-switcher"));
+    const sidebar = css.slice(css.indexOf(".library-sidebar {"), css.indexOf(".filters {"));
     const column = css.slice(
       css.indexOf(".workspace-selector {"),
       css.indexOf(".library-sidebar .workspace-create"),
@@ -145,8 +147,8 @@ describe("library chrome", () => {
   });
 
   it("asks before leave or delete and includes the workspace name", () => {
-    const leave = read("../components/library/workspace-leave.tsx");
-    const remove = read("../components/library/workspace-delete.tsx");
+    const leave = read("../components/workspace-settings/workspace-settings-leave-actions.tsx");
+    const remove = read("../components/workspace-settings/workspace-settings-delete-actions.tsx");
     const leaveClick = leave.slice(leave.indexOf("onClick"), leave.indexOf('type="button"'));
     const removeClick = remove.slice(remove.indexOf("onClick"), remove.indexOf('type="button"'));
 
@@ -162,19 +164,22 @@ describe("library chrome", () => {
     );
   });
 
-  it("sizes management to its content and does not list members", () => {
+  it("shows workspace details on settings and loads people from the members route", () => {
     const css = read("../app/globals.css");
-    const manage = read("../components/library/library-manage.tsx");
+    const settings = read("../components/workspace-settings/workspace-settings-details.tsx");
     const route = read("../app/api/workspaces/[id]/members/route.ts");
-    const card = css.slice(css.indexOf(".library-manage {"), css.indexOf(".library-manage-name"));
-
-    assert.match(card, /width:\s*fit-content/);
-    assert.match(
-      css,
-      /\.library-manage-danger\s*\{[^}]*border-top:\s*1px solid var\(--danger-line\)/,
+    const danger = css.slice(
+      css.indexOf(".library-shell .workspace-danger {"),
+      css.indexOf(".library-shell .workspace-settings-card h2"),
     );
-    assert.match(manage, /<h2 className="library-manage-name">\{name\}<\/h2>/);
+
+    assert.match(settings, /Workspace details/);
+    assert.match(settings, /<WorkspaceSettingsMark/);
+    assert.equal(/WorkspaceMemberRow/.test(settings), false);
     assert.match(route, /export async function POST/);
-    assert.equal(/export async function GET/.test(route), false);
+    assert.match(route, /export async function GET/);
+    assert.match(route, /listWorkspaceRoster/);
+    assert.equal(/invite/i.test(route), false);
+    assert.match(danger, /border-color:\s*var\(--danger\)/);
   });
 });

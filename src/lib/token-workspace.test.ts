@@ -44,7 +44,7 @@ describe("token scope", () => {
   it("stores all scopes or an explicit list and migrates old rows without widening them", () => {
     const schema = read("src/db/schema.ts");
     const table = schema.match(/export const agentTokens = pgTable\([\s\S]*?\n\);/)?.[0] ?? "";
-    const migration = read("drizzle/0002_agent-token-scope.sql");
+    const migration = read("drizzle/0003_agent-token-scope.sql");
     const journal = read("drizzle/meta/_journal.json");
 
     expect(table).toMatch(/allScopes: boolean\("all_scopes"\)\.notNull\(\)/);
@@ -56,7 +56,7 @@ describe("token scope", () => {
     expect(migration).toMatch(/WHERE "workspace_id" IS NOT NULL/);
     expect(migration).toMatch(/DROP COLUMN "workspace_id"/);
     expect(migration.indexOf("ARRAY['personal']")).toBeLessThan(migration.indexOf("DROP COLUMN"));
-    expect(journal).toMatch(/"tag": "0002_agent-token-scope"/);
+    expect(journal).toMatch(/"tag": "0003_agent-token-scope"/);
   });
 
   it("issues and updates a scope without rotating the secret", () => {

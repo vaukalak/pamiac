@@ -12,6 +12,12 @@ description: >-
 
 This skill starts the coder agent. It does not write the product code itself.
 
+## Model
+
+Do not use Cursor Fast mode.
+
+Do not select Fast in the model picker. Do not pass `fast`, or any model slug that ends in `-fast`, when launching this agent or any subagent in the chain. Omit `model`, or set it to `inherit`, so the parent model is used. If a specific model is requested, use that model's non-fast slug.
+
 ## Invoke
 
 Spawn the `coder` subagent and wait for it. Put the user task in the prompt,
