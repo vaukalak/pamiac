@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { TOKEN_SKILL_FILE } from "@/components/tokens/token-skill";
+import { Alert } from "@/ui/Alert";
 import { Button } from "@/ui/Button";
-import { Paragraph } from "@/ui/Paragraph";
 
 export function ConnectionSkillActions() {
   const [message, setMessage] = useState("");
@@ -36,7 +36,12 @@ export function ConnectionSkillActions() {
       <Button className="secondary" onClick={downloadSkill} type="button">
         Download SKILL.md
       </Button>
-      {message ? <Paragraph>{message}</Paragraph> : null}
+      {message === "Could not copy the skill." ? <Alert>{message}</Alert> : null}
+      {message === "Skill copied." ? (
+        <p className="text-pretty" role="status">
+          {message}
+        </p>
+      ) : null}
     </div>
   );
 }
