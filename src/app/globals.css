@@ -3867,6 +3867,35 @@ code {
 .library-shell .token-connect-dialog {
   width: min(520px, 100%);
 }
+.library-shell .token-connect-endpoint {
+  display: grid;
+  gap: 12px;
+  justify-items: start;
+  margin-top: 12px;
+}
+.library-shell .token-connect-endpoint .dev-link {
+  width: 100%;
+  margin: 0;
+  border: 1px solid var(--home-line);
+  background: #101410;
+  color: var(--home-text);
+}
+.library-shell .token-connect-endpoint .dev-link:focus-visible {
+  outline: 2px solid var(--home-lime);
+  outline-offset: 3px;
+}
+.library-shell .token-connect-endpoint .text-pretty {
+  margin: 0;
+}
+.library-shell .token-connect-endpoint .btn.secondary {
+  background: transparent;
+  border-color: var(--home-hair-strong);
+  color: var(--home-text);
+}
+.library-shell .token-connect-endpoint .btn.secondary:hover:not(:disabled) {
+  border-color: var(--home-lime);
+  color: var(--home-lime);
+}
 .library-shell .token-connect-dialog h3 {
   margin: 16px 0 8px;
   color: var(--home-text);
@@ -3886,8 +3915,25 @@ code {
   background: var(--home-lime);
   color: var(--home-on-lime);
 }
+.library-shell .token-connect-tabs .btn.secondary[aria-pressed="true"]:hover {
+  border-color: var(--home-lime);
+  background: var(--home-lime);
+  color: var(--home-on-lime);
+}
+.library-shell .token-connect-dialog .btn.secondary:not([aria-pressed="true"]) {
+  background: transparent;
+  border-color: var(--home-hair-strong);
+  color: var(--home-text);
+}
+.library-shell .token-connect-dialog .btn.secondary:hover:not([aria-pressed="true"]) {
+  border-color: var(--home-lime);
+  color: var(--home-lime);
+}
 .library-shell .token-connect-dialog .btn.ghost {
   color: var(--home-soft);
+}
+.library-shell .token-connect-dialog .error {
+  color: #ffb4ab;
 }
 .library-shell .token-secret .secret {
   margin-top: 8px;

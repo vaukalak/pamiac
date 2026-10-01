@@ -1,6 +1,5 @@
+import { ConnectionMcpEndpoint } from "@/components/tokens/connection-mcp-endpoint";
 import { Paragraph } from "@/ui/Paragraph";
-
-const ENDPOINT = "/api/mcp";
 
 export function ConnectionMcp() {
   return (
@@ -9,7 +8,9 @@ export function ConnectionMcp() {
         Publisher submission, and ChatGPT developer mode on Plus and above, use this MCP endpoint. A
         pasted MCP URL is developer mode, not the free tier.
       </Paragraph>
-      <p className="hint">{ENDPOINT}</p>
+      <Paragraph>PAMIAC_TOKEN has to be configured in the environment.</Paragraph>
+      <Paragraph>Paste this endpoint.</Paragraph>
+      <ConnectionMcpEndpoint />
     </div>
   );
 }
