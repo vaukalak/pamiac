@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import type { AgentToken } from "@/components/tokens/agent-token";
-import { TokenRowExpanded } from "@/components/tokens/token-row-expanded";
 import { TokenRowSummary } from "@/components/tokens/token-row-summary";
+import { TokenUpdateDialog } from "@/components/tokens/token-update-dialog";
 
 interface Properties {
   token: AgentToken;
@@ -20,7 +20,7 @@ export function TokenRow(props: Properties) {
         onToggle={() => setExpanded((value) => !value)}
         token={token}
       />
-      {expanded ? <TokenRowExpanded token={token} /> : null}
+      {expanded ? <TokenUpdateDialog onClose={() => setExpanded(false)} token={token} /> : null}
     </>
   );
 }
