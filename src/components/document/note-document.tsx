@@ -15,6 +15,7 @@ import {
   type SavedDocument,
 } from "@/components/document/document-client";
 import { useDocumentVersion } from "@/components/document/use-document-version";
+import { NoteExport } from "@/components/note/note-export";
 import { defaultTitle } from "@/lib/content";
 import { remoteNoteMarkdown, remoteNoteTitle } from "@/lib/note-sync";
 
@@ -30,6 +31,7 @@ interface Properties {
   canEdit: boolean;
   crumb: ReactNode;
   tools: ReactNode;
+  workspaceId: string | null;
 }
 
 function noteName(title: string) {
@@ -37,7 +39,7 @@ function noteName(title: string) {
 }
 
 export function NoteDocument(props: Properties) {
-  const { id, title, content, version, canEdit, crumb, tools } = props;
+  const { id, title, content, version, canEdit, crumb, tools, workspaceId } = props;
   const queryClient = useQueryClient();
   const [name, setName] = useState(noteName(title));
   const [remote, setRemote] = useState({ markdown: content, version });
@@ -232,7 +234,12 @@ export function NoteDocument(props: Properties) {
             onChange={commitTitle}
           />
         }
-        tools={tools}
+        tools={
+          <div className="library-heading-actions topbar-tools">
+            <NoteExport readMarkdown={() => latest.current.content} title={name.trim() || title} />
+            {tools}
+          </div>
+        }
       />
       <div className="note-sheet">
         <NoteEditor
@@ -240,6 +247,7 @@ export function NoteDocument(props: Properties) {
           libraryShell
           markdown={remote.markdown}
           version={remote.version}
+          workspaceId={workspaceId}
           onChange={(markdown) => schedule({ content: markdown })}
         />
       </div>
