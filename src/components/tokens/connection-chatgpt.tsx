@@ -1,5 +1,5 @@
-import { ChatGptConnect } from "@/components/tokens/chatgpt-connect";
+import { Paragraph } from "@/ui/Paragraph";
 
 export function ConnectionChatGpt() {
-  return <ChatGptConnect endpoint="/api/mcp" />;
+  return <Paragraph>Coming soon...</Paragraph>;
 }

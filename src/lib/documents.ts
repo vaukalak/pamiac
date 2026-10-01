@@ -94,6 +94,21 @@ export async function listAgentDocuments(userId: string, scope: AgentScope) {
     .orderBy(asc(documents.sortIndex), asc(documents.createdAt));
 }
 
+const PERSONAL_SPACE_NAME = "Personal space";
+
+export async function listAgentWorkspaces(userId: string, scope: AgentScope) {
+  const memberships = await listMemberWorkspaces(userId);
+  const members = memberships
+    .filter((workspace) => workspace.id !== PERSONAL_SPACE_ID)
+    .map((workspace) => ({ id: workspace.id, name: workspace.name }));
+  const personal = { id: PERSONAL_SPACE_ID, name: PERSONAL_SPACE_NAME };
+  if (scope.allScopes) return [personal, ...members];
+  const selected = new Set(scope.workspaceIds);
+  const reachable = members.filter((workspace) => selected.has(workspace.id));
+  if (!selected.has(PERSONAL_SPACE_ID)) return reachable;
+  return [personal, ...reachable];
+}
+
 export async function agentCreateWorkspace(userId: string, scope: AgentScope) {
   if (scope.allScopes || scope.workspaceIds.includes(PERSONAL_SPACE_ID)) {
     return PERSONAL_SPACE_ID;

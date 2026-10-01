@@ -16,11 +16,14 @@ PATCH /documents/:id
 
 All scopes reach personal documents and every workspace the user belongs to. A selected scope reaches only the chosen spaces. Diagram relations can refer to an element by id or by name.
 
+GET /api/agent/v1/workspaces lists the workspaces this token can reach. If the user does not specify a workspace, or which workspace they mean is unclear, call GET /api/agent/v1/workspaces. When more than one workspace is returned, list those workspaces and ask the user which one to use before searching, reading, or writing. Do not guess. One workspace needs no question.
+
 To browse the library in a browser, set a cookie on the app origin: name pamiac_token, value the PAMIAC_TOKEN value, path /. Then open /workspace. A document is /d/<id>. Do not print the token. /workspace/tokens still requires the magic-link session.`;
 
 export const TOKEN_SKILL_FILE = `---
 name: pamiac
 description: Read and edit a user's Pamiac notes and UML diagrams. Use when working with Pamiac documents, UML, or the user's diagram library.
+fast: false
 ---
 
 ${TOKEN_SKILL}`;
