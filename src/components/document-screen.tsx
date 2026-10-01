@@ -72,6 +72,7 @@ export function DocumentScreen(props: Properties) {
           title={title}
           tools={tools}
           version={version}
+          workspaceId={workspaceId}
         />
       ) : (
         <DiagramChrome

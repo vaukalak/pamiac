@@ -658,6 +658,53 @@ input.title-input:focus {
   border-radius: 0;
   min-height: 0;
   padding: 0;
+  position: relative;
+}
+.note-wiki-link {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.note-wiki-unresolved {
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+}
+.note-comment-layer {
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+}
+.note-block-comment {
+  pointer-events: auto;
+  position: absolute;
+  z-index: 2;
+}
+.note-block-comment-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--ink-soft);
+  border-radius: 12px;
+  display: grid;
+  gap: 8px;
+  padding: 10px 12px;
+}
+.note-block-comment-card p {
+  margin: 0;
+}
+.library-dashboard.is-markdown-target {
+  outline: 2px dashed var(--line);
+  outline-offset: 6px;
+}
+.doc-menu .menu-duplicate .btn.menu-item {
+  background: transparent;
+  border: 0;
+  border-radius: 10px;
+  box-shadow: none;
+  color: var(--ink);
+  font-weight: 500;
+  justify-content: flex-start;
+  padding: 10px;
+  width: 100%;
 }
 .note-editor .bn-container {
   --bn-colors-editor-background: transparent;
@@ -3368,6 +3415,27 @@ code {
 }
 .library-shell .note-editor .bn-inline-content::before {
   color: var(--home-soft);
+}
+.library-shell .note-wiki-link {
+  color: var(--home-lime);
+}
+.library-shell .note-wiki-unresolved {
+  color: var(--home-soft);
+}
+.library-shell .note-block-comment-card {
+  background: var(--home-panel);
+  border-color: var(--home-hair);
+  border-left-color: var(--home-lime);
+  color: var(--home-text);
+}
+.library-shell .doc-menu .menu-duplicate .btn.menu-item {
+  color: var(--home-text);
+}
+.library-shell .doc-menu .menu-duplicate .btn.menu-item:hover {
+  background: color-mix(in srgb, var(--home-lime) 10%, transparent);
+}
+.library-shell .library-dashboard.is-markdown-target {
+  outline-color: var(--home-lime);
 }
 .library-shell .note-editor .bn-side-menu .mantine-UnstyledButton-root:hover svg {
   color: var(--home-lime);

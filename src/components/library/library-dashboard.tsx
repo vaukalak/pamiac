@@ -5,6 +5,7 @@ import type {
   LibraryView,
 } from "@/components/library/board-document";
 import { LibraryDocuments } from "@/components/library/library-documents";
+import { LibraryMarkdownDrop } from "@/components/library/library-markdown-drop";
 import { LibraryHeading } from "@/components/library/library-heading";
 import { LibraryFilters } from "@/components/library/library-filters";
 import { LibraryTools } from "@/components/library/library-tools";
@@ -49,7 +50,7 @@ export function LibraryDashboard(props: Properties) {
   } = props;
 
   return (
-    <div className="library-dashboard">
+    <LibraryMarkdownDrop workspaceId={workspaceId}>
       <LibraryHeading filter={filter} spaceName={spaceName} workspaceId={workspaceId} />
       <LibraryFilters counts={counts} filter={filter} onChange={onFilter} />
       <LibraryTools form={form} onView={onView} view={view} />
@@ -66,6 +67,6 @@ export function LibraryDashboard(props: Properties) {
       {reorder && libraryCount > 1 ? (
         <p className="hint">Drag cards to reorder the library.</p>
       ) : null}
-    </div>
+    </LibraryMarkdownDrop>
   );
 }

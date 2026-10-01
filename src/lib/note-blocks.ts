@@ -1,5 +1,11 @@
 const markerPrefix = "<!-- pamiac-block-colors ";
 const markerSuffix = " -->";
+const commentPrefix = "<!-- pamiac-block-comments ";
+const commentSuffix = " -->";
+const maxComments = 40;
+const maxCommentLength = 400;
+
+export type NoteCommentMap = Record<string, string>;
 
 export interface NoteBlock {
   id: string;
@@ -42,18 +48,71 @@ export function noteMarkdown(content: string): string {
   return splitNoteContent(content).markdown;
 }
 
+export function readNoteComments(content: string): NoteCommentMap {
+  return peelNoteComments(content).comments;
+}
+
+export function withNoteComments(content: string, comments: NoteCommentMap): string {
+  const rest = peelNoteComments(content).rest;
+  const clean = cleanComments(comments);
+  const ids = Object.keys(clean);
+  if (ids.length === 0) return rest;
+  const packed = `${rest}${commentPrefix}${encodeBase64(JSON.stringify(clean))}${commentSuffix}`;
+  return packed === content ? content : packed;
+}
+
 function splitNoteContent(content: string): { markdown: string; encoded: string | null } {
-  const start = content.lastIndexOf(markerPrefix);
-  if (start < 0) return { markdown: content, encoded: null };
-  const end = content.indexOf(markerSuffix, start + markerPrefix.length);
-  if (end < 0) return { markdown: content, encoded: null };
-  if (content.slice(end + markerSuffix.length).trim().length > 0) {
-    return { markdown: content, encoded: null };
+  const body = peelNoteComments(content).rest;
+  const start = body.lastIndexOf(markerPrefix);
+  if (start < 0) return { markdown: body, encoded: null };
+  const end = body.indexOf(markerSuffix, start + markerPrefix.length);
+  if (end < 0) return { markdown: body, encoded: null };
+  if (body.slice(end + markerSuffix.length).trim().length > 0) {
+    return { markdown: body, encoded: null };
   }
   return {
-    markdown: content.slice(0, start),
-    encoded: content.slice(start + markerPrefix.length, end),
+    markdown: body.slice(0, start),
+    encoded: body.slice(start + markerPrefix.length, end),
   };
+}
+
+function peelNoteComments(content: string): { rest: string; comments: NoteCommentMap } {
+  const start = content.lastIndexOf(commentPrefix);
+  if (start < 0) return { rest: content, comments: {} };
+  const end = content.indexOf(commentSuffix, start + commentPrefix.length);
+  if (end < 0) return { rest: content, comments: {} };
+  if (content.slice(end + commentSuffix.length).trim().length > 0) {
+    return { rest: content, comments: {} };
+  }
+  return {
+    rest: content.slice(0, start),
+    comments: decodeComments(content.slice(start + commentPrefix.length, end)),
+  };
+}
+
+function cleanComments(input: object): NoteCommentMap {
+  const next: NoteCommentMap = {};
+  const entries = Object.entries(input).sort(([left], [right]) => left.localeCompare(right));
+  for (const [key, value] of entries) {
+    if (Object.keys(next).length >= maxComments) break;
+    if (key.length === 0 || key.length > 80 || key.trim() !== key) continue;
+    if (/[\u0000-\u001f<>]/.test(key)) continue;
+    if (typeof value !== "string") continue;
+    const text = value.trim();
+    if (!text || text.length > maxCommentLength) continue;
+    next[key] = text;
+  }
+  return next;
+}
+
+function decodeComments(encoded: string): NoteCommentMap {
+  try {
+    const parsed: unknown = JSON.parse(decodeBase64(encoded));
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
+    return cleanComments(parsed);
+  } catch {
+    return {};
+  }
 }
 
 function plainBlocks(blocks: unknown): NoteBlock[] | null {

@@ -14,7 +14,7 @@ import {
 } from "@/lib/note-lasso";
 
 interface Properties {
-  editor: BlockNoteEditor;
+  editor: BlockNoteEditor<any, any, any>;
 }
 
 const HIGHLIGHT_CLASS = "note-lasso-block";
@@ -101,7 +101,7 @@ function paintLasso(node: HTMLDivElement | null, rect: Rect | null) {
   node.style.height = `${rect.bottom - rect.top}px`;
 }
 
-function collapseEditorSelection(editor: BlockNoteEditor) {
+function collapseEditorSelection(editor: BlockNoteEditor<any, any, any>) {
   if (collapsingSelection) return;
   collapsingSelection = true;
   try {

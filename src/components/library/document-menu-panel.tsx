@@ -1,5 +1,6 @@
 import type { BoardChange, BoardDocument } from "@/components/library/board-document";
 import { DocumentDelete } from "@/components/library/document-delete";
+import { DocumentDuplicate } from "@/components/library/document-duplicate";
 import { DocumentMenuActions } from "@/components/library/document-menu-actions";
 import { DocumentRename } from "@/components/library/document-rename";
 
@@ -38,6 +39,16 @@ export function DocumentMenuPanel(props: Properties) {
       ) : null}
       {mode === "actions" ? (
         <DocumentMenuActions
+          duplicate={
+            item.type === "note" ? (
+              <DocumentDuplicate
+                content={item.content}
+                onDone={onClose}
+                title={item.title}
+                workspaceId={item.workspaceId}
+              />
+            ) : null
+          }
           onDelete={() => onMode("delete")}
           onRename={() => onMode("rename")}
           onShare={onShare}
