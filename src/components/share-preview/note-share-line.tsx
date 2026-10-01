@@ -14,7 +14,7 @@ export function NoteShareLine(props: Properties) {
       style={{
         display: "flex",
         marginTop: heading ? 18 : 10,
-        color: heading ? sharePalette.ink : sharePalette.inkSoft,
+        color: heading ? sharePalette.text : sharePalette.soft,
         fontFamily: shareFont,
         fontSize: heading ? headingSize(line.level) : 28,
         fontWeight: heading ? 600 : 400,

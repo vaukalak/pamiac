@@ -1,4 +1,5 @@
 import { NoteShareLine } from "@/components/share-preview/note-share-line";
+import { ShareCircuit } from "@/components/share-preview/share-circuit";
 import { shareFont, sharePalette } from "@/components/share-preview/share-palette";
 import { ShareWordmark } from "@/components/share-preview/share-wordmark";
 import type { SharePreviewLine } from "@/lib/share-preview";
@@ -18,20 +19,22 @@ export function NoteShareCard(props: Properties) {
         height: "100%",
         display: "flex",
         flexDirection: "column",
+        position: "relative",
         overflow: "hidden",
-        background: sharePalette.paper,
-        color: sharePalette.ink,
+        background: sharePalette.ground,
+        color: sharePalette.text,
         padding: "64px 76px",
-        borderLeft: `20px solid ${sharePalette.teal}`,
+        borderLeft: `6px solid ${sharePalette.lime}`,
         fontFamily: shareFont,
       }}
     >
+      <ShareCircuit />
       <ShareWordmark size="label" />
       <div
         style={{
           display: "flex",
           marginTop: 28,
-          color: sharePalette.ink,
+          color: sharePalette.text,
           fontFamily: shareFont,
           fontSize: 60,
           fontWeight: 600,
@@ -47,7 +50,7 @@ export function NoteShareCard(props: Properties) {
           width: 88,
           height: 6,
           marginTop: 24,
-          background: sharePalette.teal,
+          background: sharePalette.lime,
         }}
       />
       {lines.map((line, index) => (

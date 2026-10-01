@@ -12,7 +12,7 @@ export function ShareWordmark(props: Properties) {
     <div
       style={{
         display: "flex",
-        color: display ? sharePalette.ink : sharePalette.teal,
+        color: display ? sharePalette.text : sharePalette.lime,
         fontFamily: shareFont,
         fontSize: display ? 92 : 28,
         fontWeight: 600,
