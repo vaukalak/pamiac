@@ -114,11 +114,14 @@ const createDiagramInput = z
   })
   .strict();
 
+const documentVersion = z.number().int().positive();
+
 const updateNoteInput = z
   .object({
     id: documentId,
     title: titleField,
     content: z.string().max(MAX_CONTENT_LENGTH),
+    version: documentVersion,
   })
   .strict();
 
@@ -126,6 +129,7 @@ const updateDiagramInput = diagramPatchSchema
   .extend({
     id: documentId,
     title: titleField,
+    version: documentVersion,
   })
   .strict();
 
@@ -144,7 +148,15 @@ function errorResult(message: string) {
 }
 
 function failureMessage(error: unknown) {
-  if (error instanceof HttpError) return error.message;
+  if (error instanceof HttpError) {
+    if (error.version === undefined) return error.message;
+    return JSON.stringify({
+      error: error.message,
+      version: error.version,
+      title: error.title,
+      content: error.content,
+    });
+  }
   if (error instanceof Error) return error.message;
   return "Request failed";
 }
@@ -303,14 +315,19 @@ export function createPamiacMcpServer(
   server.registerTool(
     "update_note",
     {
-      description: "Replace a note with the full markdown content.",
+      description:
+        "Replace a note with the full markdown content. Send version from read_document. On conflict, the error includes the current version, title, and content. Re-apply onto that content and update with that version.",
       inputSchema: updateNoteInput,
       annotations: replaceAnnotations,
     },
-    async ({ id, title, content }) => {
+    async ({ id, title, content, version }) => {
       if (!userId) return errorResult("Sign-in required");
       try {
-        const document = await updateDocumentContent(userId, id, { title, content });
+        const document = await updateDocumentContent(userId, id, {
+          title,
+          content,
+          expectedVersion: version,
+        });
         return textResult(presentReadableDocument(presentDocument(document, origin)));
       } catch (error) {
         return errorResult(failureMessage(error));
@@ -325,12 +342,13 @@ export function createPamiacMcpServer(
       inputSchema: updateDiagramInput,
       annotations: replaceAnnotations,
     },
-    async ({ id, title, nodes, deleteNodes, relations, deleteRelations }) => {
+    async ({ id, title, version, nodes, deleteNodes, relations, deleteRelations }) => {
       if (!userId) return errorResult("Sign-in required");
       try {
         const document = await updateDocumentContent(userId, id, {
           title,
           patch: { nodes, deleteNodes, relations, deleteRelations },
+          expectedVersion: version,
         });
         return textResult(presentReadableDocument(presentDocument(document, origin)));
       } catch (error) {

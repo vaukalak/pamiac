@@ -7,10 +7,10 @@ import {
   documentSaveKey,
   documentSnapshotKey,
   documentVersionKey,
+  DocumentSaveConflict,
   saveOwnerDocument,
   type DocumentSnapshot,
 } from "@/components/document/document-client";
-import { useDocumentVersion } from "@/components/document/use-document-version";
 
 interface Properties {
   id: string;
@@ -28,7 +28,8 @@ export function DiagramTitle(props: Properties) {
   const dirty = useRef(false);
   const timer = useRef<number | null>(null);
   const appliedVersion = useRef(version);
-  const versionQuery = useDocumentVersion(id, canEdit);
+  const conflictRetries = useRef(0);
+  const saveGeneration = useRef(0);
   const snapshot = useQuery({
     queryKey: documentSnapshotKey(id),
     queryFn: async () => ({ title, version }) satisfies DocumentSnapshot,
@@ -54,6 +55,48 @@ export function DiagramTitle(props: Properties) {
     };
   }, []);
 
+  function publish(sent: string) {
+    const generation = ++saveGeneration.current;
+    save.mutate(
+      { title: sent, version: appliedVersion.current },
+      {
+        onSuccess: (result) => {
+          if (generation !== saveGeneration.current) return;
+          conflictRetries.current = 0;
+          appliedVersion.current = result.version;
+          queryClient.setQueryData(documentVersionKey(id), { version: result.version });
+          if (nameRef.current.trim() !== sent) {
+            schedule(nameRef.current);
+            return;
+          }
+          dirty.current = false;
+          persisted.current = result.title || sent;
+          setName(persisted.current);
+          queryClient.setQueryData(documentEditKey(id, "title"), "clean");
+        },
+        onError: (error) => {
+          if (generation !== saveGeneration.current) return;
+          if (retryConflict(error)) return;
+          queryClient.setQueryData(documentEditKey(id, "title"), "error");
+        },
+      },
+    );
+  }
+
+  function retryConflict(error: unknown) {
+    if (!(error instanceof DocumentSaveConflict) || conflictRetries.current >= 3) return false;
+    conflictRetries.current += 1;
+    appliedVersion.current = error.version;
+    const next = nameRef.current.trim();
+    if (!next || next === persisted.current) {
+      dirty.current = false;
+      queryClient.setQueryData(documentEditKey(id, "title"), "clean");
+      return true;
+    }
+    publish(next);
+    return true;
+  }
+
   function schedule(nextTitle: string) {
     setName(nextTitle);
     const trimmed = nextTitle.trim();
@@ -76,26 +119,8 @@ export function DiagramTitle(props: Properties) {
         queryClient.setQueryData(documentEditKey(id, "title"), "clean");
         return;
       }
-      save.mutate(
-        { title: sent, version: versionQuery.data?.version ?? appliedVersion.current },
-        {
-          onSuccess: (result) => {
-            appliedVersion.current = result.version;
-            if (nameRef.current.trim() !== sent) {
-              schedule(nameRef.current);
-              return;
-            }
-            dirty.current = false;
-            persisted.current = result.title || sent;
-            setName(persisted.current);
-            queryClient.setQueryData(documentEditKey(id, "title"), "clean");
-            void queryClient.invalidateQueries({ queryKey: documentVersionKey(id) });
-          },
-          onError: () => {
-            queryClient.setQueryData(documentEditKey(id, "title"), "error");
-          },
-        },
-      );
+      conflictRetries.current = 0;
+      publish(sent);
     }, 700);
   }
 
