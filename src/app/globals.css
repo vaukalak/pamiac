@@ -647,6 +647,7 @@ input.title-input:focus {
   margin: 0 auto;
 }
 .note-editor {
+  --bn-colors-selected-background: var(--teal);
   background: transparent;
   border: none;
   border-radius: 0;
@@ -659,6 +660,24 @@ input.title-input:focus {
 .note-editor .bn-editor {
   font-family: var(--sans);
   font-size: 17px;
+}
+.note-lasso-host {
+  display: contents;
+}
+.note-editor.note-lasso-dragging {
+  user-select: none;
+}
+.note-lasso {
+  position: fixed;
+  z-index: 20;
+  box-sizing: border-box;
+  pointer-events: none;
+  border: 1px solid var(--bn-colors-selected-background, var(--teal));
+  background: color-mix(
+    in srgb,
+    var(--bn-colors-selected-background, var(--teal)) 22%,
+    transparent
+  );
 }
 
 .uml-layout {
@@ -3291,6 +3310,9 @@ code {
   --bn-colors-shadow: rgba(0, 0, 0, 0.45);
   --bn-colors-border: var(--home-hair);
   --bn-colors-side-menu: var(--home-soft);
+}
+.library-shell .note-editor {
+  --bn-colors-selected-background: var(--home-lime);
 }
 .library-shell .note-editor .bn-editor {
   max-width: 72ch;

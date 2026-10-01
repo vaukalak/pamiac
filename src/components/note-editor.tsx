@@ -3,6 +3,7 @@
 import { useCreateBlockNote } from "@blocknote/react";
 import { useEffect, useRef, useSyncExternalStore } from "react";
 import { NoteEditorSurface } from "@/components/note/note-editor-surface";
+import { NoteLasso } from "@/components/note/note-lasso";
 import { bindNoteMarkdownPublisher } from "@/components/note/note-markdown-publisher";
 import {
   blockIdFromHash,
@@ -132,6 +133,7 @@ export function NoteEditor(props: Properties) {
         onChange={handleChange}
         theme={libraryShell || dark ? "dark" : "light"}
       />
+      <NoteLasso editor={editor} />
     </div>
   );
 }
