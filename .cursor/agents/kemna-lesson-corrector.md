@@ -1,7 +1,8 @@
 ---
 name: kemna-lesson-corrector
 description: Checks a Kemna lesson against its plan for relevance, question determinism, sequence, and matching YouTube clips. Does not rewrite the lesson.
-model: inherit
+model: grok-4.7-medium
+force-default-model: true
 readonly: true
 ---
 

@@ -11,6 +11,12 @@ description: >-
 
 This skill starts the refactor agent. It does not edit the product code itself.
 
+## Model
+
+Use Grok 4.7 Medium reasoning. The model slug is `grok-4.7-medium`.
+
+Do not use Cursor Fast mode. Do not select Fast in the model picker. Do not pass `fast`, `inherit`, or any model slug that ends in `-fast`. When launching this agent or any subagent in the chain, set `model` to `grok-4.7-medium`.
+
 It follows the same writer → tester → reviewer loop as `coder`, without the
 risk-analysis step and without any additions.
 

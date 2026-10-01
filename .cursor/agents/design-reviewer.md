@@ -1,7 +1,8 @@
 ---
 name: design-reviewer
 description: Reviews UI changes in the coder chain against the shared components and, when the diff has UI, the Impeccable critique. Does not edit files. Sends defects back to the code writer.
-model: inherit
+model: grok-4.7-medium
+force-default-model: true
 readonly: true
 ---
 

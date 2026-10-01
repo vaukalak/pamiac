@@ -1,7 +1,8 @@
 ---
 name: kemna-lesson-creator
 description: Writes one Kemna Lesson object from an approved plan and course context. Geography lessons must include YouTube fragments from the matching video. Does not invent the plan or the test bank.
-model: inherit
+model: grok-4.7-medium
+force-default-model: true
 readonly: false
 ---
 

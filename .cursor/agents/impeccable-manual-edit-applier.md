@@ -1,7 +1,8 @@
 ---
 name: impeccable-manual-edit-applier
 description: Applies leased Impeccable live manual copy-edit batches to source and returns canonical Apply results.
-model: inherit
+model: grok-4.7-medium
+force-default-model: true
 is_background: false
 ---
 # Impeccable Manual Edit Applier

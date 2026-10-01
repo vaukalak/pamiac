@@ -1,7 +1,8 @@
 ---
 name: code-writer
 description: Writes application code according to code-quality.md and the shared UI components. Use inside the coder chain for the first implementation and for fixes sent back by the tester, reviewer, or design reviewer.
-model: inherit
+model: grok-4.7-medium
+force-default-model: true
 readonly: false
 ---
 

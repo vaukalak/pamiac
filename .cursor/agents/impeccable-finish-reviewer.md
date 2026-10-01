@@ -1,7 +1,8 @@
 ---
 name: impeccable-finish-reviewer
 description: Reviews a finished Impeccable build against its direction contract, the approved comp, and the chosen world's quality bar, returning an ordered list of material fixes.
-model: inherit
+model: grok-4.7-medium
+force-default-model: true
 readonly: true
 is_background: false
 ---

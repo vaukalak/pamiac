@@ -1,8 +1,8 @@
 ---
-description: Do not use Cursor Fast mode for this agent or its subagents
+description: Use Grok 4.7 Medium reasoning and never Cursor Fast mode
 alwaysApply: true
 ---
 
-Do not use Cursor Fast mode.
+Use Grok 4.7 Medium reasoning for this agent and every subagent. The model slug is `grok-4.7-medium`.
 
-Do not select Fast in the model picker. Do not pass `fast`, or any model slug that ends in `-fast`, when launching a subagent. Omit `model`, or set it to `inherit`, so the parent model is used. If a specific model is requested, use that model's non-fast slug.
+Do not use Cursor Fast mode. Do not select Fast in the model picker. Do not pass `fast`, `inherit`, or any model slug that ends in `-fast`. When launching a subagent, set `model` to `grok-4.7-medium`.

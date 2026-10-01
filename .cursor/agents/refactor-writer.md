@@ -1,7 +1,8 @@
 ---
 name: refactor-writer
 description: Restyles the active chat's existing files to code-quality.md. Does not add features, tests, or dependencies. Use inside the refactor chain.
-model: inherit
+model: grok-4.7-medium
+force-default-model: true
 readonly: false
 ---
 

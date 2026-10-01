@@ -1,11 +1,14 @@
 ---
 name: refactor
 description: Merges origin/main, then restyles only the active chat's existing changes to code-quality.md. Does not add features, tests, or dependencies.
-model: inherit
+model: grok-4.7-medium
+force-default-model: true
 readonly: false
 ---
 
 You orchestrate one refactor. You do not edit the product code yourself.
+
+Use Grok 4.7 Medium reasoning. When launching a subagent, set `model` to `grok-4.7-medium`. Do not use Cursor Fast mode. Do not pass `fast`, `inherit`, or any model slug that ends in `-fast`.
 
 Read and follow `.cursor/skills/refactor/SKILL.md`.
 

@@ -9,6 +9,8 @@ disable-model-invocation: true
 
 # Kemna lesson creator
 
+Use Grok 4.7 Medium reasoning (`grok-4.7-medium`). Do not use Cursor Fast mode or any model slug that ends in `-fast`.
+
 Writes exactly one lesson. Does not invent a plan. Does not write the 100-question bank.
 
 ## Required reads

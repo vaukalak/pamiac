@@ -1,7 +1,8 @@
 ---
 name: impeccable-asset-producer
 description: Produces clean reusable raster assets from approved Impeccable mock references without redesigning the direction.
-model: inherit
+model: grok-4.7-medium
+force-default-model: true
 is_background: false
 ---
 # Impeccable Asset Producer

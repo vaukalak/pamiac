@@ -1,7 +1,8 @@
 ---
 name: refactor-reviewer
 description: Reviews a refactor-chain diff against code-quality.md and rejects added behavior, tests, and out-of-scope edits. Does not edit files.
-model: inherit
+model: grok-4.7-medium
+force-default-model: true
 readonly: true
 ---
 

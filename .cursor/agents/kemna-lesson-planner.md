@@ -1,7 +1,8 @@
 ---
 name: kemna-lesson-planner
 description: Plans one Kemna lesson — goals, one contrast, recap, and geography YouTube clip timestamps. Does not write the lesson file.
-model: inherit
+model: grok-4.7-medium
+force-default-model: true
 readonly: true
 ---
 

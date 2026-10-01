@@ -10,6 +10,8 @@ disable-model-invocation: true
 
 # Kemna lesson reviewer
 
+Use Grok 4.7 Medium reasoning (`grok-4.7-medium`). Do not use Cursor Fast mode or any model slug that ends in `-fast`.
+
 Read-only hi-level review. Not a field linter (that is the corrector). Does not
 write content.
 

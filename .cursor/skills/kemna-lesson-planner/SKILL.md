@@ -9,6 +9,8 @@ disable-model-invocation: true
 
 # Kemna lesson planner
 
+Use Grok 4.7 Medium reasoning (`grok-4.7-medium`). Do not use Cursor Fast mode or any model slug that ends in `-fast`.
+
 Read-only. Produces a plan. Does not edit `lib/lessons/` or `lib/geography/`.
 
 ## Required reads
