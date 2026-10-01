@@ -16,7 +16,7 @@ function block(source: string, start: string, end: string) {
 describe("library profile corner", () => {
   it("renders the account menu once beside the sidebar, not in the rail", () => {
     const board = read("../components/library/document-board.tsx");
-    const sidebar = read("../components/library/library-sidebar.tsx");
+    const sidebar = read("../components/library/library-sidebar-panel.tsx");
     const shell = block(board, '<div className="library-shell">', "</div>");
 
     assert.equal(board.match(/<ProfileMenu /g)?.length, 1);

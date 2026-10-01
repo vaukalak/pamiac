@@ -36,7 +36,7 @@ describe("library sidebar and create plus", () => {
   });
 
   it("opens a named workspace form from the sidebar and rejects an empty name", () => {
-    const sidebar = read("../components/library/library-sidebar.tsx");
+    const sidebar = read("../components/library/library-sidebar-panel.tsx");
     const form = read("../components/library/workspace-create.tsx");
     const manage = read("../components/library/library-manage.tsx");
 
