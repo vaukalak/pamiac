@@ -41,6 +41,7 @@ export async function PATCH(request: Request, context: Context) {
       title: input.title,
       content: input.content,
       patch: input.patch,
+      expectedVersion: input.version,
     });
     return json(presentDocumentWrite(document));
   } catch (error) {

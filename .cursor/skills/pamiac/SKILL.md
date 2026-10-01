@@ -117,6 +117,6 @@ A node object sets only the fields it contains. Those fields are `kind`, `name`,
 
 `content` on a diagram PATCH is a full replace. Do not send it to change a node. Creating a node without an id still slugs from the name when you send full `content`. Notes remain a full markdown `content` replace.
 
-A matching `version` writes and the response includes the new `version`. On 409, GET the document again, re-apply the same intended change onto that content, then PATCH again with the new `version`. Rebuild a diagram `patch` against the new document. Do not resend a stale full replace that drops the other writer's work.
+A matching `version` writes and the response includes the new `version`. On 409, the response includes the current `version`, `title`, and `content`. Re-apply the same intended change onto that content, then PATCH again with that `version`. Rebuild a diagram `patch` against the new document. Do not resend a stale full replace that drops the other writer's work.
 
 `GET /api/agent/v1` returns this contract when the token is valid.

@@ -316,7 +316,18 @@ export async function updateDocumentContent(
       throw new HttpError(404, "Document not found");
     }
     const conflict = documentVersionConflict(current.version, input.expectedVersion);
-    if (conflict !== null) throw new HttpError(409, DOCUMENT_VERSION_CONFLICT, conflict);
+    if (conflict !== null) {
+      throw new HttpError(
+        409,
+        DOCUMENT_VERSION_CONFLICT,
+        presentDocumentWrite({
+          type: current.type,
+          title: current.title,
+          content: current.content,
+          version: current.version,
+        }),
+      );
+    }
     const title = input.title?.trim() || current.title;
     if (title.length > 160) throw new HttpError(400, "Title is too long");
     let written;

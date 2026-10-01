@@ -43,7 +43,7 @@ export async function GET(request: Request) {
             patch:
               "optional diagram merge. GET the document in the same turn, then send only the nodes you change, with ids from that GET. Omit other nodes. Omit position to keep layout.",
             version:
-              "required. The version from GET /api/agent/v1/documents/:id in the same turn. A mismatch returns 409 with the current version. GET the document again, re-apply the change onto that content, and PATCH with the new version. Rebuild a diagram patch against the new document. Do not resend a stale full replace.",
+              "required. The version from GET /api/agent/v1/documents/:id in the same turn. A mismatch returns 409 with the current version, title, and content. Re-apply the change onto that content and PATCH with that version. Rebuild a diagram patch against the new document. Do not resend a stale full replace.",
           },
         },
       },

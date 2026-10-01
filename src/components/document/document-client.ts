@@ -16,6 +16,20 @@ export type SavedDocument = {
   content: DiagramContent | string;
 };
 
+export class DocumentSaveConflict extends Error {
+  readonly version: number;
+  readonly title: string;
+  readonly content: DiagramContent | string;
+
+  constructor(conflict: { version: number; title: string; content: DiagramContent | string }) {
+    super("Document changed. Read it again and send the current version.");
+    this.name = "DocumentSaveConflict";
+    this.version = conflict.version;
+    this.title = conflict.title;
+    this.content = conflict.content;
+  }
+}
+
 export type DocumentSnapshot = {
   title: string;
   version: number;
@@ -57,11 +71,29 @@ export async function saveOwnerDocument(
   id: string,
   body: { title?: string; content?: unknown; patch?: DiagramPatch; version?: number },
 ) {
-  return readBody<SavedDocument>(
-    await fetch(`/api/documents/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    }),
-  );
+  const response = await fetch(`/api/documents/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (response.status === 409) {
+    const conflict = (await response.json()) as {
+      version?: number;
+      title?: string;
+      content?: DiagramContent | string;
+    };
+    if (
+      typeof conflict.version !== "number" ||
+      typeof conflict.title !== "string" ||
+      conflict.content === undefined
+    ) {
+      throw new Error("Document request failed");
+    }
+    throw new DocumentSaveConflict({
+      version: conflict.version,
+      title: conflict.title,
+      content: conflict.content,
+    });
+  }
+  return readBody<SavedDocument>(response);
 }

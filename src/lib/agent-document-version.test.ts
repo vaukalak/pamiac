@@ -30,15 +30,35 @@ describe("agent document version", () => {
     assert.equal(documentUpdateSchema.safeParse({ content: "note", version: 2 }).success, true);
   });
 
-  it("attaches version only on the conflict error", async () => {
+  it("attaches version, title, and content only on the conflict error", async () => {
     const conflict = errorResponse(
-      new HttpError(409, "Document changed. Read it again and send the current version.", 4),
+      new HttpError(409, "Document changed. Read it again and send the current version.", {
+        version: 4,
+        title: "Note",
+        content: "hello",
+      }),
       true,
     );
     assert.equal(conflict.status, 409);
     assert.deepEqual(await conflict.json(), {
       error: "Document changed. Read it again and send the current version.",
       version: 4,
+      title: "Note",
+      content: "hello",
+    });
+
+    const humanConflict = errorResponse(
+      new HttpError(409, "Document changed. Read it again and send the current version.", {
+        version: 5,
+        title: "Map",
+        content: { nodes: [], relations: [] },
+      }),
+    );
+    assert.deepEqual(await humanConflict.json(), {
+      error: "Document changed. Read it again and send the current version.",
+      version: 5,
+      title: "Map",
+      content: { nodes: [], relations: [] },
     });
 
     const missing = errorResponse(new HttpError(404, "Document not found"), true);
@@ -48,20 +68,24 @@ describe("agent document version", () => {
     assert.deepEqual(await human.json(), { error: "Title is too long" });
   });
 
-  it("checks the locked row before writing and leaves human saves and creates unchecked", () => {
+  it("checks the locked row before writing and leaves creates unchecked", () => {
     const store = readFileSync(new URL("./documents.ts", import.meta.url), "utf8");
     const update = store.slice(store.indexOf("export async function updateDocumentContent"));
     const check = update.indexOf("documentVersionConflict(current.version, input.expectedVersion)");
     const write = update.indexOf("applyDocumentWrite(");
     assert.ok(check > 0);
     assert.ok(write > check);
+    assert.match(
+      update,
+      /new HttpError\(\s*409,\s*DOCUMENT_VERSION_CONFLICT,\s*presentDocumentWrite\(/,
+    );
 
     const human = readFileSync(
       new URL("../app/api/documents/[id]/route.ts", import.meta.url),
       "utf8",
     );
     assert.match(human, /updateDocumentContent\(user\.id, id, \{\s*title: input\.title,/);
-    assert.equal(human.includes("expectedVersion"), false);
+    assert.match(human, /expectedVersion: input\.version/);
 
     const create = readFileSync(
       new URL("../app/api/agent/v1/documents/route.ts", import.meta.url),
@@ -95,10 +119,9 @@ describe("agent document version", () => {
       mcp.indexOf("async function loadUser"),
     );
     assert.match(failure, /if \(error\.version === undefined\) return error\.message/);
-    assert.match(
-      failure,
-      /JSON\.stringify\(\{ error: error\.message, version: error\.version \}\)/,
-    );
+    assert.match(failure, /version: error\.version/);
+    assert.match(failure, /title: error\.title/);
+    assert.match(failure, /content: error\.content/);
 
     const index = readFileSync(new URL("../app/api/agent/v1/route.ts", import.meta.url), "utf8");
     assert.equal(index.includes("optional. The server merges even when this is behind."), false);
@@ -116,7 +139,10 @@ describe("agent document version", () => {
     assert.equal(cursorSkill, published);
     assert.match(published, /"version": 3/);
     assert.match(published, /"version": 4/);
-    assert.match(published, /On 409, GET the document again/);
+    assert.match(
+      published,
+      /On 409, the response includes the current `version`, `title`, and `content`/,
+    );
     assert.match(published, /Rebuild a diagram `patch` against the new document/);
     assert.match(mcp, /Send `version` from `read_document`/);
     assert.match(mcp, /rebuild the change against that document/);

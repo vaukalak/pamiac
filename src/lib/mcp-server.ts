@@ -150,7 +150,12 @@ function errorResult(message: string) {
 function failureMessage(error: unknown) {
   if (error instanceof HttpError) {
     if (error.version === undefined) return error.message;
-    return JSON.stringify({ error: error.message, version: error.version });
+    return JSON.stringify({
+      error: error.message,
+      version: error.version,
+      title: error.title,
+      content: error.content,
+    });
   }
   if (error instanceof Error) return error.message;
   return "Request failed";
@@ -311,7 +316,7 @@ export function createPamiacMcpServer(
     "update_note",
     {
       description:
-        "Replace a note with the full markdown content. Send version from read_document. On conflict, read again, re-apply, and update with the new version.",
+        "Replace a note with the full markdown content. Send version from read_document. On conflict, the error includes the current version, title, and content. Re-apply onto that content and update with that version.",
       inputSchema: updateNoteInput,
       annotations: replaceAnnotations,
     },
