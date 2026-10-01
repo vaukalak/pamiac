@@ -1158,13 +1158,37 @@ input.title-input:focus {
   margin: 12px 0;
 }
 .secret {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   font-family: var(--mono);
   font-size: 13px;
   background: var(--secret-bg);
   color: var(--secret-ink);
-  padding: 12px;
+  padding: 8px 8px 8px 12px;
   border-radius: 12px;
+}
+.secret-value {
+  flex: 1 1 auto;
+  min-width: 0;
   word-break: break-all;
+}
+.secret .btn.secret-icon {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-color: transparent;
+  background: transparent;
+  color: var(--secret-ink);
+  border-radius: 8px;
+}
+.secret .btn.secret-icon:hover {
+  background: color-mix(in srgb, var(--secret-ink) 12%, transparent);
+}
+.secret .btn.secret-icon:focus-visible {
+  outline: 2px solid var(--secret-ink);
+  outline-offset: 2px;
 }
 .skill {
   font-family: var(--mono);
@@ -4080,4 +4104,16 @@ code {
 }
 .library-shell .token-secret .secret {
   margin-top: 8px;
+}
+.library-shell .token-secret .secret .btn.secret-icon:hover {
+  border-color: var(--home-lime);
+  background: transparent;
+  color: var(--home-lime);
+}
+.library-shell .token-secret .secret .btn.secret-icon:focus-visible {
+  outline: 2px solid var(--home-lime);
+  outline-offset: 2px;
+}
+.library-shell .token-secret .error {
+  color: #ffb4ab;
 }
