@@ -1,3 +1,8 @@
+"use client";
+
+import { useState } from "react";
+import { TokenSecretRow } from "@/components/tokens/token-secret-row";
+import { Alert } from "@/ui/Alert";
 import { Paragraph } from "@/ui/Paragraph";
 
 interface Properties {
@@ -6,13 +11,26 @@ interface Properties {
 
 export function TokenSecret(props: Properties) {
   const { secret } = props;
+  const [visible, setVisible] = useState(false);
+  const [message, setMessage] = useState("");
 
   return (
     <div className="token-secret">
       <Paragraph>
         Copy this key now. Set PAMIAC_TOKEN to this value. Pamiac will not show it again.
       </Paragraph>
-      <div className="secret">{secret}</div>
+      <TokenSecretRow
+        onResult={setMessage}
+        onToggle={() => setVisible((current) => !current)}
+        secret={secret}
+        visible={visible}
+      />
+      {message === "Could not copy the key." ? <Alert>{message}</Alert> : null}
+      {message === "Key copied." ? (
+        <p className="text-pretty" role="status">
+          {message}
+        </p>
+      ) : null}
     </div>
   );
 }
