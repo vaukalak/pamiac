@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { applyDocumentWrite } from "./document-write.ts";
+import { applyDocumentWrite, documentVersionConflict } from "./document-write.ts";
 
 const user = {
   id: "user",
@@ -89,6 +89,18 @@ test("a patch on a note is rejected and does not change the markdown", () => {
       ),
     /Patch applies to diagrams/,
   );
+});
+
+test("a matching expected version allows the write", () => {
+  assert.equal(documentVersionConflict(4, 4), null);
+});
+
+test("a mismatched expected version returns the current version", () => {
+  assert.equal(documentVersionConflict(4, 3), 4);
+});
+
+test("a missing expected version allows the write", () => {
+  assert.equal(documentVersionConflict(4, undefined), null);
 });
 
 test("content and patch together are rejected", () => {

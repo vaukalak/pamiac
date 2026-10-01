@@ -136,7 +136,7 @@ describe("agent documents in the token workspace", () => {
     assert.ok(patch.indexOf("getAgentDocument") < patch.indexOf("updateDocumentContent"));
     assert.match(
       patch,
-      /updateDocumentContent\(\s*agent\.id,\s*id,\s*\{\s*title: input\.title,\s*content: input\.content,\s*patch: input\.patch,\s*\},\s*agent\.scope,\s*\)/,
+      /updateDocumentContent\(\s*agent\.id,\s*id,\s*\{\s*title: input\.title,\s*content: input\.content,\s*patch: input\.patch,\s*expectedVersion: input\.version,\s*\},\s*agent\.scope,\s*\)/,
     );
     assert.match(searchRoute, /agent\.scope\.allScopes/);
     assert.match(

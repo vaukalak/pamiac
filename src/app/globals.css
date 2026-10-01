@@ -31,9 +31,9 @@
   --scrim: rgba(26, 24, 20, 0.35);
   --secret-bg: #14211f;
   --secret-ink: #e7f6f3;
-  --serif: var(--font-serif, "Iowan Old Style", Georgia, serif);
-  --sans: var(--font-sans, "Avenir Next", sans-serif);
-  --mono: var(--font-mono, ui-monospace, monospace);
+  --serif: "Fraunces", "Literata", "Iowan Old Style", Georgia, serif;
+  --sans: "Outfit", "Manrope", "Avenir Next", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
   color-scheme: light;
 }
 

@@ -9,6 +9,7 @@ import {
   documentEditKey,
   documentSaveKey,
   documentVersionKey,
+  DocumentSaveConflict,
   readOwnerDocument,
   saveOwnerDocument,
   type SavedDocument,
@@ -46,6 +47,8 @@ export function NoteDocument(props: Properties) {
   const titleDirty = useRef(false);
   const saveInFlight = useRef(false);
   const appliedVersion = useRef(version);
+  const conflictRetries = useRef(0);
+  const saveGeneration = useRef(0);
   const timer = useRef<number | null>(null);
   const versionQuery = useDocumentVersion(id, canEdit);
   const save = useMutation({
@@ -73,12 +76,60 @@ export function NoteDocument(props: Properties) {
       latest.current.title = result.title;
       setName(noteName(result.title));
     }
+    queryClient.setQueryData(documentVersionKey(id), { version: result.version });
     if (dirty.current || titleDirty.current) {
       schedule();
       return;
     }
     queryClient.setQueryData(documentEditKey(id, "body"), "clean");
-    void queryClient.invalidateQueries({ queryKey: documentVersionKey(id) });
+  }
+
+  function publish(payload: { title?: string; content?: string; version: number }) {
+    const sent = { title: payload.title, content: payload.content };
+    const generation = ++saveGeneration.current;
+    saveInFlight.current = true;
+    save.mutate(payload, {
+      onSuccess: (result) => {
+        if (generation !== saveGeneration.current) return;
+        conflictRetries.current = 0;
+        markSaved(result, sent);
+      },
+      onError: (error) => {
+        if (generation !== saveGeneration.current) return;
+        if (retryConflict(error)) return;
+        queryClient.setQueryData(documentEditKey(id, "body"), "error");
+      },
+      onSettled: () => {
+        if (generation === saveGeneration.current) saveInFlight.current = false;
+      },
+    });
+  }
+
+  function retryConflict(error: unknown) {
+    if (!(error instanceof DocumentSaveConflict) || conflictRetries.current >= 3) return false;
+    if (typeof error.content !== "string") return false;
+    conflictRetries.current += 1;
+    appliedVersion.current = error.version;
+    if (!dirty.current) {
+      latest.current.content = error.content;
+      setRemote({ markdown: error.content, version: error.version });
+    }
+    if (!titleDirty.current) {
+      persistedTitle.current = error.title;
+      latest.current.title = error.title;
+      setName(noteName(error.title));
+    }
+    const payload: { title?: string; content?: string; version: number } = {
+      version: error.version,
+    };
+    if (dirty.current) payload.content = latest.current.content;
+    if (titleDirty.current) payload.title = latest.current.title;
+    if (payload.content === undefined && payload.title === undefined) {
+      queryClient.setQueryData(documentEditKey(id, "body"), "clean");
+      return true;
+    }
+    publish(payload);
+    return true;
   }
 
   function schedule(partial?: { title?: string; content?: string }) {
@@ -104,17 +155,8 @@ export function NoteDocument(props: Properties) {
       };
       if (dirty.current) payload.content = latest.current.content;
       if (titleDirty.current) payload.title = latest.current.title;
-      const sent = { title: payload.title, content: payload.content };
-      saveInFlight.current = true;
-      save.mutate(payload, {
-        onSuccess: (result) => markSaved(result, sent),
-        onError: () => {
-          queryClient.setQueryData(documentEditKey(id, "body"), "error");
-        },
-        onSettled: () => {
-          saveInFlight.current = false;
-        },
-      });
+      conflictRetries.current = 0;
+      publish(payload);
     }, 700);
   }
 

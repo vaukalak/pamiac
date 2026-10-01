@@ -7,6 +7,7 @@ import {
   documentSaveKey,
   documentSnapshotKey,
   documentVersionKey,
+  DocumentSaveConflict,
   readOwnerDocument,
   saveOwnerDocument,
   type SavedDocument,
@@ -41,6 +42,8 @@ export function useDiagramSync(input: Input) {
   const holdRef = useRef(hold);
   const saveInFlight = useRef(false);
   const appliedVersion = useRef(version);
+  const conflictRetries = useRef(0);
+  const saveGeneration = useRef(0);
   const timer = useRef<number | null>(null);
   const queryClient = useQueryClient();
   const versionQuery = useDocumentVersion(id, editable);
@@ -53,7 +56,7 @@ export function useDiagramSync(input: Input) {
   applyRef.current = input.apply;
   holdRef.current = hold;
 
-  function applyRemote(remote: DiagramContent, remoteVersion: number, title?: string) {
+  function adoptRemote(remote: DiagramContent, remoteVersion: number, title?: string) {
     const pendingBefore = new Set(dirty.pendingNodes);
     syncDirtyWithRemote(dirty, remote);
     applyRef.current(mergeRemoteDiagram(diagramRef.current(), remote, dirtyState(dirty)));
@@ -61,11 +64,15 @@ export function useDiagramSync(input: Input) {
     if (title) {
       queryClient.setQueryData(documentSnapshotKey(id), { title, version: remoteVersion });
     }
-    const promoted = [...dirty.pendingNodes].some((nodeId) => !pendingBefore.has(nodeId));
-    if (promoted) schedule();
+    return [...dirty.pendingNodes].some((nodeId) => !pendingBefore.has(nodeId));
+  }
+
+  function applyRemote(remote: DiagramContent, remoteVersion: number, title?: string) {
+    if (adoptRemote(remote, remoteVersion, title)) schedule();
   }
 
   function finishSave(result: SavedDocument, patch: DiagramPatch) {
+    queryClient.setQueryData(documentVersionKey(id), { version: result.version });
     if (typeof result.content === "string") return;
     const current = diagramRef.current();
     acknowledgePatch(dirty, patch, current);
@@ -76,7 +83,42 @@ export function useDiagramSync(input: Input) {
       return;
     }
     queryClient.setQueryData(documentEditKey(id, "body"), "clean");
-    void queryClient.invalidateQueries({ queryKey: documentVersionKey(id) });
+  }
+
+  function publish(patch: DiagramPatch) {
+    const generation = ++saveGeneration.current;
+    saveInFlight.current = true;
+    save.mutate(
+      { patch, version: appliedVersion.current },
+      {
+        onSuccess: (result) => {
+          if (generation !== saveGeneration.current) return;
+          conflictRetries.current = 0;
+          finishSave(result, patch);
+        },
+        onError: (error) => {
+          if (generation !== saveGeneration.current) return;
+          if (retryConflict(error)) return;
+          queryClient.setQueryData(documentEditKey(id, "body"), "error");
+        },
+        onSettled: () => {
+          if (generation === saveGeneration.current) saveInFlight.current = false;
+        },
+      },
+    );
+  }
+
+  function retryConflict(error: unknown) {
+    if (!(error instanceof DocumentSaveConflict) || conflictRetries.current >= 3) return false;
+    if (typeof error.content === "string") return false;
+    conflictRetries.current += 1;
+    adoptRemote(error.content, error.version, error.title);
+    if (!isDiagramDirty(dirty)) {
+      queryClient.setQueryData(documentEditKey(id, "body"), "clean");
+      return true;
+    }
+    publish(buildDiagramPatch(diagramRef.current(), dirty));
+    return true;
   }
 
   function schedule() {
@@ -90,19 +132,8 @@ export function useDiagramSync(input: Input) {
         return;
       }
       const patch = buildDiagramPatch(diagramRef.current(), dirty);
-      saveInFlight.current = true;
-      save.mutate(
-        { patch, version: appliedVersion.current },
-        {
-          onSuccess: (result) => finishSave(result, patch),
-          onError: () => {
-            queryClient.setQueryData(documentEditKey(id, "body"), "error");
-          },
-          onSettled: () => {
-            saveInFlight.current = false;
-          },
-        },
-      );
+      conflictRetries.current = 0;
+      publish(patch);
     }, 700);
   }
 

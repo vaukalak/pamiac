@@ -4,7 +4,7 @@ import {
   requireAgentUser,
   updateDocumentContent,
 } from "@/lib/documents";
-import { documentUpdateSchema } from "@/lib/document-write";
+import { agentDocumentUpdateSchema } from "@/lib/document-write";
 import { agentJson, corsHeaders, errorResponse, readJson } from "@/lib/http";
 
 export function OPTIONS() {
@@ -36,7 +36,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     const { id } = await context.params;
     const current = await getAgentDocument(agent.id, id, agent.scope);
     if (!current) return agentJson({ error: "Document not found" }, 404);
-    const input = documentUpdateSchema.parse(await readJson(request));
+    const input = agentDocumentUpdateSchema.parse(await readJson(request));
     const document = await updateDocumentContent(
       agent.id,
       id,
@@ -44,6 +44,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
         title: input.title,
         content: input.content,
         patch: input.patch,
+        expectedVersion: input.version,
       },
       agent.scope,
     );

@@ -25,7 +25,11 @@ import { normalizeEmails } from "@/lib/access";
 import { defaultTitle, documentText, readDiagram, type DocumentType } from "@/lib/content";
 import type { DiagramPatch } from "@/lib/diagram-patch";
 import { embedText, excerpt } from "@/lib/embeddings";
-import { applyDocumentWrite } from "@/lib/document-write";
+import {
+  applyDocumentWrite,
+  DOCUMENT_VERSION_CONFLICT,
+  documentVersionConflict,
+} from "@/lib/document-write";
 import { HttpError } from "@/lib/http";
 import {
   documentsInSpace,
@@ -292,7 +296,12 @@ export async function getDocumentBundle(id: string) {
 export async function updateDocumentContent(
   userId: string,
   id: string,
-  input: { title?: string; content?: unknown; patch?: DiagramPatch },
+  input: {
+    title?: string;
+    content?: unknown;
+    patch?: DiagramPatch;
+    expectedVersion?: number;
+  },
   scope?: AgentScope,
 ) {
   const db = getDb();
@@ -305,6 +314,19 @@ export async function updateDocumentContent(
     }
     if (scope && !documentInTokenScope(current, userId, scope, workspaceMember)) {
       throw new HttpError(404, "Document not found");
+    }
+    const conflict = documentVersionConflict(current.version, input.expectedVersion);
+    if (conflict !== null) {
+      throw new HttpError(
+        409,
+        DOCUMENT_VERSION_CONFLICT,
+        presentDocumentWrite({
+          type: current.type,
+          title: current.title,
+          content: current.content,
+          version: current.version,
+        }),
+      );
     }
     const title = input.title?.trim() || current.title;
     if (title.length > 160) throw new HttpError(400, "Title is too long");

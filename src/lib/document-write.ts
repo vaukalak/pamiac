@@ -10,6 +10,21 @@ export const documentUpdateSchema = z.object({
   version: z.number().int().positive().optional(),
 });
 
+export const agentDocumentUpdateSchema = documentUpdateSchema.extend({
+  version: z.number().int().positive(),
+});
+
+export const DOCUMENT_VERSION_CONFLICT =
+  "Document changed. Read it again and send the current version.";
+
+export function documentVersionConflict(
+  currentVersion: number,
+  expectedVersion: number | undefined,
+): number | null {
+  if (expectedVersion === undefined || expectedVersion === currentVersion) return null;
+  return currentVersion;
+}
+
 export function applyDocumentWrite(
   current: { type: DocumentType; content: string; version: number },
   input: { content?: unknown; patch?: DiagramPatch },

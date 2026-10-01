@@ -59,10 +59,10 @@ Create a diagram:
 }
 ```
 
-Update a note:
+Update a note. Send `version` from `GET /api/agent/v1/documents/:id` in the same turn:
 
 ```json
-{ "content": "# updated markdown" }
+{ "content": "# updated markdown", "version": 3 }
 ```
 
 `GET /api/agent/v1/documents?type=note` or `GET /api/agent/v1/documents?type=diagram` filters the list.
@@ -91,10 +91,11 @@ Notes store markdown in `content`. Diagrams store:
 
 Diagram relations can refer to an element by id or by name. Omit `position` to keep the user's current layout.
 
-Update one diagram without replacing the others' work. GET `/api/agent/v1/documents/:id` in the same turn before you change it. PATCH `patch` with only the nodes you change, using each id from that GET. Omit other nodes. Omit `position` to keep the layout.
+Update one diagram without replacing the others' work. GET `/api/agent/v1/documents/:id` in the same turn before you change it. PATCH `patch` with only the nodes you change, using each id from that GET. Omit other nodes. Omit `position` to keep the layout. Send `version` from that GET.
 
 ```json
 {
+  "version": 4,
   "patch": {
     "nodes": [{ "id": "user", "methods": ["login(): void"] }],
     "deleteNodes": [],
@@ -115,5 +116,7 @@ Update one diagram without replacing the others' work. GET `/api/agent/v1/docume
 A node object sets only the fields it contains. Those fields are `kind`, `name`, `stereotype`, `attributes`, `methods`, `body`, and `position`. When `attributes` or `methods` is present, it replaces that whole list. A node absent from `patch.nodes` stays. You can send `title` beside `patch`.
 
 `content` on a diagram PATCH is a full replace. Do not send it to change a node. Creating a node without an id still slugs from the name when you send full `content`. Notes remain a full markdown `content` replace.
+
+A matching `version` writes and the response includes the new `version`. On 409, the response includes the current `version`, `title`, and `content`. Re-apply the same intended change onto that content, then PATCH again with that `version`. Rebuild a diagram `patch` against the new document. Do not resend a stale full replace that drops the other writer's work.
 
 `GET /api/agent/v1` returns this contract when the token is valid.
