@@ -648,6 +648,11 @@ input.title-input:focus {
 }
 .note-editor {
   --bn-colors-selected-background: var(--teal);
+  --note-lasso-fill: color-mix(
+    in srgb,
+    var(--bn-colors-selected-background, var(--teal)) 22%,
+    transparent
+  );
   background: transparent;
   border: none;
   border-radius: 0;
@@ -673,11 +678,13 @@ input.title-input:focus {
   box-sizing: border-box;
   pointer-events: none;
   border: 1px solid var(--bn-colors-selected-background, var(--teal));
-  background: color-mix(
-    in srgb,
-    var(--bn-colors-selected-background, var(--teal)) 22%,
-    transparent
-  );
+  background: var(--note-lasso-fill);
+}
+.note-editor .bn-block.note-lasso-block > .bn-block-content {
+  background: var(--note-lasso-fill);
+}
+.note-editor .bn-block.note-lasso-block:not(:has(> .bn-block-content)) {
+  background: var(--note-lasso-fill);
 }
 
 .uml-layout {

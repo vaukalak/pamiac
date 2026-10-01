@@ -1,12 +1,13 @@
 import type { BlockNoteEditor } from "@blocknote/core";
-import { NodeSelection, TextSelection } from "prosemirror-state";
+import { Selection } from "prosemirror-state";
 import { useEffect, useRef, useState } from "react";
 import {
+  collapseLeftoverSelection,
   dragPastThreshold,
   lassoSelection,
   lassoStartAllowed,
   rectFromPoints,
-  type LassoSelection,
+  type BlockBox,
   type LassoStart,
   type Point,
   type Rect,
@@ -15,6 +16,8 @@ import {
 interface Properties {
   editor: BlockNoteEditor;
 }
+
+const HIGHLIGHT_CLASS = "note-lasso-block";
 
 function eventElement(target: EventTarget | null) {
   if (target instanceof Element) return target;
@@ -41,88 +44,50 @@ function lassoStartFromPointer(event: PointerEvent, editorRoot: Element): LassoS
   };
 }
 
-function blockBoxes(editorRoot: Element) {
-  const boxes = [];
+function elementRect(element: HTMLElement): Rect {
+  const box = element.getBoundingClientRect();
+  return {
+    left: box.left,
+    top: box.top,
+    right: box.right,
+    bottom: box.bottom,
+  };
+}
 
+function blockBoxes(editorRoot: Element): BlockBox[] {
+  const boxes: BlockBox[] = [];
   for (const node of editorRoot.querySelectorAll<HTMLElement>(".bn-block[data-id]")) {
     const id = node.dataset.id;
     if (!id) continue;
-    const box = node.getBoundingClientRect();
+    const parent = node.parentElement?.closest(".bn-block[data-id]");
+    let contentRect: Rect | null = null;
+    for (const child of node.children) {
+      if (!(child instanceof HTMLElement) || !child.classList.contains("bn-block-content")) {
+        continue;
+      }
+      contentRect = elementRect(child);
+      break;
+    }
     boxes.push({
       id,
-      rect: {
-        left: box.left,
-        top: box.top,
-        right: box.right,
-        bottom: box.bottom,
-      },
+      rect: elementRect(node),
+      contentRect,
+      parentId: parent instanceof HTMLElement ? (parent.dataset.id ?? null) : null,
     });
   }
-
   return boxes;
 }
 
-function blockElement(root: Element, id: string) {
+function paintHighlight(root: Element, ids: readonly string[]) {
+  const wanted = new Set(ids);
   for (const node of root.querySelectorAll<HTMLElement>(".bn-block[data-id]")) {
-    if (node.dataset.id === id) return node;
+    const id = node.dataset.id;
+    node.classList.toggle(HIGHLIGHT_CLASS, Boolean(id && wanted.has(id)));
   }
-  return null;
 }
 
-function blockRange(editor: BlockNoteEditor, element: HTMLElement, id: string) {
-  const view = editor.prosemirrorView;
-  const pos = view.posAtDOM(element, 0);
-  const resolved = view.state.doc.resolve(pos);
-  for (let depth = resolved.depth; depth > 0; depth -= 1) {
-    const node = resolved.node(depth);
-    if (node.attrs.id !== id) continue;
-    return {
-      before: resolved.before(depth),
-      start: resolved.start(depth),
-      end: resolved.end(depth),
-      atom: node.firstChild?.isAtom === true,
-    };
-  }
-  return null;
-}
-
-function selectBlockSpan(editor: BlockNoteEditor, root: Element, firstId: string, lastId: string) {
-  const first = blockElement(root, firstId);
-  const last = blockElement(root, lastId);
-  if (!first || !last) return;
-  const start = blockRange(editor, first, firstId);
-  const end = blockRange(editor, last, lastId);
-  if (!start || !end) return;
-
-  const view = editor.prosemirrorView;
-  const selection =
-    firstId === lastId && start.atom
-      ? NodeSelection.create(view.state.doc, start.before + 1)
-      : TextSelection.create(
-          view.state.doc,
-          Math.min(start.start, end.start),
-          Math.max(start.end, end.end),
-        );
-  view.dispatch(view.state.tr.setSelection(selection));
-}
-
-function applyLassoSelection(editor: BlockNoteEditor, root: Element, selection: LassoSelection) {
-  if (selection.firstId !== selection.lastId) {
-    try {
-      editor.setSelection(selection.firstId, selection.lastId);
-      editor.focus();
-      return;
-    } catch {
-      // A media block has no inline content, so the range is applied below.
-    }
-  }
-
-  try {
-    selectBlockSpan(editor, root, selection.firstId, selection.lastId);
-    editor.focus();
-  } catch {
-    // Leave the existing selection when the editor cannot represent the range.
-  }
+function collapseEditorSelection(editor: BlockNoteEditor) {
+  collapseLeftoverSelection(editor.prosemirrorView, (position) => Selection.near(position));
 }
 
 export function NoteLasso(props: Properties) {
@@ -139,6 +104,13 @@ export function NoteLasso(props: Properties) {
     let active = false;
     let pointerId: number | null = null;
     let lassoEndedAt = 0;
+    let committedIds: string[] = [];
+    let downInEditor = false;
+
+    function show(ids: readonly string[]) {
+      paintHighlight(root, ids);
+      if (ids.length > 0) collapseEditorSelection(editor);
+    }
 
     function clearDrag() {
       start = null;
@@ -149,6 +121,7 @@ export function NoteLasso(props: Properties) {
     }
 
     function onPointerDown(event: PointerEvent) {
+      downInEditor = root.contains(event.target as Node);
       if (start || !lassoStartAllowed(lassoStartFromPointer(event, root))) return;
       start = { x: event.clientX, y: event.clientY };
       active = false;
@@ -164,25 +137,40 @@ export function NoteLasso(props: Properties) {
         root.classList.add("note-lasso-dragging");
       }
       event.preventDefault();
-      setRect(rectFromPoints(start, current));
+      const next = rectFromPoints(start, current);
+      setRect(next);
+      show(lassoSelection(blockBoxes(root), next) ?? []);
     }
 
     function onPointerUp(event: PointerEvent) {
-      if (!start || event.pointerId !== pointerId) return;
-      if (active) {
-        event.preventDefault();
-        lassoEndedAt = performance.now();
-        const selection = lassoSelection(
-          blockBoxes(root),
-          rectFromPoints(start, { x: event.clientX, y: event.clientY }),
-        );
-        if (selection) applyLassoSelection(editor, root, selection);
+      const editorPress = downInEditor;
+      downInEditor = false;
+      if (start && event.pointerId === pointerId) {
+        if (active) {
+          event.preventDefault();
+          lassoEndedAt = performance.now();
+          const selection = lassoSelection(
+            blockBoxes(root),
+            rectFromPoints(start, { x: event.clientX, y: event.clientY }),
+          );
+          if (selection) committedIds = selection;
+          show(selection ?? committedIds);
+        } else if (editorPress) {
+          committedIds = [];
+          paintHighlight(root, []);
+        }
+        clearDrag();
+        return;
       }
-      clearDrag();
+      if (editorPress) {
+        committedIds = [];
+        paintHighlight(root, []);
+      }
     }
 
     function onPointerCancel(event: PointerEvent) {
       if (!start || event.pointerId !== pointerId) return;
+      paintHighlight(root, committedIds);
       clearDrag();
     }
 
@@ -204,6 +192,7 @@ export function NoteLasso(props: Properties) {
       window.removeEventListener("pointercancel", onPointerCancel);
       editorRoot.removeEventListener("click", onClick, true);
       editorRoot.classList.remove("note-lasso-dragging");
+      paintHighlight(root, []);
     };
   }, [editor]);
 
