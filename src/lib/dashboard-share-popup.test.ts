@@ -72,4 +72,17 @@ describe("dashboard share popup", () => {
       /\.library-shell \.workspace-add-dialog \.choice span \{[^}]*color:\s*var\(--home-soft\)/,
     );
   });
+
+  it("washes the selected share choice in faint lime and a lighter hover on the rest", () => {
+    const css = read("../app/globals.css");
+
+    assert.match(
+      css,
+      /\.library-shell \.workspace-add-dialog \.choice:has\(input:checked\) \{[^}]*background:\s*color-mix\(in srgb, var\(--home-lime\) 14%, transparent\)/,
+    );
+    assert.match(
+      css,
+      /\.library-shell \.workspace-add-dialog \.choice:hover:not\(:has\(input:checked\)\) \{[^}]*background:\s*color-mix\(in srgb, var\(--home-lime\) 6%, transparent\)/,
+    );
+  });
 });
