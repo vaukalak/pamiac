@@ -113,6 +113,8 @@ export function NoteLasso(props: Properties) {
     let committedIds: string[] = [];
     let highlightedIds: readonly string[] = [];
     let downInEditor = false;
+    let frame = 0;
+    let pendingPoint: Point | null = null;
 
     function scheduleRepaint() {
       queueMicrotask(() => paintHighlight(root, highlightedIds));
@@ -121,9 +123,14 @@ export function NoteLasso(props: Properties) {
 
     function show(ids: readonly string[]) {
       highlightedIds = ids;
-      if (ids.length > 0) collapseEditorSelection(editor);
       paintHighlight(root, highlightedIds);
       scheduleRepaint();
+    }
+
+    function cancelLassoFrame() {
+      if (frame === 0) return;
+      cancelAnimationFrame(frame);
+      frame = 0;
     }
 
     function clearHighlight() {
@@ -133,6 +140,8 @@ export function NoteLasso(props: Properties) {
     }
 
     function clearDrag() {
+      cancelLassoFrame();
+      pendingPoint = null;
       start = null;
       active = false;
       pointerId = null;
@@ -143,6 +152,7 @@ export function NoteLasso(props: Properties) {
     function onPointerDown(event: PointerEvent) {
       downInEditor = root.contains(event.target as Node);
       if (start || !lassoStartAllowed(lassoStartFromPointer(event, root))) return;
+      event.preventDefault();
       start = { x: event.clientX, y: event.clientY };
       active = false;
       pointerId = event.pointerId;
@@ -156,12 +166,19 @@ export function NoteLasso(props: Properties) {
       if (!active) {
         active = true;
         root.classList.add("note-lasso-dragging");
+        collapseEditorSelection(editor);
       }
       event.preventDefault();
       clearDomSelection();
-      const next = rectFromPoints(start, current);
-      setRect(next);
-      show(lassoSelection(blockBoxes(root), next) ?? []);
+      pendingPoint = current;
+      if (frame !== 0) return;
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        if (!start || !pendingPoint) return;
+        const next = rectFromPoints(start, pendingPoint);
+        setRect(next);
+        show(lassoSelection(blockBoxes(root), next) ?? []);
+      });
     }
 
     function onPointerUp(event: PointerEvent) {
@@ -170,12 +187,12 @@ export function NoteLasso(props: Properties) {
       if (start && event.pointerId === pointerId) {
         if (active) {
           event.preventDefault();
+          cancelLassoFrame();
+          pendingPoint = null;
           clearDomSelection();
           lassoEndedAt = performance.now();
-          const selection = lassoSelection(
-            blockBoxes(root),
-            rectFromPoints(start, { x: event.clientX, y: event.clientY }),
-          );
+          const next = rectFromPoints(start, { x: event.clientX, y: event.clientY });
+          const selection = lassoSelection(blockBoxes(root), next);
           if (selection) committedIds = selection;
           show(selection ?? committedIds);
         } else if (editorPress) {
@@ -191,6 +208,8 @@ export function NoteLasso(props: Properties) {
 
     function onPointerCancel(event: PointerEvent) {
       if (!start || event.pointerId !== pointerId) return;
+      cancelLassoFrame();
+      pendingPoint = null;
       highlightedIds = committedIds;
       paintHighlight(root, committedIds);
       clearDrag();
@@ -230,6 +249,7 @@ export function NoteLasso(props: Properties) {
     window.addEventListener("pointercancel", onPointerCancel);
     editorRoot.addEventListener("click", onClick, true);
     return () => {
+      cancelLassoFrame();
       stopSelectionChange();
       stopChange();
       observer.disconnect();
