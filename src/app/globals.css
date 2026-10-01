@@ -671,6 +671,11 @@ input.title-input:focus {
 }
 .note-editor.note-lasso-dragging {
   user-select: none;
+  -webkit-user-select: none;
+}
+.note-editor.note-lasso-dragging * {
+  user-select: none;
+  -webkit-user-select: none;
 }
 .note-lasso {
   position: fixed;
@@ -681,11 +686,27 @@ input.title-input:focus {
   border: 1px solid var(--bn-colors-selected-background, var(--teal));
   background: var(--note-lasso-fill);
 }
+@keyframes note-lasso-block-fade {
+  from {
+    background-color: transparent;
+  }
+  to {
+    background-color: var(--note-lasso-fill);
+  }
+}
 .note-editor .bn-block.note-lasso-block > .bn-block-content {
   background: var(--note-lasso-fill);
+  animation: note-lasso-block-fade 0.1s linear both;
 }
 .note-editor .bn-block.note-lasso-block:not(:has(> .bn-block-content)) {
   background: var(--note-lasso-fill);
+  animation: note-lasso-block-fade 0.1s linear both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .note-editor .bn-block.note-lasso-block > .bn-block-content,
+  .note-editor .bn-block.note-lasso-block:not(:has(> .bn-block-content)) {
+    animation: none;
+  }
 }
 .note-editor .bn-block:hover:not(:has(.bn-block:hover)) > .bn-block-content {
   background: var(--note-lasso-fill);
@@ -2605,6 +2626,9 @@ code {
 .library-shell:has(.doc-menu .menu-panel) > .library-main {
   z-index: 6;
 }
+.library-shell:has(.bn-drag-handle-menu) > .library-main {
+  z-index: 6;
+}
 .library-shell ::selection {
   background: var(--home-lime);
   color: var(--home-on-lime);
@@ -3315,7 +3339,7 @@ code {
   --bn-colors-editor-text: var(--home-text);
   --bn-colors-editor-background: transparent;
   --bn-colors-menu-text: var(--home-text);
-  --bn-colors-menu-background: var(--home-panel);
+  --bn-colors-menu-background: #0d110e;
   --bn-colors-tooltip-text: var(--home-text);
   --bn-colors-tooltip-background: var(--home-panel);
   --bn-colors-hovered-text: var(--home-text);
@@ -3327,6 +3351,11 @@ code {
   --bn-colors-shadow: rgba(0, 0, 0, 0.45);
   --bn-colors-border: var(--home-hair);
   --bn-colors-side-menu: var(--home-soft);
+}
+.library-shell .note-editor .bn-suggestion-menu,
+.library-shell .note-editor .bn-menu-dropdown,
+.library-shell .note-editor .bn-drag-handle-menu {
+  background-color: #0d110e;
 }
 .library-shell .note-editor {
   --bn-colors-selected-background: var(--home-lime);

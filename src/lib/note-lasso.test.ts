@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import {
+  collapseLeftoverSelection,
   dragPastThreshold,
   lassoSelection,
   lassoStartAllowed,
@@ -332,6 +333,112 @@ describe("note lasso wiring", () => {
       /\.note-editor \.bn-block\.note-lasso-block > \.bn-block-content \{\s*background: var\(--note-lasso-fill\);/,
     );
     assert.equal(css.includes("--note-hover-fill"), false);
+  });
+
+  it("collapses a leftover selection once and skips an empty or non-empty result", () => {
+    const calls: number[] = [];
+    collapseLeftoverSelection(undefined, () => {
+      calls.push(0);
+      return { empty: true };
+    });
+    collapseLeftoverSelection(null, () => {
+      calls.push(1);
+      return { empty: true };
+    });
+
+    const dispatched: { empty: boolean }[] = [];
+    function view(empty: boolean) {
+      return {
+        state: {
+          selection: { empty, from: 4 },
+          doc: { resolve: (position: number) => position },
+          tr: { setSelection: (selection: { empty: boolean }) => selection },
+        },
+        dispatch: (transaction: { empty: boolean }) => {
+          dispatched.push(transaction);
+        },
+      };
+    }
+
+    collapseLeftoverSelection(view(true), () => ({ empty: true }));
+    collapseLeftoverSelection(view(false), () => ({ empty: false }));
+    collapseLeftoverSelection(view(false), (position: number) => ({ empty: true, position }));
+
+    assert.deepEqual(calls, []);
+    assert.deepEqual(dispatched, [{ empty: true, position: 4 }]);
+  });
+
+  it("prevents a text selection only for a lasso press and collapses once when the drag activates", () => {
+    const gesture = read("../components/note/note-lasso.tsx");
+    const down = gesture.slice(
+      gesture.indexOf("function onPointerDown"),
+      gesture.indexOf("function onPointerMove"),
+    );
+    const move = gesture.slice(
+      gesture.indexOf("function onPointerMove"),
+      gesture.indexOf("function onPointerUp"),
+    );
+    const show = gesture.slice(
+      gesture.indexOf("function show"),
+      gesture.indexOf("function cancelLassoFrame"),
+    );
+    const beforePrevent = down.slice(0, down.indexOf("event.preventDefault()"));
+    assert.match(beforePrevent, /lassoStartAllowed/);
+    assert.match(move, /collapseEditorSelection\(editor\)/);
+    assert.match(move, /requestAnimationFrame/);
+    assert.equal(show.includes("collapse"), false);
+  });
+
+  it("flushes the pending frame with the released rectangle and restores the highlight on cancel", () => {
+    const gesture = read("../components/note/note-lasso.tsx");
+    const up = gesture.slice(
+      gesture.indexOf("function onPointerUp"),
+      gesture.indexOf("function onPointerCancel"),
+    );
+    const cancel = gesture.slice(gesture.indexOf("function onPointerCancel"));
+    const flush = up.slice(0, up.indexOf("const selection"));
+    assert.match(flush, /cancelLassoFrame\(\)/);
+    assert.match(flush, /rectFromPoints\(start, \{ x: event\.clientX, y: event\.clientY \}\)/);
+    assert.match(up, /if \(selection\) committedIds = selection/);
+    assert.match(up, /show\(selection \?\? committedIds\)/);
+    assert.match(up, /clearHighlight\(\)/);
+    assert.match(cancel, /paintHighlight\(root, committedIds\)/);
+    assert.match(cancel, /cancelLassoFrame\(\)/);
+  });
+
+  it("blocks text selection during the drag and fades a block in after the editor updates", () => {
+    const gesture = read("../components/note/note-lasso.tsx");
+    const css = read("../app/globals.css");
+    const show = gesture.slice(gesture.indexOf("function show"));
+    const showBody = show.slice(0, show.indexOf("function clearHighlight"));
+    assert.equal(showBody.includes("collapseEditorSelection"), false);
+    assert.match(showBody, /highlightedIds = ids/);
+    assert.match(showBody, /paintHighlight\(root, highlightedIds\)/);
+    assert.match(showBody, /scheduleRepaint\(\)/);
+    assert.match(gesture, /window\.getSelection\(\)/);
+    assert.match(gesture, /removeAllRanges\(\)/);
+    assert.match(
+      gesture,
+      /function onSelectStart[\s\S]*if \(!active\) return;\s*event\.preventDefault\(\)/,
+    );
+    assert.match(gesture, /editorRoot\.addEventListener\("selectstart", onSelectStart\)/);
+    assert.match(gesture, /editor\.onSelectionChange\(onEditorTransaction\)/);
+    assert.match(gesture, /editor\.onChange\(onEditorTransaction\)/);
+    assert.match(gesture, /new MutationObserver/);
+    assert.match(
+      css,
+      /\.note-editor\.note-lasso-dragging \* \{\s*user-select: none;\s*-webkit-user-select: none;/,
+    );
+    assert.match(css, /-webkit-user-select: none;/);
+    assert.match(
+      css,
+      /@keyframes note-lasso-block-fade \{[\s\S]*from \{[\s\S]*background-color: transparent;[\s\S]*to \{[\s\S]*background-color: var\(--note-lasso-fill\);/,
+    );
+    assert.match(css, /animation: note-lasso-block-fade 0\.1s linear both;/);
+    const down = gesture.slice(gesture.indexOf("function onPointerDown"));
+    const downBody = down.slice(0, down.indexOf("function onPointerMove"));
+    assert.match(downBody, /classList\.add\("note-lasso-dragging"\)/);
+    assert.match(gesture, /classList\.remove\("note-lasso-dragging"\)/);
   });
 
   it("mounts the lasso on the note editor only", () => {
