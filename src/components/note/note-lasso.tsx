@@ -17,7 +17,8 @@ interface Properties {
   editor: BlockNoteEditor<any, any, any>;
 }
 
-const HIGHLIGHT_CLASS = "note-lasso-block";
+const HIGHLIGHT_CLASS = "note-lasso-highlight";
+const MARQUEE_CLASS = "note-lasso-visible";
 
 let collapsingSelection = false;
 
@@ -80,21 +81,52 @@ function blockBoxes(editorRoot: Element): BlockBox[] {
   return boxes;
 }
 
-function paintHighlight(root: Element, ids: readonly string[]) {
+function placeHighlight(node: HTMLElement, rect: Rect) {
+  node.style.left = `${rect.left}px`;
+  node.style.top = `${rect.top}px`;
+  node.style.width = `${Math.max(0, rect.right - rect.left)}px`;
+  node.style.height = `${Math.max(0, rect.bottom - rect.top)}px`;
+}
+
+function paintHighlight(root: Element, layer: HTMLElement | null, ids: readonly string[]) {
+  if (!layer) return;
   const wanted = new Set(ids);
-  for (const node of root.querySelectorAll<HTMLElement>(".bn-block[data-id]")) {
-    const id = node.dataset.id;
-    node.classList.toggle(HIGHLIGHT_CLASS, Boolean(id && wanted.has(id)));
+  const boxes = new Map(
+    blockBoxes(root)
+      .filter((box) => wanted.has(box.id))
+      .map((box) => [box.id, box.contentRect ?? box.rect]),
+  );
+  for (const child of [...layer.children]) {
+    if (!(child instanceof HTMLElement)) continue;
+    const id = child.dataset.id;
+    const rect = id ? boxes.get(id) : undefined;
+    if (!id || !rect) {
+      child.remove();
+      continue;
+    }
+    placeHighlight(child, rect);
+    boxes.delete(id);
+  }
+  for (const [id, rect] of boxes) {
+    const node = document.createElement("div");
+    node.className = HIGHLIGHT_CLASS;
+    node.dataset.id = id;
+    placeHighlight(node, rect);
+    layer.append(node);
   }
 }
 
 function paintLasso(node: HTMLDivElement | null, rect: Rect | null) {
   if (!node) return;
   if (!rect) {
+    node.classList.remove(MARQUEE_CLASS);
     node.style.display = "none";
     return;
   }
-  node.style.display = "block";
+  if (!node.classList.contains(MARQUEE_CLASS)) {
+    node.classList.add(MARQUEE_CLASS);
+    node.style.display = "block";
+  }
   node.style.left = `${rect.left}px`;
   node.style.top = `${rect.top}px`;
   node.style.width = `${rect.right - rect.left}px`;
@@ -121,6 +153,7 @@ export function NoteLasso(props: Properties) {
   const { editor } = props;
   const anchorRef = useRef<HTMLDivElement>(null);
   const lassoRef = useRef<HTMLDivElement>(null);
+  const highlightsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const editorRoot = anchorRef.current?.parentElement;
@@ -134,18 +167,15 @@ export function NoteLasso(props: Properties) {
     let committedIds: string[] = [];
     let highlightedIds: readonly string[] = [];
     let downInEditor = false;
+    let armed = false;
     let frame = 0;
+    let scrollFrame = 0;
     let pendingPoint: Point | null = null;
-
-    function scheduleRepaint() {
-      queueMicrotask(() => paintHighlight(root, highlightedIds));
-      requestAnimationFrame(() => paintHighlight(root, highlightedIds));
-    }
+    let paintingFromChange = false;
 
     function show(ids: readonly string[]) {
       highlightedIds = ids;
-      paintHighlight(root, highlightedIds);
-      scheduleRepaint();
+      paintHighlight(root, highlightsRef.current, highlightedIds);
     }
 
     function cancelLassoFrame() {
@@ -157,7 +187,7 @@ export function NoteLasso(props: Properties) {
     function clearHighlight() {
       committedIds = [];
       highlightedIds = [];
-      paintHighlight(root, []);
+      paintHighlight(root, highlightsRef.current, []);
     }
 
     function clearDrag() {
@@ -165,6 +195,7 @@ export function NoteLasso(props: Properties) {
       pendingPoint = null;
       start = null;
       active = false;
+      armed = false;
       pointerId = null;
       root.classList.remove("note-lasso-dragging");
       paintLasso(lassoRef.current, null);
@@ -174,6 +205,8 @@ export function NoteLasso(props: Properties) {
       downInEditor = root.contains(event.target as Node);
       if (start || !lassoStartAllowed(lassoStartFromPointer(event, root))) return;
       event.preventDefault();
+      event.stopPropagation();
+      armed = true;
       start = { x: event.clientX, y: event.clientY };
       active = false;
       pointerId = event.pointerId;
@@ -188,9 +221,9 @@ export function NoteLasso(props: Properties) {
         active = true;
         root.classList.add("note-lasso-dragging");
         collapseEditorSelection(editor);
+        clearDomSelection();
       }
       event.preventDefault();
-      clearDomSelection();
       pendingPoint = current;
       if (frame !== 0) return;
       frame = requestAnimationFrame(() => {
@@ -210,7 +243,6 @@ export function NoteLasso(props: Properties) {
           event.preventDefault();
           cancelLassoFrame();
           pendingPoint = null;
-          clearDomSelection();
           lassoEndedAt = performance.now();
           const next = rectFromPoints(start, { x: event.clientX, y: event.clientY });
           const selection = lassoSelection(blockBoxes(root), next);
@@ -232,7 +264,7 @@ export function NoteLasso(props: Properties) {
       cancelLassoFrame();
       pendingPoint = null;
       highlightedIds = committedIds;
-      paintHighlight(root, committedIds);
+      paintHighlight(root, highlightsRef.current, committedIds);
       clearDrag();
     }
 
@@ -243,52 +275,60 @@ export function NoteLasso(props: Properties) {
     }
 
     function onSelectStart(event: Event) {
-      if (!active) return;
+      if (!armed) return;
       event.preventDefault();
     }
 
-    function onEditorTransaction() {
-      scheduleRepaint();
+    function onScroll() {
+      if (scrollFrame !== 0) return;
+      scrollFrame = requestAnimationFrame(() => {
+        scrollFrame = 0;
+        paintHighlight(root, highlightsRef.current, highlightedIds);
+      });
     }
 
-    const observer = new MutationObserver(() => {
-      paintHighlight(root, highlightedIds);
-    });
-    observer.observe(root, {
-      subtree: true,
-      childList: true,
-      attributes: true,
-      attributeFilter: ["class"],
-    });
-    const stopSelectionChange = editor.onSelectionChange(onEditorTransaction);
-    const stopChange = editor.onChange(onEditorTransaction);
+    function onDocumentChange() {
+      if (paintingFromChange) return;
+      paintingFromChange = true;
+      try {
+        paintHighlight(root, highlightsRef.current, highlightedIds);
+      } finally {
+        paintingFromChange = false;
+      }
+    }
 
-    editorRoot.addEventListener("pointerdown", onPointerDown);
+    const stopChange = editor.onChange(onDocumentChange);
+
+    editorRoot.addEventListener("pointerdown", onPointerDown, true);
     editorRoot.addEventListener("selectstart", onSelectStart);
     window.addEventListener("pointermove", onPointerMove, { passive: false });
     window.addEventListener("pointerup", onPointerUp);
     window.addEventListener("pointercancel", onPointerCancel);
+    window.addEventListener("scroll", onScroll, true);
+    window.addEventListener("resize", onScroll);
     editorRoot.addEventListener("click", onClick, true);
     return () => {
       cancelLassoFrame();
-      stopSelectionChange();
+      if (scrollFrame !== 0) cancelAnimationFrame(scrollFrame);
       stopChange();
-      observer.disconnect();
-      editorRoot.removeEventListener("pointerdown", onPointerDown);
+      editorRoot.removeEventListener("pointerdown", onPointerDown, true);
       editorRoot.removeEventListener("selectstart", onSelectStart);
       window.removeEventListener("pointermove", onPointerMove);
       window.removeEventListener("pointerup", onPointerUp);
       window.removeEventListener("pointercancel", onPointerCancel);
+      window.removeEventListener("scroll", onScroll, true);
+      window.removeEventListener("resize", onScroll);
       editorRoot.removeEventListener("click", onClick, true);
       editorRoot.classList.remove("note-lasso-dragging");
       highlightedIds = [];
-      paintHighlight(root, []);
+      paintHighlight(root, highlightsRef.current, []);
       paintLasso(lassoRef.current, null);
     };
   }, [editor]);
 
   return (
     <div ref={anchorRef} className="note-lasso-host">
+      <div ref={highlightsRef} className="note-lasso-highlights" />
       <div ref={lassoRef} className="note-lasso" />
     </div>
   );

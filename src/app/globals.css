@@ -650,7 +650,7 @@ input.title-input:focus {
   --bn-colors-selected-background: var(--teal);
   --note-lasso-fill: color-mix(
     in srgb,
-    var(--bn-colors-selected-background, var(--teal)) 22%,
+    var(--bn-colors-selected-background, var(--teal)) 10%,
     transparent
   );
   background: transparent;
@@ -732,27 +732,47 @@ input.title-input:focus {
   pointer-events: none;
   border: 1px solid var(--bn-colors-selected-background, var(--teal));
   background: var(--note-lasso-fill);
+  opacity: 0;
+}
+.note-lasso.note-lasso-visible {
+  animation: note-lasso-marquee-fade 200ms ease both;
+}
+@keyframes note-lasso-marquee-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.note-lasso-highlights {
+  pointer-events: none;
+}
+.note-lasso-highlight {
+  position: fixed;
+  z-index: 4;
+  box-sizing: border-box;
+  pointer-events: none;
+  background: var(--note-lasso-fill);
+  opacity: 1;
+  animation: note-lasso-block-fade 200ms ease;
 }
 @keyframes note-lasso-block-fade {
   from {
-    background-color: transparent;
+    opacity: 0;
   }
   to {
-    background-color: var(--note-lasso-fill);
+    opacity: 1;
   }
 }
-.note-editor .bn-block.note-lasso-block > .bn-block-content {
-  background: var(--note-lasso-fill);
-  animation: note-lasso-block-fade 0.1s linear both;
-}
-.note-editor .bn-block.note-lasso-block:not(:has(> .bn-block-content)) {
-  background: var(--note-lasso-fill);
-  animation: note-lasso-block-fade 0.1s linear both;
-}
 @media (prefers-reduced-motion: reduce) {
-  .note-editor .bn-block.note-lasso-block > .bn-block-content,
-  .note-editor .bn-block.note-lasso-block:not(:has(> .bn-block-content)) {
+  .note-lasso.note-lasso-visible {
     animation: none;
+    opacity: 1;
+  }
+  .note-lasso-highlight {
+    animation: none;
+    opacity: 1;
   }
 }
 .note-editor .bn-block:hover:not(:has(.bn-block:hover)) > .bn-block-content {
