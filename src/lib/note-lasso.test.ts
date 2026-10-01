@@ -301,6 +301,40 @@ describe("note lasso wiring", () => {
     assert.match(gesture, /child\.classList\.contains\("bn-block-content"\)/);
   });
 
+  it("moves the lasso through the element and collapses a leftover selection once", () => {
+    const gesture = read("../components/note/note-lasso.tsx");
+    const move = gesture.slice(gesture.indexOf("function onPointerMove"));
+    const moveBody = move.slice(0, move.indexOf("function onPointerUp"));
+    const show = gesture.slice(
+      gesture.indexOf("function show"),
+      gesture.indexOf("function clearDrag"),
+    );
+    assert.equal(gesture.includes("useState"), false);
+    assert.equal(gesture.includes("setRect"), false);
+    assert.match(gesture, /lassoRef/);
+    assert.match(gesture, /node\.style\.left/);
+    assert.match(gesture, /if \(collapsingSelection\) return/);
+    assert.match(moveBody, /collapseEditorSelection\(editor\)/);
+    assert.equal(
+      moveBody.slice(moveBody.indexOf("event.preventDefault()")).includes("collapse"),
+      false,
+    );
+    assert.equal(show.includes("collapse"), false);
+  });
+
+  it("washes only the innermost hovered block and keeps a lasso highlight", () => {
+    const css = read("../app/globals.css");
+    assert.match(
+      css,
+      /\.note-editor \.bn-block:hover:not\(:has\(\.bn-block:hover\)\) > \.bn-block-content \{\s*background: var\(--note-lasso-fill\);/,
+    );
+    assert.match(
+      css,
+      /\.note-editor \.bn-block\.note-lasso-block > \.bn-block-content \{\s*background: var\(--note-lasso-fill\);/,
+    );
+    assert.equal(css.includes("--note-hover-fill"), false);
+  });
+
   it("collapses a leftover selection once and skips an empty or non-empty result", () => {
     const calls: number[] = [];
     collapseLeftoverSelection(undefined, () => {

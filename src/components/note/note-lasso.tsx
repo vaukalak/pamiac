@@ -1,6 +1,6 @@
 import type { BlockNoteEditor } from "@blocknote/core";
 import { Selection } from "prosemirror-state";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import {
   collapseLeftoverSelection,
   dragPastThreshold,
@@ -18,6 +18,8 @@ interface Properties {
 }
 
 const HIGHLIGHT_CLASS = "note-lasso-block";
+
+let collapsingSelection = false;
 
 function eventElement(target: EventTarget | null) {
   if (target instanceof Element) return target;
@@ -86,8 +88,27 @@ function paintHighlight(root: Element, ids: readonly string[]) {
   }
 }
 
+function paintLasso(node: HTMLDivElement | null, rect: Rect | null) {
+  if (!node) return;
+  if (!rect) {
+    node.style.display = "none";
+    return;
+  }
+  node.style.display = "block";
+  node.style.left = `${rect.left}px`;
+  node.style.top = `${rect.top}px`;
+  node.style.width = `${rect.right - rect.left}px`;
+  node.style.height = `${rect.bottom - rect.top}px`;
+}
+
 function collapseEditorSelection(editor: BlockNoteEditor<any, any, any>) {
-  collapseLeftoverSelection(editor.prosemirrorView, (position) => Selection.near(position));
+  if (collapsingSelection) return;
+  collapsingSelection = true;
+  try {
+    collapseLeftoverSelection(editor.prosemirrorView, (position) => Selection.near(position));
+  } finally {
+    collapsingSelection = false;
+  }
 }
 
 function clearDomSelection() {
@@ -99,7 +120,7 @@ function clearDomSelection() {
 export function NoteLasso(props: Properties) {
   const { editor } = props;
   const anchorRef = useRef<HTMLDivElement>(null);
-  const [rect, setRect] = useState<Rect | null>(null);
+  const lassoRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const editorRoot = anchorRef.current?.parentElement;
@@ -146,7 +167,7 @@ export function NoteLasso(props: Properties) {
       active = false;
       pointerId = null;
       root.classList.remove("note-lasso-dragging");
-      setRect(null);
+      paintLasso(lassoRef.current, null);
     }
 
     function onPointerDown(event: PointerEvent) {
@@ -176,7 +197,7 @@ export function NoteLasso(props: Properties) {
         frame = 0;
         if (!start || !pendingPoint) return;
         const next = rectFromPoints(start, pendingPoint);
-        setRect(next);
+        paintLasso(lassoRef.current, next);
         show(lassoSelection(blockBoxes(root), next) ?? []);
       });
     }
@@ -262,22 +283,13 @@ export function NoteLasso(props: Properties) {
       editorRoot.classList.remove("note-lasso-dragging");
       highlightedIds = [];
       paintHighlight(root, []);
+      paintLasso(lassoRef.current, null);
     };
   }, [editor]);
 
   return (
     <div ref={anchorRef} className="note-lasso-host">
-      {rect ? (
-        <div
-          className="note-lasso"
-          style={{
-            left: rect.left,
-            top: rect.top,
-            width: rect.right - rect.left,
-            height: rect.bottom - rect.top,
-          }}
-        />
-      ) : null}
+      <div ref={lassoRef} className="note-lasso" />
     </div>
   );
 }
