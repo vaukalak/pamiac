@@ -3771,11 +3771,10 @@ code {
   flex: 1 1 180px;
   min-width: 0;
 }
-.library-shell .token-create {
-  display: contents;
-}
-.library-shell .token-form {
-  flex: 1 1 100%;
+.library-shell .token-form-dialog {
+  width: min(520px, 100%);
+  max-height: min(720px, calc(100vh - 48px));
+  overflow: auto;
 }
 .library-shell .token-keys .btn.secondary {
   background: transparent;
