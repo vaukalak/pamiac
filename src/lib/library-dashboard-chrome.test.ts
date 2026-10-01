@@ -60,11 +60,14 @@ describe("library dashboard chrome risks", () => {
     const panel = read("../components/header/profile-menu-panel.tsx");
     const board = read("../components/library/document-board.tsx");
     const sidebar = read("../components/library/library-sidebar.tsx");
+    const header = read("../components/library/library-mobile-header.tsx");
     const nav = read("../components/library/library-nav.tsx");
 
     assert.match(rail, /\{managing \? <LibraryInviteLink onInvite=\{onManage\} \/> : null\}/);
     assert.match(rail, /href="\/support"/);
-    assert.match(board, /<ProfileMenu email=\{email\} \/>/);
+    assert.match(board, /email=\{email\}/);
+    assert.match(header, /<ProfileMenu email=\{email\} \/>/);
+    assert.match(sidebar, /email=\{email\}/);
     assert.match(panel, /className="profile-email"/);
     assert.match(panel, /\{email\}/);
     assert.equal(/LibraryAccount|library-account/.test(sidebar + board), false);

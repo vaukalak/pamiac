@@ -123,15 +123,30 @@ describe("library mobile menu", () => {
     assert.equal(/\.library-sidebar/.test(stacked), false);
     assert.equal(/border-bottom:\s*1px solid var\(--home-hair\)/.test(stacked), false);
     assert.match(button, /display:\s*none/);
-    assert.match(button, /top:\s*16px/);
-    assert.match(button, /left:\s*16px/);
+    assert.equal(/position:\s*fixed/.test(button), false);
+    assert.equal(/top:\s*16px/.test(button), false);
+    assert.equal(/left:\s*16px/.test(button), false);
     assert.match(
       css,
       /@media \(max-width:\s*760px\)\s*\{\s*\.library-shell \.library-menu-button\s*\{\s*display:\s*inline-flex;/,
     );
+    const bar = block(css, ".library-mobile-header {", ".library-mobile-header .brand");
+    assert.match(bar, /position:\s*fixed/);
+    assert.match(bar, /top:\s*16px/);
+    assert.match(bar, /right:\s*16px/);
+    assert.match(bar, /z-index:\s*7/);
+    assert.match(
+      css,
+      /\.library-shell \.library-mobile-header\s*\{[^}]*top:\s*0;[^}]*left:\s*0;[^}]*right:\s*0;[^}]*height:\s*56px;[^}]*border-bottom:\s*1px solid var\(--home-hair\);[^}]*background:\s*var\(--home-ground\)/,
+    );
+    assert.match(css, /\.library-shell \.library-menu-backdrop\s*\{[^}]*top:\s*56px/);
+    assert.match(css, /\.library-shell > \.library-sidebar \.brand\s*\{\s*display:\s*none;/);
     const rail = block(css, ".library-sidebar {", ".library-switcher");
 
     assert.match(drawer, /position:\s*fixed/);
+    assert.match(drawer, /top:\s*56px/);
+    assert.equal(/top:\s*0/.test(drawer), false);
+    assert.match(drawer, /z-index:\s*5/);
     assert.match(drawer, /background:\s*var\(--home-ground\)/);
     assert.match(rail, /border-right:\s*1px solid var\(--home-hair\)/);
     assert.equal(/border-right:\s*0/.test(drawer), false);

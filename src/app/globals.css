@@ -2482,12 +2482,28 @@ code {
   position: relative;
   z-index: 2;
 }
-.library-shell .library-menu-button {
-  display: none;
+.library-mobile-header {
   position: fixed;
   top: 16px;
-  left: 16px;
-  z-index: 6;
+  right: 16px;
+  z-index: 7;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.library-mobile-header .brand {
+  display: none;
+}
+.library-mobile-header .profile {
+  flex: none;
+}
+.library-shell .library-menu-button {
+  display: none;
+  flex: none;
   width: 40px;
   height: 40px;
   align-items: center;
@@ -2533,14 +2549,36 @@ code {
   .library-shell .library-menu-button {
     display: inline-flex;
   }
+  .library-shell .library-mobile-header {
+    top: 0;
+    left: 0;
+    right: 0;
+    justify-content: flex-start;
+    gap: 12px;
+    height: 56px;
+    padding: 0 16px;
+    border-bottom: 1px solid var(--home-hair);
+    background: var(--home-ground);
+  }
+  .library-shell .library-mobile-header .brand {
+    display: flex;
+    min-width: 0;
+    padding-right: 0;
+  }
+  .library-shell .library-mobile-header .profile {
+    margin-left: auto;
+  }
+  .library-shell .library-menu-backdrop {
+    top: 56px;
+  }
   .library-shell > .library-sidebar {
     position: fixed;
     z-index: 5;
-    top: 0;
+    top: 56px;
     bottom: 0;
     width: min(240px, calc(100vw - 56px));
     min-height: 0;
-    height: 100%;
+    height: auto;
     overflow: auto;
     overscroll-behavior: contain;
     padding-top: 64px;
@@ -2562,6 +2600,9 @@ code {
   }
   .library-shell > .library-sidebar .library-menu-close {
     display: inline-flex;
+  }
+  .library-shell > .library-sidebar .brand {
+    display: none;
   }
 }
 @media (max-width: 760px) and (prefers-reduced-motion: reduce) {
@@ -2644,13 +2685,7 @@ code {
   color: var(--home-on-lime);
   background: var(--home-lime);
 }
-.library-shell > .profile {
-  position: fixed;
-  top: 16px;
-  right: 16px;
-  z-index: 3;
-}
-.library-shell:has(.share-backdrop) > .profile,
+.library-shell:has(.share-backdrop) .library-mobile-header,
 .library-shell:has(.share-backdrop) .library-menu-button {
   z-index: 1;
 }

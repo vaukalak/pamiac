@@ -2,12 +2,13 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import { LibraryMenuBackdrop } from "@/components/library/library-menu-backdrop";
-import { LibraryMenuButton } from "@/components/library/library-menu-button";
+import { LibraryMobileHeader } from "@/components/library/library-mobile-header";
 import { LibrarySidebarPanel } from "@/components/library/library-sidebar-panel";
 import type { LibraryFilter } from "@/components/library/board-document";
 import type { NamedWorkspace } from "@/lib/library-spaces";
 
 interface Properties {
+  email: string;
   filter: LibraryFilter;
   managing: boolean;
   onFilter: (filter: LibraryFilter) => void;
@@ -28,7 +29,7 @@ function focusable(node: HTMLElement) {
 }
 
 export function LibrarySidebar(props: Properties) {
-  const { filter, managing, onFilter, onManage, onSelect, selectedId, workspaces } = props;
+  const { email, filter, managing, onFilter, onManage, onSelect, selectedId, workspaces } = props;
   const [open, setOpen] = useState(false);
   const [mobile, setMobile] = useState(false);
   const menuId = useId();
@@ -148,7 +149,13 @@ export function LibrarySidebar(props: Properties) {
 
   return (
     <>
-      <LibraryMenuButton buttonRef={menuButton} controls={menuId} onToggle={toggle} open={open} />
+      <LibraryMobileHeader
+        buttonRef={menuButton}
+        controls={menuId}
+        email={email}
+        onToggle={toggle}
+        open={open}
+      />
       {open ? <LibraryMenuBackdrop onClose={close} /> : null}
       <LibrarySidebarPanel
         filter={filter}

@@ -15,12 +15,13 @@ import { workspacesQueryKey, workspacesQueryOptions } from "@/lib/library-worksp
 
 interface Properties {
   documentType: "note" | "diagram";
+  email: string;
   workspaceId: string | null;
   workspaces: NamedWorkspace[];
 }
 
 export function DocumentSidebar(props: Properties) {
-  const { documentType, workspaceId, workspaces } = props;
+  const { documentType, email, workspaceId, workspaces } = props;
   const router = useRouter();
   const queryClient = useQueryClient();
   const spacesQuery = useQuery({
@@ -53,6 +54,7 @@ export function DocumentSidebar(props: Properties) {
 
   return (
     <LibrarySidebar
+      email={email}
       filter={documentType}
       managing={managing}
       onFilter={chooseFilter}
