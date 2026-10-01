@@ -115,7 +115,7 @@ export function lassoStartAllowed(start: LassoStart): boolean {
   return true;
 }
 
-export function collapseLeftoverSelection<Position, Mark, Transaction>(
+export function collapseLeftoverSelection<Position, Mark extends { empty: boolean }, Transaction>(
   view:
     | {
         state: {
@@ -131,5 +131,6 @@ export function collapseLeftoverSelection<Position, Mark, Transaction>(
 ) {
   if (!view || view.state.selection.empty) return;
   const collapsed = near(view.state.doc.resolve(view.state.selection.from));
+  if (!collapsed.empty) return;
   view.dispatch(view.state.tr.setSelection(collapsed));
 }
