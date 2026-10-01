@@ -276,7 +276,7 @@ describe("note lasso wiring", () => {
     assert.equal(gesture.includes("setSelection"), false);
     assert.equal(gesture.includes("TextSelection"), false);
     assert.equal(gesture.includes("NodeSelection"), false);
-    assert.match(gesture, /note-lasso-block/);
+    assert.match(gesture, /note-lasso-highlight/);
     assert.match(gesture, /lassoSelection/);
     assert.match(gesture, /collapseLeftoverSelection/);
     assert.equal(gesture.includes("editable"), false);
@@ -284,7 +284,7 @@ describe("note lasso wiring", () => {
     assert.match(gesture, /className="note-lasso"/);
     assert.match(css, /--note-lasso-fill:/);
     assert.match(css, /\.note-lasso \{[\s\S]*background: var\(--note-lasso-fill\)/);
-    assert.match(css, /\.note-lasso-block[\s\S]*background: var\(--note-lasso-fill\)/);
+    assert.match(css, /\.note-lasso-highlight[\s\S]*background: var\(--note-lasso-fill\)/);
   });
 
   it("paints during the drag, keeps a miss from clearing the previous highlight, and clears a click", () => {
@@ -295,7 +295,7 @@ describe("note lasso wiring", () => {
     assert.match(move, /lassoSelection\(blockBoxes\(root\), next\)/);
     assert.match(up, /if \(selection\) committedIds = selection/);
     assert.match(up, /show\(selection \?\? committedIds\)/);
-    assert.match(up, /paintHighlight\(root, \[\]\)/);
+    assert.match(up, /paintHighlight\(root, highlightsRef\.current, \[\]\)/);
     assert.match(css, /\.note-editor\.note-lasso-dragging \{\s*user-select: none;/);
     assert.match(gesture, /querySelectorAll<HTMLElement>\("\.bn-block\[data-id\]"\)/);
     assert.match(gesture, /child\.classList\.contains\("bn-block-content"\)/);
@@ -328,10 +328,7 @@ describe("note lasso wiring", () => {
       css,
       /\.note-editor \.bn-block:hover:not\(:has\(\.bn-block:hover\)\) > \.bn-block-content \{\s*background: var\(--note-lasso-fill\);/,
     );
-    assert.match(
-      css,
-      /\.note-editor \.bn-block\.note-lasso-block > \.bn-block-content \{\s*background: var\(--note-lasso-fill\);/,
-    );
+    assert.match(css, /\.note-lasso-highlight \{[\s\S]*background: var\(--note-lasso-fill\);/);
     assert.equal(css.includes("--note-hover-fill"), false);
   });
 
@@ -402,43 +399,131 @@ describe("note lasso wiring", () => {
     assert.match(up, /if \(selection\) committedIds = selection/);
     assert.match(up, /show\(selection \?\? committedIds\)/);
     assert.match(up, /clearHighlight\(\)/);
-    assert.match(cancel, /paintHighlight\(root, committedIds\)/);
+    assert.match(cancel, /paintHighlight\(root, highlightsRef\.current, committedIds\)/);
     assert.match(cancel, /cancelLassoFrame\(\)/);
   });
 
-  it("blocks text selection during the drag and fades a block in after the editor updates", () => {
+  it("blocks text selection for the armed gesture and fades the wash in after a document change", () => {
     const gesture = read("../components/note/note-lasso.tsx");
     const css = read("../app/globals.css");
     const show = gesture.slice(gesture.indexOf("function show"));
     const showBody = show.slice(0, show.indexOf("function clearHighlight"));
+    const move = gesture.slice(
+      gesture.indexOf("function onPointerMove"),
+      gesture.indexOf("function onPointerUp"),
+    );
+    const activation = move.slice(
+      move.indexOf("if (!active)"),
+      move.indexOf("event.preventDefault()"),
+    );
+    const afterPrevent = move.slice(move.indexOf("event.preventDefault()"));
     assert.equal(showBody.includes("collapseEditorSelection"), false);
+    assert.equal(showBody.includes("queueMicrotask"), false);
+    assert.equal(showBody.includes("requestAnimationFrame"), false);
     assert.match(showBody, /highlightedIds = ids/);
-    assert.match(showBody, /paintHighlight\(root, highlightedIds\)/);
-    assert.match(showBody, /scheduleRepaint\(\)/);
+    assert.match(showBody, /paintHighlight\(root, highlightsRef\.current, highlightedIds\)/);
+    assert.match(activation, /clearDomSelection\(\)/);
+    assert.equal(afterPrevent.includes("clearDomSelection"), false);
+    assert.equal(afterPrevent.includes("removeAllRanges"), false);
     assert.match(gesture, /window\.getSelection\(\)/);
     assert.match(gesture, /removeAllRanges\(\)/);
+    assert.equal(gesture.includes("MutationObserver"), false);
+    assert.equal(gesture.includes("onSelectionChange"), false);
+    assert.equal(gesture.includes("queueMicrotask"), false);
     assert.match(
       gesture,
-      /function onSelectStart[\s\S]*if \(!active\) return;\s*event\.preventDefault\(\)/,
+      /function onSelectStart[\s\S]*if \(!armed\) return;\s*event\.preventDefault\(\)/,
     );
     assert.match(gesture, /editorRoot\.addEventListener\("selectstart", onSelectStart\)/);
-    assert.match(gesture, /editor\.onSelectionChange\(onEditorTransaction\)/);
-    assert.match(gesture, /editor\.onChange\(onEditorTransaction\)/);
-    assert.match(gesture, /new MutationObserver/);
+    assert.match(gesture, /editorRoot\.addEventListener\("pointerdown", onPointerDown, true\)/);
+    assert.match(gesture, /if \(paintingFromChange\) return/);
+    assert.match(gesture, /editor\.onChange\(onDocumentChange\)/);
     assert.match(
       css,
       /\.note-editor\.note-lasso-dragging \* \{\s*user-select: none;\s*-webkit-user-select: none;/,
     );
     assert.match(css, /-webkit-user-select: none;/);
+    const fill = css.slice(
+      css.indexOf("--note-lasso-fill:"),
+      css.indexOf("--note-lasso-fill:") + 200,
+    );
+    assert.match(fill, /10%/);
+    assert.equal(fill.includes("22%"), false);
     assert.match(
       css,
-      /@keyframes note-lasso-block-fade \{[\s\S]*from \{[\s\S]*background-color: transparent;[\s\S]*to \{[\s\S]*background-color: var\(--note-lasso-fill\);/,
+      /@keyframes note-lasso-block-fade \{[\s\S]*from \{[\s\S]*opacity: 0;[\s\S]*to \{[\s\S]*opacity: 1;/,
     );
-    assert.match(css, /animation: note-lasso-block-fade 0\.1s linear both;/);
+    assert.match(css, /animation: note-lasso-block-fade 200ms ease;/);
+    assert.match(
+      css,
+      /@media \(prefers-reduced-motion: reduce\) \{[\s\S]*\.note-lasso-highlight \{[\s\S]*animation: none;\s*opacity: 1;/,
+    );
+    assert.equal(css.includes(".note-lasso-block:not(:has(> .bn-block-content))"), false);
     const down = gesture.slice(gesture.indexOf("function onPointerDown"));
     const downBody = down.slice(0, down.indexOf("function onPointerMove"));
     assert.match(downBody, /classList\.add\("note-lasso-dragging"\)/);
+    assert.match(downBody, /event\.stopPropagation\(\)/);
     assert.match(gesture, /classList\.remove\("note-lasso-dragging"\)/);
+  });
+
+  it("paints the drag highlight once per frame without watching selection or class mutations", () => {
+    const gesture = read("../components/note/note-lasso.tsx");
+    const move = gesture.slice(
+      gesture.indexOf("function onPointerMove"),
+      gesture.indexOf("function onPointerUp"),
+    );
+    const frame = move.slice(move.indexOf("requestAnimationFrame"));
+    const down = gesture.slice(
+      gesture.indexOf("function onPointerDown"),
+      gesture.indexOf("function onPointerMove"),
+    );
+    const beforePrevent = down.slice(0, down.indexOf("event.preventDefault()"));
+    const change = gesture.slice(
+      gesture.indexOf("function onDocumentChange"),
+      gesture.indexOf("const stopChange"),
+    );
+    assert.equal(move.match(/requestAnimationFrame/g)?.length, 1);
+    assert.match(frame, /show\(lassoSelection\(blockBoxes\(root\), next\) \?\? \[\]\)/);
+    assert.equal(frame.includes("clearDomSelection"), false);
+    assert.equal(frame.includes("removeAllRanges"), false);
+    assert.match(beforePrevent, /if \(start \|\| !lassoStartAllowed/);
+    assert.match(beforePrevent, /return/);
+    assert.equal(beforePrevent.includes("stopPropagation"), false);
+    assert.match(change, /paintHighlight\(root, highlightsRef\.current, highlightedIds\)/);
+    assert.equal(change.includes("lassoSelection"), false);
+    assert.equal(change.includes("onSelectionChange"), false);
+    assert.equal(gesture.includes("new MutationObserver"), false);
+    assert.equal(gesture.includes("attributeFilter"), false);
+  });
+
+  it("fades the marquee in once and washes a contentless block from a transparent tint", () => {
+    const gesture = read("../components/note/note-lasso.tsx");
+    const css = read("../app/globals.css");
+    const paint = gesture.slice(
+      gesture.indexOf("function paintLasso"),
+      gesture.indexOf("function collapseEditorSelection"),
+    );
+    assert.match(paint, /if \(!node\.classList\.contains\(MARQUEE_CLASS\)\)/);
+    assert.match(paint, /node\.classList\.add\(MARQUEE_CLASS\)/);
+    assert.equal(paint.includes("node.style.opacity"), false);
+    assert.match(gesture, /contentRect \?\? box\.rect/);
+    assert.match(
+      css,
+      /@keyframes note-lasso-marquee-fade \{[\s\S]*from \{[\s\S]*opacity: 0;[\s\S]*to \{[\s\S]*opacity: 1;/,
+    );
+    assert.match(css, /\.note-lasso \{[\s\S]*pointer-events: none;/);
+    assert.match(
+      css,
+      /\.note-lasso\.note-lasso-visible \{[\s\S]*animation: note-lasso-marquee-fade 200ms ease both;/,
+    );
+    assert.match(
+      css,
+      /\.note-lasso-highlight \{[\s\S]*opacity: 1;\s*animation: note-lasso-block-fade 200ms ease;/,
+    );
+    assert.match(
+      css,
+      /@media \(prefers-reduced-motion: reduce\) \{[\s\S]*\.note-lasso\.note-lasso-visible \{[\s\S]*animation: none;\s*opacity: 1;/,
+    );
   });
 
   it("mounts the lasso on the note editor only", () => {
