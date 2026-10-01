@@ -671,6 +671,11 @@ input.title-input:focus {
 }
 .note-editor.note-lasso-dragging {
   user-select: none;
+  -webkit-user-select: none;
+}
+.note-editor.note-lasso-dragging * {
+  user-select: none;
+  -webkit-user-select: none;
 }
 .note-lasso {
   position: fixed;
@@ -680,11 +685,27 @@ input.title-input:focus {
   border: 1px solid var(--bn-colors-selected-background, var(--teal));
   background: var(--note-lasso-fill);
 }
+@keyframes note-lasso-block-fade {
+  from {
+    background-color: transparent;
+  }
+  to {
+    background-color: var(--note-lasso-fill);
+  }
+}
 .note-editor .bn-block.note-lasso-block > .bn-block-content {
   background: var(--note-lasso-fill);
+  animation: note-lasso-block-fade 0.1s linear both;
 }
 .note-editor .bn-block.note-lasso-block:not(:has(> .bn-block-content)) {
   background: var(--note-lasso-fill);
+  animation: note-lasso-block-fade 0.1s linear both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .note-editor .bn-block.note-lasso-block > .bn-block-content,
+  .note-editor .bn-block.note-lasso-block:not(:has(> .bn-block-content)) {
+    animation: none;
+  }
 }
 
 .uml-layout {

@@ -300,6 +300,40 @@ describe("note lasso wiring", () => {
     assert.match(gesture, /child\.classList\.contains\("bn-block-content"\)/);
   });
 
+  it("blocks text selection during the drag and fades a block in after the editor updates", () => {
+    const gesture = read("../components/note/note-lasso.tsx");
+    const css = read("../app/globals.css");
+    const show = gesture.slice(gesture.indexOf("function show"));
+    const showBody = show.slice(0, show.indexOf("function clearHighlight"));
+    const collapseAt = showBody.indexOf("collapseEditorSelection");
+    const paintAt = showBody.indexOf("paintHighlight");
+    assert.equal(collapseAt >= 0 && paintAt > collapseAt, true);
+    assert.match(gesture, /window\.getSelection\(\)/);
+    assert.match(gesture, /removeAllRanges\(\)/);
+    assert.match(
+      gesture,
+      /function onSelectStart[\s\S]*if \(!active\) return;\s*event\.preventDefault\(\)/,
+    );
+    assert.match(gesture, /editorRoot\.addEventListener\("selectstart", onSelectStart\)/);
+    assert.match(gesture, /editor\.onSelectionChange\(onEditorTransaction\)/);
+    assert.match(gesture, /editor\.onChange\(onEditorTransaction\)/);
+    assert.match(gesture, /new MutationObserver/);
+    assert.match(
+      css,
+      /\.note-editor\.note-lasso-dragging \* \{\s*user-select: none;\s*-webkit-user-select: none;/,
+    );
+    assert.match(css, /-webkit-user-select: none;/);
+    assert.match(
+      css,
+      /@keyframes note-lasso-block-fade \{[\s\S]*from \{[\s\S]*background-color: transparent;[\s\S]*to \{[\s\S]*background-color: var\(--note-lasso-fill\);/,
+    );
+    assert.match(css, /animation: note-lasso-block-fade 0\.1s linear both;/);
+    const down = gesture.slice(gesture.indexOf("function onPointerDown"));
+    const downBody = down.slice(0, down.indexOf("function onPointerMove"));
+    assert.match(downBody, /classList\.add\("note-lasso-dragging"\)/);
+    assert.match(gesture, /classList\.remove\("note-lasso-dragging"\)/);
+  });
+
   it("mounts the lasso on the note editor only", () => {
     const editor = read("../components/note-editor.tsx");
     const canvas = read("../components/diagram/uml-canvas.tsx");
