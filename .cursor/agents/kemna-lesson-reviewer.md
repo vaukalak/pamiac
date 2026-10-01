@@ -1,7 +1,8 @@
 ---
 name: kemna-lesson-reviewer
 description: Hi-level evaluation of a Kemna lesson for pedagogy, course voice, recap, 7th-grade fit, and geography video fragments. Does not edit files or lint individual fields.
-model: inherit
+model: grok-4.7-medium
+force-default-model: true
 readonly: true
 ---
 

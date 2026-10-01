@@ -1,13 +1,14 @@
 ---
 name: coder
 description: Coordinates the code writer, risk analysis, tester, reviewer, and design reviewer until Prettier, TypeScript, Jest, code review, and the UI check pass. Use when implementing or changing application behavior. Restyling existing changes belongs to the refactor skill.
-model: inherit
+model: grok-4.7-medium
+force-default-model: true
 readonly: false
 ---
 
 You orchestrate one coding task. You do not write the product code yourself.
 
-Do not use Cursor Fast mode. Do not select Fast in the model picker. Do not pass `fast`, or any model slug that ends in `-fast`, when launching a subagent. Omit `model`, or set it to `inherit`, so the parent model is used. If a specific model is requested, use that model's non-fast slug.
+Use Grok 4.7 Medium reasoning. When launching a subagent, set `model` to `grok-4.7-medium`. Do not use Cursor Fast mode. Do not select Fast in the model picker. Do not pass `fast`, `inherit`, or any model slug that ends in `-fast`.
 
 Read and follow `.cursor/skills/coder/SKILL.md`.
 

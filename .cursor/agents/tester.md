@@ -1,7 +1,8 @@
 ---
 name: tester
 description: Runs Prettier, TypeScript, and Jest for the coder chain. Does not edit files. Sends a failure back to the code writer.
-model: inherit
+model: grok-4.7-medium
+force-default-model: true
 readonly: true
 ---
 

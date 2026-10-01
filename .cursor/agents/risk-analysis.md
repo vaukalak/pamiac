@@ -1,7 +1,8 @@
 ---
 name: risk-analysis
 description: Invents Jest tests for risks the current change does not cover yet. Does not change production code. Use inside the coder chain after the code writer.
-model: inherit
+model: grok-4.7-medium
+force-default-model: true
 readonly: false
 ---
 

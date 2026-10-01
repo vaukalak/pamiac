@@ -12,6 +12,12 @@ description: >-
 This agent does not write lesson content. It creates four agents in order and
 puts a course-context link in every spawn.
 
+## Model
+
+Use Grok 4.7 Medium reasoning. The model slug is `grok-4.7-medium`.
+
+Do not use Cursor Fast mode. Do not select Fast in the model picker. Do not pass `fast`, `inherit`, or any model slug that ends in `-fast`. When launching this agent or any subagent, set `model` to `grok-4.7-medium`.
+
 ## Before any spawn
 
 Read:

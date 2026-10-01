@@ -7,6 +7,8 @@ description: >-
 
 # Pamiac
 
+Use Grok 4.7 Medium reasoning (`grok-4.7-medium`). Do not use Cursor Fast mode or any model slug that ends in `-fast`. When launching a subagent, set `model` to `grok-4.7-medium`.
+
 Read `PAMIAC_TOKEN` from the process environment (the agent environment). Send `Authorization: Bearer <PAMIAC_TOKEN>` on every request, using that value. Do not ask the user to paste the token. If `PAMIAC_TOKEN` is missing, say so and stop. Do not invent a token.
 
 Do not print the token.

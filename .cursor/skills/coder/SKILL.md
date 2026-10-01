@@ -14,9 +14,9 @@ This skill starts the coder agent. It does not write the product code itself.
 
 ## Model
 
-Do not use Cursor Fast mode.
+Use Grok 4.7 Medium reasoning. The model slug is `grok-4.7-medium`.
 
-Do not select Fast in the model picker. Do not pass `fast`, or any model slug that ends in `-fast`, when launching this agent or any subagent in the chain. Omit `model`, or set it to `inherit`, so the parent model is used. If a specific model is requested, use that model's non-fast slug.
+Do not use Cursor Fast mode. Do not select Fast in the model picker. Do not pass `fast`, `inherit`, or any model slug that ends in `-fast`. When launching this agent or any subagent in the chain, set `model` to `grok-4.7-medium`.
 
 ## Invoke
 

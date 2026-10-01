@@ -1,7 +1,8 @@
 ---
 name: reviewer
 description: Reviews a coder-chain change against code-quality.md. Does not edit files. Sends defects back to the code writer.
-model: inherit
+model: grok-4.7-medium
+force-default-model: true
 readonly: true
 ---
 

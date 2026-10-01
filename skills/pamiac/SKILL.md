@@ -5,6 +5,8 @@ description: Search, read, and edit the signed-in user's Pamiac notes and UML di
 
 # Pamiac
 
+Use Grok 4.7 Medium reasoning (`grok-4.7-medium`). Do not use Cursor Fast mode or any model slug that ends in `-fast`. When launching a subagent, set `model` to `grok-4.7-medium`.
+
 Pamiac is the signed-in user's library of markdown notes and UML diagrams. Use the Pamiac tools on that account. Do not ask for an API token, and do not invent a document id.
 
 ## Before you write

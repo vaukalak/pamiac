@@ -10,6 +10,8 @@ disable-model-invocation: true
 
 # Kemna lesson corrector
 
+Use Grok 4.7 Medium reasoning (`grok-4.7-medium`). Do not use Cursor Fast mode or any model slug that ends in `-fast`.
+
 Read-only. Gates. Any fail → `CHANGES_REQUESTED` with a concrete defect list
 for the creator. Do not rewrite the lesson.
 
