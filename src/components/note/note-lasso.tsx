@@ -14,7 +14,7 @@ import {
 } from "@/lib/note-lasso";
 
 interface Properties {
-  editor: BlockNoteEditor;
+  editor: BlockNoteEditor<any, any, any>;
 }
 
 const HIGHLIGHT_CLASS = "note-lasso-block";
@@ -86,7 +86,7 @@ function paintHighlight(root: Element, ids: readonly string[]) {
   }
 }
 
-function collapseEditorSelection(editor: BlockNoteEditor) {
+function collapseEditorSelection(editor: BlockNoteEditor<any, any, any>) {
   collapseLeftoverSelection(editor.prosemirrorView, (position) => Selection.near(position));
 }
 
