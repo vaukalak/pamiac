@@ -7,6 +7,8 @@ readonly: false
 
 You orchestrate one coding task. You do not write the product code yourself.
 
+Do not use Cursor Fast mode. Do not select Fast in the model picker. Do not pass `fast`, or any model slug that ends in `-fast`, when launching a subagent. Omit `model`, or set it to `inherit`, so the parent model is used. If a specific model is requested, use that model's non-fast slug.
+
 Read and follow `.cursor/skills/coder/SKILL.md`.
 
 Spawn `code-writer`, then `risk-analysis`, then `tester`, then `reviewer`, then `design-reviewer`. Do not run them in parallel. Maximum 5 iterations. Tester `FAIL`, reviewer `CHANGES_REQUESTED`, or design reviewer `CHANGES_REQUESTED` returns to the code writer on the next iteration. Design reviewer `SKIPPED` does not. On iteration 5, stop and ask the user. Do not commit unless the user asked. Do not stage `.impeccable/`.

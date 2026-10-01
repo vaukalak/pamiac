@@ -14,15 +14,13 @@ import { LibraryColumn } from "@/components/library/library-column";
 import type { LibrarySearchValues } from "@/components/library/library-search";
 import { LibrarySidebar } from "@/components/library/library-sidebar";
 import { LibraryStatus } from "@/components/library/library-status";
-import type { LibraryPanel } from "@/components/library/library-switcher";
 import { documentPreview } from "@/lib/content";
 import { libraryItemsQueryKey, libraryItemsQueryOptions } from "@/lib/library-items";
-import { libraryFilter, libraryPanel } from "@/lib/library-memory";
+import { LIBRARY_FILTER_KEY, libraryFilter } from "@/lib/library-memory";
 import { libraryQueryMatches, libraryTypeCounts } from "@/lib/library-query";
 import {
   documentsInSpace,
   librarySpaces,
-  managesWorkspace,
   openLibraryId,
   openWorkspaceName,
   PERSONAL_SPACE_ID,
@@ -40,8 +38,6 @@ interface Properties {
 
 const VIEW_KEY = "pamiac-library-view";
 const OPEN_LIBRARY_KEY = "pamiac-open-library";
-const FILTER_KEY = "pamiac-library-filter";
-const PANEL_KEY = "pamiac-library-panel";
 
 function spaceTitle(workspaceId: string, workspaces: readonly NamedWorkspace[] | undefined) {
   if (workspaceId === PERSONAL_SPACE_ID) return "Personal";
@@ -66,11 +62,9 @@ export function DocumentBoard(props: Properties) {
   const [filter, setFilter] = useState<LibraryFilter>("all");
   const [view, setView] = useState<LibraryView>("grid");
   const [dragging, setDragging] = useState<string | null>(null);
-  const [panel, setPanel] = useState<LibraryPanel>("dashboard");
   const [workspaceId, setWorkspaceId] = useState(PERSONAL_SPACE_ID);
   const query = searchForm.watch("query") ?? "";
   const library = documentsInSpace(workspaceId, items, spacesQuery.data);
-  const managing = managesWorkspace(workspaceId, spacesQuery.data);
   const counts = libraryTypeCounts(library);
   const visible = useMemo(
     () =>
@@ -101,22 +95,12 @@ export function DocumentBoard(props: Properties) {
   }
 
   useEffect(() => {
-    setFilter(libraryFilter(window.localStorage.getItem(FILTER_KEY)));
+    setFilter(libraryFilter(window.localStorage.getItem(LIBRARY_FILTER_KEY)));
   }, []);
-
-  useEffect(() => {
-    setPanel(libraryPanel(window.localStorage.getItem(PANEL_KEY)));
-  }, []);
-
-  function choosePanel(next: LibraryPanel) {
-    setPanel(next);
-    window.localStorage.setItem(PANEL_KEY, next);
-  }
 
   function chooseFilter(next: LibraryFilter) {
     setFilter(next);
-    window.localStorage.setItem(FILTER_KEY, next);
-    choosePanel("dashboard");
+    window.localStorage.setItem(LIBRARY_FILTER_KEY, next);
   }
 
   function chooseWorkspace(nextId: string) {
@@ -170,10 +154,9 @@ export function DocumentBoard(props: Properties) {
       <LibrarySidebar
         email={email}
         filter={filter}
-        managing={managing}
         onFilter={chooseFilter}
-        onManage={() => setPanel("manage")}
         onSelect={chooseWorkspace}
+        page="library"
         selectedId={workspaceId}
         workspaces={workspaces}
       />
@@ -184,7 +167,6 @@ export function DocumentBoard(props: Properties) {
         filter={filter}
         form={searchForm}
         libraryCount={library.length}
-        managing={managing}
         onChange={apply}
         onDragStart={setDragging}
         onDrop={(id) => {
@@ -192,9 +174,7 @@ export function DocumentBoard(props: Properties) {
         }}
         onFilter={chooseFilter}
         onView={chooseView}
-        panel={panel}
         reorder={reorder}
-        setPanel={choosePanel}
         spaceName={spaceName}
         view={view}
         visible={visible}

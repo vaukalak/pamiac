@@ -7,8 +7,8 @@ import {
   isWorkspaceAdmin,
   PERSONAL_SPACE_ID,
   workspacePerson,
-  workspaceRole,
   type WorkspacePerson,
+  type WorkspaceRole,
 } from "@/lib/library-spaces";
 import { sendWorkspaceInvite } from "@/lib/mail";
 import { currentWorkspacePlan, memberRoom } from "@/lib/plans";
@@ -18,6 +18,11 @@ function clientError(error: unknown): HttpError {
   if (error instanceof HttpError) return error;
   if (error instanceof Error) return new HttpError(400, error.message);
   return new HttpError(400, "Could not add that person");
+}
+
+function addedMemberRole(role: string): WorkspaceRole {
+  if (role === "admin" || role === "editor") return role;
+  throw new Error("Choose Admin or Editor");
 }
 
 function asCount(value: unknown) {
@@ -71,6 +76,7 @@ export async function addWorkspacePerson(
   actorId: string,
   workspaceId: string,
   email: string,
+  role: string,
 ): Promise<WorkspacePerson> {
   if (workspaceId === PERSONAL_SPACE_ID) {
     throw new HttpError(400, "Personal space cannot receive members");
@@ -88,8 +94,10 @@ export async function addWorkspacePerson(
   }
 
   let pending: WorkspacePerson;
+  let memberRole: WorkspaceRole;
   try {
     pending = workspacePerson(workspaceId, email, null);
+    memberRole = addedMemberRole(role);
   } catch (error) {
     throw clientError(error);
   }
@@ -110,7 +118,7 @@ export async function addWorkspacePerson(
         id: crypto.randomUUID(),
         workspaceId: person.workspaceId,
         userId: person.userId,
-        role: workspaceRole("added"),
+        role: memberRole,
       })
       .onConflictDoNothing({
         target: [workspaceMembers.workspaceId, workspaceMembers.userId],
@@ -132,6 +140,7 @@ export async function addWorkspacePerson(
       id: crypto.randomUUID(),
       workspaceId: person.workspaceId,
       email: person.email,
+      role: memberRole,
     })
     .onConflictDoNothing({
       target: [workspaceInvites.workspaceId, workspaceInvites.email],

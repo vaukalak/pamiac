@@ -8,6 +8,8 @@ import { LibraryNav } from "@/components/library/library-nav";
 import { LibraryRailLinks } from "@/components/library/library-rail-links";
 import { LibrarySpaceAddButton } from "@/components/library/library-space-add-button";
 import { LibrarySpaceAddDialog } from "@/components/library/library-space-add-dialog";
+import type { LibraryPage } from "@/components/library/library-sidebar";
+import { LibraryWorkspaceNav } from "@/components/library/library-workspace-nav";
 import { WorkspaceCreate } from "@/components/library/workspace-create";
 import { WorkspaceSelector } from "@/components/library/workspace-selector";
 import type { LibraryFilter } from "@/components/library/board-document";
@@ -15,14 +17,13 @@ import type { NamedWorkspace } from "@/lib/library-spaces";
 
 interface Properties {
   filter: LibraryFilter;
-  managing: boolean;
   menuId: string;
   mobile: boolean;
   onClose: () => void;
   onFilter: (filter: LibraryFilter) => void;
-  onManage: () => void;
   onSelect: (workspaceId: string) => void;
   open: boolean;
+  page: LibraryPage;
   panelRef: RefObject<HTMLElement | null>;
   selectedId: string;
   workspaces: NamedWorkspace[];
@@ -31,14 +32,13 @@ interface Properties {
 export function LibrarySidebarPanel(props: Properties) {
   const {
     filter,
-    managing,
     menuId,
     mobile,
     onClose,
     onFilter,
-    onManage,
     onSelect: selectWorkspace,
     open,
+    page,
     panelRef,
     selectedId,
     workspaces,
@@ -92,8 +92,9 @@ export function LibrarySidebarPanel(props: Properties) {
       <LibrarySpaceAddButton expanded={creating} label="Add workspace" onOpen={openCreate} />
       {creating ? <LibrarySpaceAddDialog form={workspaceForm} onClose={close} /> : null}
       <p className="library-rail-label">Library</p>
-      <LibraryNav filter={filter} onFilter={onFilter} />
-      <LibraryRailLinks managing={managing} onManage={onManage} />
+      <LibraryNav filter={filter} linked={page !== "library"} onFilter={onFilter} />
+      <LibraryWorkspaceNav page={page} />
+      <LibraryRailLinks />
     </aside>
   );
 }

@@ -1,21 +1,24 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { ShareActions } from "@/components/share/share-actions";
 import { ShareLink } from "@/components/share/share-link";
 import { ShareModeFields } from "@/components/share/share-mode-fields";
 import { ShareModeList } from "@/components/share/share-mode-list";
 import type { ShareResult } from "@/components/share/share-result";
-import { shareWorkspaceBody } from "@/lib/share-workspace";
 import { ShareWorkspaceChoice } from "@/components/share/share-workspace-choice";
 import type { Visibility } from "@/lib/access";
 import { workspacesQueryOptions } from "@/lib/library-workspaces";
+import { shareWorkspaceBody } from "@/lib/share-workspace";
+import { Button } from "@/ui/Button";
+import { Paragraph } from "@/ui/Paragraph";
 
 interface Properties {
   emails: string[];
   hasPassword: boolean;
   id: string;
+  lockWorkspace?: boolean;
   visibility: Visibility;
   workspaceId: string | null;
   onClose: () => void;
@@ -23,15 +26,21 @@ interface Properties {
 }
 
 export function ShareModal(props: Properties) {
-  const { emails, hasPassword, id, visibility, workspaceId, onClose, onSaved } = props;
+  const {
+    emails,
+    hasPassword,
+    id,
+    lockWorkspace = false,
+    visibility,
+    workspaceId,
+    onClose,
+    onSaved,
+  } = props;
   const [mode, setMode] = useState<Visibility>(visibility);
   const [emailText, setEmailText] = useState(emails.join("\n"));
   const [password, setPassword] = useState("");
   const [workspaceChoice, setWorkspaceChoice] = useState<string | null>(workspaceId);
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
-  const [pending, setPending] = useState(false);
-  const spaces = useQuery(workspacesQueryOptions());
+  const spaces = useQuery({ ...workspacesQueryOptions(), enabled: !lockWorkspace });
   const dialogRef = useRef<HTMLDivElement>(null);
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
@@ -72,11 +81,8 @@ export function ShareModal(props: Properties) {
     };
   }, []);
 
-  async function save() {
-    setPending(true);
-    setError("");
-    setMessage("");
-    try {
+  const saveShare = useMutation({
+    mutationFn: async function save() {
       const response = await fetch(`/api/documents/${id}/share`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -87,34 +93,36 @@ export function ShareModal(props: Properties) {
             .split(/[\n,]/)
             .map((email) => email.trim())
             .filter(Boolean),
-          ...shareWorkspaceBody(workspaceId, workspaceChoice, spaces.data ?? []),
+          ...(lockWorkspace
+            ? {}
+            : shareWorkspaceBody(workspaceId, workspaceChoice, spaces.data ?? [])),
         }),
-      });
-      const body = (await response.json()) as Partial<ShareResult> & { error?: string };
-      setPending(false);
+      }).catch(() => null);
+      const body = (response ? await response.json().catch(() => null) : null) as
+        (Partial<ShareResult> & { error?: string }) | null;
       if (
+        !response ||
+        !body ||
         !response.ok ||
         !body.visibility ||
         !body.emails ||
         body.hasPassword === undefined ||
         body.workspaceId === undefined
       ) {
-        setError(body.error ?? "Could not update sharing");
-        return;
+        throw new Error(body?.error ?? "Could not update sharing");
       }
-      setPassword("");
-      setMessage("Sharing updated");
-      onSaved({
+      return {
         visibility: body.visibility,
         emails: body.emails,
         hasPassword: body.hasPassword,
         workspaceId: body.workspaceId,
-      });
-    } catch {
-      setPending(false);
-      setError("Could not update sharing");
-    }
-  }
+      };
+    },
+    onSuccess: (share) => {
+      setPassword("");
+      onSaved(share);
+    },
+  });
 
   return (
     <div className="share-backdrop" onClick={onClose} role="presentation">
@@ -122,7 +130,7 @@ export function ShareModal(props: Properties) {
         aria-describedby="share-dialog-hint"
         aria-labelledby="share-dialog-title"
         aria-modal="true"
-        className="share-dialog"
+        className={lockWorkspace ? "share-dialog workspace-add-dialog" : "share-dialog"}
         onClick={(event) => event.stopPropagation()}
         ref={dialogRef}
         role="dialog"
@@ -130,13 +138,15 @@ export function ShareModal(props: Properties) {
       >
         <div className="share-dialog-head">
           <h2 id="share-dialog-title">Share</h2>
-          <button className="btn ghost small" onClick={onClose} type="button">
+          <Button className="ghost small" onClick={onClose} type="button">
             Close
-          </button>
+          </Button>
         </div>
-        <p className="hint" id="share-dialog-hint">
-          Anyone you share with opens this exact link. Only you can edit.
-        </p>
+        <Paragraph className="hint" id="share-dialog-hint">
+          Anyone you share with opens this exact link.
+          <br />
+          Only you can edit.
+        </Paragraph>
         <ShareModeList mode={mode} onChange={setMode} />
         <ShareModeFields
           emailText={emailText}
@@ -146,13 +156,16 @@ export function ShareModal(props: Properties) {
           onPassword={setPassword}
           password={password}
         />
-        <ShareWorkspaceChoice onSelect={setWorkspaceChoice} selectedId={workspaceChoice} />
+        {lockWorkspace ? null : (
+          <ShareWorkspaceChoice onSelect={setWorkspaceChoice} selectedId={workspaceChoice} />
+        )}
         <ShareLink id={id} key={mode} mode={mode} />
         <ShareActions
-          error={error}
-          message={message}
-          onSave={() => void save()}
-          pending={pending}
+          error={saveShare.error instanceof Error ? saveShare.error.message : ""}
+          message={saveShare.isSuccess ? "Sharing updated" : ""}
+          onSave={() => saveShare.mutate()}
+          pending={saveShare.isPending}
+          saveClassName={lockWorkspace ? "library-lime" : undefined}
         />
       </div>
     </div>

@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import type { Visibility } from "@/lib/access";
+import { Alert } from "@/ui/Alert";
+import { Button } from "@/ui/Button";
+import { Paragraph } from "@/ui/Paragraph";
 
 interface Properties {
   id: string;
@@ -25,16 +28,13 @@ export function ShareLink(props: Properties) {
 
   return (
     <div className="share-link">
-      <p className="hint">Document link</p>
+      <Paragraph className="hint">Document link</Paragraph>
       <div className="dev-link">{link}</div>
-      <button className="btn secondary small" onClick={() => void copy()} type="button">
+      <Button className="secondary small" onClick={() => void copy()} type="button">
         Copy link
-      </button>
-      {notice ? (
-        <p aria-live="polite" className={notice === "Link copied" ? "hint" : "error"}>
-          {notice}
-        </p>
-      ) : null}
+      </Button>
+      {notice === "Link copied" ? <Paragraph className="hint">{notice}</Paragraph> : null}
+      {notice === "Could not copy the link" ? <Alert>{notice}</Alert> : null}
     </div>
   );
 }

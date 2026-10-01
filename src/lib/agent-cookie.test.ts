@@ -172,8 +172,7 @@ describe("cookie browse contract", () => {
       /export const PAMIAC_TOKEN_COOKIE = "pamiac_token"/,
     );
     expect(read("src/app/api/agent/v1/route.ts")).toMatch(/\$\{PAMIAC_TOKEN_COOKIE\}/);
-    const page = read("src/components/tokens/token-manager.tsx");
-    const skill = page.match(/const SKILL = `([\s\S]*?)`;/)?.[1] ?? "";
+    const skill = read("src/components/tokens/token-skill.ts");
     expect(skill).toMatch(/name pamiac_token/);
     expect(skill).toMatch(/\/workspace\/tokens/);
     expect(read("README.md")).toMatch(

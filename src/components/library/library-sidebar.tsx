@@ -7,13 +7,14 @@ import { LibrarySidebarPanel } from "@/components/library/library-sidebar-panel"
 import type { LibraryFilter } from "@/components/library/board-document";
 import type { NamedWorkspace } from "@/lib/library-spaces";
 
+export type LibraryPage = "library" | "settings" | "members" | "document" | "connections";
+
 interface Properties {
   email: string;
   filter: LibraryFilter;
-  managing: boolean;
   onFilter: (filter: LibraryFilter) => void;
-  onManage: () => void;
   onSelect: (workspaceId: string) => void;
+  page: LibraryPage;
   selectedId: string;
   workspaces: NamedWorkspace[];
 }
@@ -29,7 +30,7 @@ function focusable(node: HTMLElement) {
 }
 
 export function LibrarySidebar(props: Properties) {
-  const { email, filter, managing, onFilter, onManage, onSelect, selectedId, workspaces } = props;
+  const { email, filter, onFilter, onSelect, page, selectedId, workspaces } = props;
   const [open, setOpen] = useState(false);
   const [mobile, setMobile] = useState(false);
   const menuId = useId();
@@ -137,11 +138,6 @@ export function LibrarySidebar(props: Properties) {
     onFilter(next);
   }
 
-  function chooseManage() {
-    close();
-    onManage();
-  }
-
   function chooseWorkspace(workspaceId: string) {
     close();
     onSelect(workspaceId);
@@ -159,14 +155,13 @@ export function LibrarySidebar(props: Properties) {
       {open ? <LibraryMenuBackdrop onClose={close} /> : null}
       <LibrarySidebarPanel
         filter={filter}
-        managing={managing}
         menuId={menuId}
         mobile={mobile}
         onClose={close}
         onFilter={chooseFilter}
-        onManage={chooseManage}
         onSelect={chooseWorkspace}
         open={open}
+        page={page}
         panelRef={panelRef}
         selectedId={selectedId}
         workspaces={workspaces}

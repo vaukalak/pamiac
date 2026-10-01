@@ -62,9 +62,10 @@ describe("create in the open library", () => {
       agent.indexOf("export async function POST"),
     );
 
+    assert.match(agent, /agentCreateWorkspace\(agent\.id, agent\.scope\)/);
     assert.match(
       agent,
-      /createDocument\(\s*agent\.id,\s*input\.type,\s*input\.title,\s*agent\.workspaceId \?\? PERSONAL_SPACE_ID,\s*\)/,
+      /createDocument\(\s*agent\.id,\s*input\.type,\s*input\.title,\s*workspaceId\s*\)/,
     );
     assert.equal(schema.includes("workspaceId"), false);
     assert.match(mcp, /createDocument\(userId, "note", title\)/);

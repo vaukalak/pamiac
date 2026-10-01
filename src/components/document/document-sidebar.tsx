@@ -4,13 +4,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import type { LibraryFilter } from "@/components/library/board-document";
 import { LibrarySidebar } from "@/components/library/library-sidebar";
-import { LIBRARY_FILTER_KEY, LIBRARY_PANEL_KEY, OPEN_LIBRARY_KEY } from "@/lib/library-memory";
-import {
-  librarySpaces,
-  managesWorkspace,
-  openLibraryId,
-  type NamedWorkspace,
-} from "@/lib/library-spaces";
+import { LIBRARY_FILTER_KEY, OPEN_LIBRARY_KEY } from "@/lib/library-memory";
+import { librarySpaces, openLibraryId, type NamedWorkspace } from "@/lib/library-spaces";
 import { workspacesQueryKey, workspacesQueryOptions } from "@/lib/library-workspaces";
 
 interface Properties {
@@ -29,7 +24,6 @@ export function DocumentSidebar(props: Properties) {
     initialData: workspaces,
   });
   const selectedId = openLibraryId(workspaceId, spacesQuery.data);
-  const managing = managesWorkspace(selectedId, spacesQuery.data);
 
   function openLibrary(nextId: string) {
     const stored =
@@ -42,13 +36,6 @@ export function DocumentSidebar(props: Properties) {
 
   function chooseFilter(next: LibraryFilter) {
     window.localStorage.setItem(LIBRARY_FILTER_KEY, next);
-    window.localStorage.setItem(LIBRARY_PANEL_KEY, "dashboard");
-    router.push("/workspace");
-  }
-
-  function openManage() {
-    window.localStorage.setItem(OPEN_LIBRARY_KEY, selectedId);
-    window.localStorage.setItem(LIBRARY_PANEL_KEY, "manage");
     router.push("/workspace");
   }
 
@@ -56,10 +43,9 @@ export function DocumentSidebar(props: Properties) {
     <LibrarySidebar
       email={email}
       filter={documentType}
-      managing={managing}
       onFilter={chooseFilter}
-      onManage={openManage}
       onSelect={openLibrary}
+      page="document"
       selectedId={selectedId}
       workspaces={workspaces}
     />

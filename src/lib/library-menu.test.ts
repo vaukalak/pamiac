@@ -62,19 +62,21 @@ describe("library mobile menu", () => {
     assert.match(menu, /requestAnimationFrame\(\(\) => \{\s*button\?\.focus\(\)/);
   });
 
-  it("closes for a workspace, filter, manage action, or link, and leaves add-workspace alone", () => {
+  it("closes for a workspace, filter, or link, and leaves add-workspace alone", () => {
     const menu = read("../components/library/library-sidebar.tsx");
     const panel = read("../components/library/library-sidebar-panel.tsx");
 
     assert.match(menu, /function chooseFilter\(next: LibraryFilter\) \{\s*close\(\)/);
-    assert.match(menu, /function chooseManage\(\) \{\s*close\(\)/);
     assert.match(menu, /function chooseWorkspace\(workspaceId: string\) \{\s*close\(\)/);
     assert.match(panel, /onFilter=\{onFilter\}/);
-    assert.match(panel, /onManage=\{onManage\}/);
     assert.match(panel, /onSelect=\{selectWorkspace\}/);
+    assert.match(panel, /linked=\{page !== "library"\}/);
+    assert.match(panel, /<LibraryWorkspaceNav page=\{page\} \/>/);
+    assert.match(panel, /<LibraryRailLinks \/>/);
     assert.match(panel, /closest\("a\[href\]"\)/);
     assert.match(panel, /onOpen=\{openCreate\}/);
     assert.equal(/onOpen=\{onClose\}/.test(panel), false);
+    assert.equal(/onManage/.test(panel), false);
     assert.match(panel, /<WorkspaceCreate onCreated=\{onSelect\} \/>/);
   });
 
@@ -141,7 +143,7 @@ describe("library mobile menu", () => {
     );
     assert.match(css, /\.library-shell \.library-menu-backdrop\s*\{[^}]*top:\s*56px/);
     assert.match(css, /\.library-shell > \.library-sidebar \.brand\s*\{\s*display:\s*none;/);
-    const rail = block(css, ".library-sidebar {", ".library-switcher");
+    const rail = block(css, ".library-sidebar {", ".filters {");
 
     assert.match(drawer, /position:\s*fixed/);
     assert.match(drawer, /top:\s*56px/);

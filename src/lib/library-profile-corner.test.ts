@@ -17,12 +17,16 @@ describe("library profile corner", () => {
   it("renders the account menu once in the shared header, not in the rail", () => {
     const board = read("../components/library/document-board.tsx");
     const documentShell = read("../components/document/document-shell.tsx");
+    const libraryShell = read("../components/library/library-shell.tsx");
+    const tokenShell = read("../components/tokens/token-shell.tsx");
     const panel = read("../components/library/library-sidebar-panel.tsx");
     const header = read("../components/library/library-mobile-header.tsx");
     const menu = read("../components/library/library-sidebar.tsx");
 
     assert.equal(board.match(/<ProfileMenu /g)?.length ?? 0, 0);
     assert.equal(documentShell.match(/<ProfileMenu /g)?.length ?? 0, 0);
+    assert.equal(libraryShell.match(/<ProfileMenu /g)?.length ?? 0, 0);
+    assert.equal(tokenShell.match(/<ProfileMenu /g)?.length ?? 0, 0);
     assert.equal(header.match(/<ProfileMenu /g)?.length, 1);
     assert.match(board, /<LibrarySidebar[\s\S]*email=\{email\}/);
     assert.match(menu, /<LibraryMobileHeader[\s\S]*email=\{email\}/);
