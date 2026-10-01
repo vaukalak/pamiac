@@ -3498,6 +3498,30 @@ code {
 .library-shell .workspace-add-dialog .workspace-create .error {
   color: #ffb4ab;
 }
+.library-shell .workspace-add-dialog .share-actions .error {
+  color: #ffb4ab;
+}
+.library-shell .workspace-add-dialog .share-link .btn.secondary {
+  border-color: var(--home-hair-strong);
+  background: transparent;
+  color: var(--home-text);
+}
+.library-shell .workspace-add-dialog .share-link .btn.secondary:hover {
+  border-color: var(--home-lime);
+  color: var(--home-lime);
+}
+.library-shell .workspace-add-dialog .choice {
+  border-color: var(--home-hair);
+}
+.library-shell .workspace-add-dialog .choice:has(input:checked) {
+  background: color-mix(in srgb, var(--home-lime) 14%, transparent);
+}
+.library-shell .workspace-add-dialog .choice:hover:not(:has(input:checked)) {
+  background: color-mix(in srgb, var(--home-lime) 6%, transparent);
+}
+.library-shell .workspace-add-dialog .choice span {
+  color: var(--home-soft);
+}
 @media (max-width: 480px) {
   .library-shell .workspace-add-dialog h2 {
     font-size: 28px;

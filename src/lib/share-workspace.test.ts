@@ -62,8 +62,15 @@ describe("share workspace choice", () => {
     assert.match(option, /name="share-workspace"/);
     assert.equal(option.includes('name="share"'), false);
     assert.match(modal, /<ShareModeList/);
-    assert.match(modal, /<ShareWorkspaceChoice/);
-    assert.match(modal, /shareWorkspaceBody/);
+    assert.match(modal, /lockWorkspace \? null :/);
+    assert.match(
+      modal,
+      /<ShareWorkspaceChoice onSelect=\{setWorkspaceChoice\} selectedId=\{workspaceChoice\} \/>/,
+    );
+    assert.match(
+      modal,
+      /lockWorkspace\s*\?\s*\{\}\s*:\s*shareWorkspaceBody\(workspaceId, workspaceChoice/,
+    );
     assert.match(choice, /adminWorkspaces/);
     assert.match(choice, /if \(workspaces\.length === 0\) return null/);
     assert.match(choice, /onSelect\(null\)/);
@@ -218,9 +225,19 @@ describe("share workspace choice", () => {
       "utf8",
     );
     const page = readFileSync(new URL("../app/d/[id]/page.tsx", import.meta.url), "utf8");
+    const portal = readFileSync(
+      new URL("../components/library/document-share-portal.tsx", import.meta.url),
+      "utf8",
+    );
     assert.match(board, /workspaceId: change\.workspaceId/);
     assert.match(menu, /workspaceId=\{item\.workspaceId\}/);
     assert.match(menu, /workspaceId: share\.workspaceId/);
+    assert.match(menu, /lockWorkspace/);
+    assert.match(menu, /<DocumentSharePortal>/);
+    assert.match(menu, /close\(\);\s*setSharing\(true\)/);
+    assert.match(portal, /createPortal/);
+    assert.match(portal, /querySelector\("\.library-shell"\)/);
+    assert.equal(screen.includes("lockWorkspace"), false);
     assert.match(screen, /workspaceId=\{shareState\.workspaceId\}/);
     assert.match(page, /workspaceId=\{bundle\.document\.workspaceId\}/);
   });
@@ -304,12 +321,17 @@ describe("share workspace choice", () => {
       /if \(input\.workspaceMember\) return \{ level: "edit", reason: "member" \}/,
     );
     assert.match(modal, /<ShareModeList mode=\{mode\} onChange=\{setMode\} \/>/);
+    assert.match(modal, /lockWorkspace \? null :/);
     assert.match(
       modal,
       /<ShareWorkspaceChoice onSelect=\{setWorkspaceChoice\} selectedId=\{workspaceChoice\} \/>/,
     );
+    assert.match(modal, /lockWorkspace \? "share-dialog workspace-add-dialog" : "share-dialog"/);
     assert.match(save, /visibility: mode/);
-    assert.match(save, /shareWorkspaceBody\(workspaceId, workspaceChoice/);
+    assert.match(
+      save,
+      /lockWorkspace\s*\?\s*\{\}\s*:\s*shareWorkspaceBody\(workspaceId, workspaceChoice/,
+    );
     assert.equal(save.includes("workspaceId: null"), false);
     assert.equal(resolveAccess({ ...stranger, visibility: "public" }).level, "view");
     assert.equal(
