@@ -2598,6 +2598,9 @@ code {
 .library-shell:has(.doc-menu .menu-panel) > .library-main {
   z-index: 6;
 }
+.library-shell:has(.bn-drag-handle-menu) > .library-main {
+  z-index: 6;
+}
 .library-shell ::selection {
   background: var(--home-lime);
   color: var(--home-on-lime);
