@@ -10,7 +10,9 @@ import {
   listDocuments,
   presentDocument,
   searchAccountDocuments,
+  searchDocuments,
   updateDocumentContent,
+  type AgentScope,
 } from "@/lib/documents";
 import { UML_KINDS, UML_RELATIONS } from "@/lib/diagram";
 import { diagramPatchSchema } from "@/lib/diagram-patch";
@@ -161,7 +163,11 @@ async function readableOwned(userId: string, id: string, origin: string) {
   return presentReadableDocument(presentDocument(document, origin));
 }
 
-export function createPamiacMcpServer(userId: string, origin: string) {
+export function createPamiacMcpServer(
+  userId: string,
+  origin: string,
+  scope: AgentScope = { allScopes: true, workspaceIds: [] },
+) {
   const server = new McpServer(
     { name: "pamiac", version: "1.0.0" },
     { instructions: MCP_INSTRUCTIONS },
@@ -200,7 +206,9 @@ export function createPamiacMcpServer(userId: string, origin: string) {
     async ({ query, limit }) => {
       if (!userId) return errorResult("Sign-in required");
       try {
-        const rows = await searchAccountDocuments(userId, query, limit);
+        const rows = scope.allScopes
+          ? await searchAccountDocuments(userId, query, limit)
+          : await searchDocuments(userId, query, limit, scope);
         return textResult({
           results: rows.map((row) => presentSearchHit(presentDocument(row, origin), row.score)),
         });

@@ -12,6 +12,10 @@ function expect(actual: unknown) {
     toBe(expected: unknown) {
       assert.equal(actual, expected);
     },
+    toBeLessThan(expected: number) {
+      assert.equal(typeof actual, "number");
+      assert.ok(Number(actual) < expected, `${String(actual)} < ${expected}`);
+    },
     toMatch(pattern: RegExp) {
       assert.match(text, pattern);
     },
@@ -36,48 +40,65 @@ function slice(source: string, start: string, end?: string) {
   return source.slice(from, to);
 }
 
-describe("token workspace binding", () => {
-  it("stores a member workspace and null for personal", () => {
+describe("token scope", () => {
+  it("stores all scopes or an explicit list and migrates old rows without widening them", () => {
     const schema = read("src/db/schema.ts");
     const table = schema.match(/export const agentTokens = pgTable\([\s\S]*?\n\);/)?.[0] ?? "";
-    const column =
-      table.match(/workspaceId: text\("workspace_id"\)\.references\([\s\S]*?\),/)?.[0] ?? "";
+    const migration = read("drizzle/0003_agent-token-scope.sql");
+    const journal = read("drizzle/meta/_journal.json");
+
+    expect(table).toMatch(/allScopes: boolean\("all_scopes"\)\.notNull\(\)/);
+    expect(table).toMatch(/workspaceIds: text\("workspace_ids"\)\.array\(\)\.notNull\(\)/);
+    expect(table).not.toMatch(/workspaceId:/);
+    expect(migration).toMatch(/SET "workspace_ids" = ARRAY\['personal'\]/);
+    expect(migration).toMatch(/WHERE "workspace_id" IS NULL/);
+    expect(migration).toMatch(/SET "workspace_ids" = ARRAY\["workspace_id"\]/);
+    expect(migration).toMatch(/WHERE "workspace_id" IS NOT NULL/);
+    expect(migration).toMatch(/DROP COLUMN "workspace_id"/);
+    expect(migration.indexOf("ARRAY['personal']")).toBeLessThan(migration.indexOf("DROP COLUMN"));
+    expect(journal).toMatch(/"tag": "0003_agent-token-scope"/);
+  });
+
+  it("issues and updates a scope without rotating the secret", () => {
     const store = read("src/lib/documents.ts");
-    const bound = slice(
-      store,
-      "async function boundTokenWorkspace",
-      "export async function issueToken",
-    );
+    const resolve = slice(store, "async function resolveTokenScope", "function uniqueScopeIds");
     const issue = slice(
       store,
       "export async function issueToken",
+      "export async function updateToken",
+    );
+    const update = slice(
+      store,
+      "export async function updateToken",
       "export async function revokeToken",
     );
-    const listed = slice(
-      store,
-      "export async function listTokens",
-      "async function boundTokenWorkspace",
-    );
+    const listed = slice(store, "export async function listTokens", "function scopeFromRow");
     const route = read("src/app/api/tokens/route.ts");
 
-    expect(column).toMatch(
-      /workspaceId: text\("workspace_id"\)\.references\(\(\) => workspaces\.id, \{ onDelete: "cascade" \}\)/,
-    );
-    expect(column).not.toMatch(/notNull/);
-    expect(column).not.toMatch(/default\(/);
-    expect(bound).toMatch(/const value = workspaceId\?\.trim\(\) \?\? ""/);
-    expect(bound).toMatch(/if \(!value \|\| value === PERSONAL_SPACE_ID\) return null/);
-    expect(bound).toMatch(/listMemberWorkspaces\(userId\)/);
-    expect(bound).toMatch(/HttpError\(404, "Workspace not found"\)/);
-    expect(issue).toMatch(/boundTokenWorkspace\(userId, workspaceId\)/);
-    expect(issue).toMatch(/workspaceId: boundWorkspaceId/);
-    expect(issue).not.toMatch(/workspaceId:\s*"personal"/);
-    expect(listed).toMatch(/workspaceId: agentTokens\.workspaceId/);
-    expect(route).toMatch(/workspaceId: z\.string\(\)\.optional\(\)/);
-    expect(route).toMatch(/issueToken\(user\.id, input\.name, expiresAt, input\.workspaceId\)/);
+    expect(resolve).toMatch(/if \(scope\.all\) return \{ allScopes: true, workspaceIds: \[\]/);
+    expect(resolve).toMatch(/HttpError\(400, "Choose at least one space"\)/);
+    expect(resolve).toMatch(/HttpError\(404, "Workspace not found"\)/);
+    expect(resolve).toMatch(/listMemberWorkspaces\(userId\)/);
+    expect(resolve).toMatch(/id !== PERSONAL_SPACE_ID/);
+    expect(resolve).not.toMatch(/allScopes: true, workspaceIds: workspaceIds/);
+    expect(issue).toMatch(/resolveTokenScope\(userId, scope\)/);
+    expect(issue).toMatch(/allScopes: stored\.allScopes/);
+    expect(issue).toMatch(/workspaceIds: stored\.workspaceIds/);
+    expect(issue).toMatch(/secret: created\.token/);
+    expect(update).toMatch(/allScopes: stored\.allScopes/);
+    expect(update).toMatch(/workspaceIds: stored\.workspaceIds/);
+    expect(update).not.toMatch(/secret:|tokenHash:|tokenPrefix:/);
+    expect(listed).toMatch(/allScopes: agentTokens\.allScopes/);
+    expect(listed).toMatch(/workspaceIds: agentTokens\.workspaceIds/);
+    expect(listed).not.toMatch(/workspaceId: agentTokens\.workspaceId/);
+    expect(route).toMatch(/all: z\.literal\(true\)/);
+    expect(route).toMatch(/all: z\.literal\(false\), workspaceIds: z\.array\(z\.string\(\)\)/);
+    expect(route).toMatch(/issueToken\(user\.id, input\.name, expiresAt, input\.scope\)/);
+    expect(route).toMatch(/updateToken\(user\.id, id, input\.name, input\.scope\)/);
+    expect(route).not.toMatch(/workspaceId: z\.string\(\)/);
   });
 
-  it("exposes the token workspace on agent auth and keeps the library cookie unscope", () => {
+  it("returns the token scope from bearer auth and leaves the library board unscoped", () => {
     const store = read("src/lib/documents.ts");
     const lookup = slice(
       store,
@@ -91,31 +112,42 @@ describe("token workspace binding", () => {
     );
     const library = read("src/app/workspace/page.tsx");
 
-    expect(lookup).toMatch(/workspaceId: agentTokens\.workspaceId/);
-    expect(lookup).toMatch(/workspaceId: row\.workspaceId/);
-    expect(bearer).toMatch(
-      /return \{ id: result\.user\.id, workspaceId: result\.user\.workspaceId \}/,
-    );
+    expect(lookup).toMatch(/allScopes: agentTokens\.allScopes/);
+    expect(lookup).toMatch(/workspaceIds: agentTokens\.workspaceIds/);
+    expect(lookup).toMatch(/scope: scopeFromRow\(row\)/);
+    expect(bearer).toMatch(/return \{ id: result\.user\.id, scope: result\.user\.scope \}/);
+    expect(bearer).not.toMatch(/workspaceId/);
     expect(bearer).not.toMatch(/PAMIAC_TOKEN_COOKIE/);
-    expect(library).not.toMatch(/agent\.workspaceId/);
+    expect(library).not.toMatch(/agent\.workspaceId|agent\.scope/);
     expect(library).toMatch(/listLibraryDocuments\(/);
   });
 
-  it("limits a personal token before membership and blocks a write outside that scope", () => {
+  it("limits list, search, and write to the chosen spaces", () => {
     const store = read("src/lib/documents.ts");
     const where = slice(
       store,
       "function agentDocumentWhere",
       "export async function listAgentDocuments",
     );
-    const personal = where.slice(
-      where.indexOf("if (!workspaceId)"),
-      where.indexOf("const membership"),
+    const selected = slice(
+      store,
+      "function selectedDocumentWhere",
+      "export async function listAgentDocuments",
     );
     const write = slice(
       store,
-      "export async function updateDocumentContent",
+      "function documentInTokenScope",
       "export async function deleteDocument",
+    );
+    const search = slice(
+      store,
+      "export async function searchDocuments",
+      "export async function searchAccountDocuments",
+    );
+    const create = slice(
+      store,
+      "export async function agentCreateWorkspace",
+      "export async function listLibraryDocuments",
     );
     const listRoute = read("src/app/api/agent/v1/documents/route.ts");
     const searchRoute = read("src/app/api/agent/v1/search/route.ts");
@@ -126,66 +158,101 @@ describe("token workspace binding", () => {
       "async function searchVisibleDocuments",
     );
 
-    expect(where.indexOf("if (!workspaceId)") < where.indexOf("const membership")).toBe(true);
-    expect(personal).toMatch(/eq\(documents\.ownerId, userId\)/);
-    expect(personal).toMatch(/isNull\(documents\.workspaceId\)/);
-    expect(personal).not.toMatch(/workspaceMembers|exists\(membership\)/);
-    expect(write).toMatch(/boundWorkspaceId !== undefined/);
-    expect(write).toMatch(
-      /documentInTokenWorkspace\(current, userId, boundWorkspaceId, workspaceMember\)/,
+    expect(where).toMatch(/if \(scope\.allScopes\) return accountDocumentWhere\(userId\)/);
+    expect(selected).toMatch(/workspaceIds\.includes\(PERSONAL_SPACE_ID\)/);
+    expect(selected).toMatch(
+      /and\(eq\(documents\.ownerId, userId\), isNull\(documents\.workspaceId\)\)/,
     );
+    expect(selected).toMatch(/eq\(workspaceMembers\.workspaceId, documents\.workspaceId\)/);
+    expect(selected).toMatch(/inArray\(workspaceMembers\.workspaceId, selected\)/);
+    expect(selected).toMatch(/inArray\(documents\.workspaceId, selected\)/);
+    expect(write).toMatch(/scope\.allScopes/);
+    expect(write).toMatch(/scope\.workspaceIds\.includes\(PERSONAL_SPACE_ID\)/);
     expect(write).toMatch(
-      /if \(!boundWorkspaceId\) return document\.ownerId === userId && !document\.workspaceId/,
+      /scope\.workspaceIds\.includes\(document\.workspaceId\) && workspaceMember/,
     );
-    expect(write).toMatch(/return document\.workspaceId === boundWorkspaceId && workspaceMember/);
+    expect(search).toMatch(
+      /if \(scope\.allScopes\) return searchAccountDocuments\(userId, query, limit\)/,
+    );
+    expect(search).toMatch(/agentDocumentWhere\(userId, scope\)/);
+    expect(create).toMatch(
+      /scope\.allScopes \|\| scope\.workspaceIds\.includes\(PERSONAL_SPACE_ID\)/,
+    );
+    expect(create).toMatch(/if \(selected\.length === 1\) return selected\[0\]/);
+    expect(create).toMatch(/selected\.find\(\(id\) => memberIds\.has\(id\)\)/);
+    expect(create).toMatch(/HttpError\(404, "Workspace not found"\)/);
+    expect(listRoute).toMatch(/listAgentDocuments\(agent\.id, agent\.scope\)/);
+    expect(listRoute).toMatch(/agentCreateWorkspace\(agent\.id, agent\.scope\)/);
     expect(listRoute).toMatch(
-      /updateDocumentContent\(\s*agent\.id,\s*created\.id,\s*\{\s*content: input\.content\s*\},\s*agent\.workspaceId,\s*\)/,
+      /createDocument\(\s*agent\.id,\s*input\.type,\s*input\.title,\s*workspaceId\s*\)/,
     );
-    expect(searchRoute).not.toMatch(/searchAccountDocuments/);
+    expect(listRoute).toMatch(/updateDocumentContent\([\s\S]*agent\.scope,\s*\)/);
+    expect(searchRoute).toMatch(/agent\.scope\.allScopes/);
+    expect(searchRoute).toMatch(
+      /searchAccountDocuments\(agent\.id, input\.query, input\.limit \?\? 8\)/,
+    );
+    expect(searchRoute).toMatch(
+      /searchDocuments\(agent\.id, input\.query, input\.limit \?\? 8, agent\.scope\)/,
+    );
+    expect(mcp).toMatch(/scope\.allScopes/);
     expect(mcp).toMatch(/searchAccountDocuments\(userId, query, limit\)/);
-    expect(mcp).not.toMatch(/searchDocuments\(/);
+    expect(mcp).toMatch(/searchDocuments\(userId, query, limit, scope\)/);
     expect(account).toMatch(/eq\(workspaceMembers\.workspaceId, documents\.workspaceId\)/);
+    expect(store).not.toMatch(/agentTokens\.workspaceId(?!s)/);
   });
 
-  it("picks a workspace in the create form and shows the binding on each key", () => {
-    const form = read("src/components/tokens/token-form.tsx");
-    const facts = read("src/components/tokens/token-facts.tsx");
+  it("picks all scopes or selected spaces in the form and describes that reach in the skill", () => {
+    const form = read("src/components/tokens/token-create-form.tsx");
+    const spaces = read("src/components/tokens/token-scope-spaces.tsx");
+    const checkbox = read("src/components/tokens/token-scope-space.tsx");
     const token = read("src/components/tokens/agent-token.ts");
-    const page = read("src/components/tokens/token-manager.tsx");
-    const skill = page.match(/const SKILL = `([\s\S]*?)`;/)?.[1] ?? "";
-    const select = read("src/ui/Form/Select.tsx");
-    const menu = read("src/ui/Form/SelectMenu.tsx");
-    const exported = read("src/ui/Form/index.ts");
+    const skill = read("src/components/tokens/token-skill.ts");
+    const dialog = read("src/components/tokens/connection-dialog-panel.tsx");
+    const heading = read("src/components/tokens/connection-dialog-heading.tsx");
+    const tabs = read("src/components/tokens/connection-tabs.tsx");
+    const agentTab = read("src/components/tokens/connection-agent.tsx");
+    const page = read("src/app/workspace/tokens/page.tsx");
 
     expect(form).not.toMatch(/useState/);
     expect(form).toMatch(/useForm<TokenValues>/);
     expect(form).toMatch(/name: "Cloud agent"/);
-    expect(form).toMatch(/workspaceId: PERSONAL_SPACE_ID/);
+    expect(form).toMatch(/scope: "all"/);
     expect(form).toMatch(/expiration: "never"/);
-    expect(form).toMatch(/workspacesQueryOptions\(\)/);
-    expect(form).toMatch(/librarySpaces\(spaces\.data \?\? \[\]\)/);
     expect(form).toMatch(/<Form\.Context/);
-    expect(form).toMatch(/<Form\.Input label="Name" name="name" \/>/);
-    expect(form).toMatch(
-      /<Form\.Select label="Workspace" name="workspaceId" options=\{workspaceOptions\} \/>/,
-    );
-    expect(form).toMatch(/workspaceId: values\.workspaceId/);
+    expect(form).toMatch(/<TokenScopeFields/);
+    expect(form).toMatch(/label="Expiration"/);
     expect(form).toMatch(/mutation\.isPending/);
-    expect(form).not.toMatch(/<input|<select/);
-    expect(form).toMatch(/expiration === "date"/);
-    expect(form).toMatch(/name="date"/);
-    expect(form).toMatch(/type="date"/);
-    expect(facts).toMatch(/useQuery\(workspacesQueryOptions\(\)\)/);
-    expect(facts).toMatch(/if \(!workspaceId\) return "Personal space"/);
-    expect(facts).toMatch(/if \(!label\) return "Workspace"/);
-    expect(facts).toMatch(/\["Workspace", boundWorkspaceName\(token\.workspaceId/);
-    expect(token).toMatch(/workspaceId: string \| null/);
+    expect(form).not.toMatch(/<input|<select|workspaceId/);
+    expect(form).toMatch(/Choose at least one space/);
+    expect(spaces).toMatch(/workspacesQueryOptions\(\)/);
+    expect(spaces).toMatch(/librarySpaces\(spaces\.data \?\? \[\]\)/);
+    expect(spaces).toMatch(/scope !== "selected"/);
+    expect(checkbox).toMatch(/type="checkbox"/);
+    expect(checkbox).toMatch(/register\(`spaces\.\$\{id\}`\)/);
+    expect(token).toMatch(/allScopes: boolean/);
+    expect(token).toMatch(/workspaceIds: string\[\]/);
+    expect(token).not.toMatch(/workspaceId: string \| null/);
     expect(skill).toMatch(
-      /Search reaches the workspace this token was bound to, and a personal binding reaches only that user's personal documents\./,
+      /All scopes reach personal documents and every workspace the user belongs to\./,
     );
-    expect(select).toMatch(/<label htmlFor=\{name\}>\{label\}<\/label>/);
-    expect(select).toMatch(/<Alert id=\{errorId\}>\{message\}<\/Alert>/);
-    expect(menu).toMatch(/\{\.\.\.register\(name\)\}/);
-    expect(exported).toMatch(/Select: FormSelect/);
+    expect(skill).toMatch(/A selected scope reaches only the chosen spaces\./);
+    expect(skill).toMatch(/Read PAMIAC_TOKEN from the agent environment/);
+    expect(skill).toMatch(/Do not ask the user to paste the token/);
+    expect(skill).not.toMatch(/pam_[A-Za-z0-9_-]{8,}/);
+    expect(heading).toMatch(/New connection/);
+    expect(heading).toMatch(/Done/);
+    expect(dialog).toMatch(/Choose how to connect\./);
+    expect(dialog).toMatch(/role="dialog"/);
+    expect(dialog).toMatch(/aria-modal="true"/);
+    expect(tabs).toMatch(/Agent skills/);
+    expect(tabs).toMatch(/"mcp", "MCP"/);
+    expect(tabs).toMatch(/ChatGPT/);
+    expect(read("src/components/tokens/connection-tab-button.tsx")).toMatch(/pressed=\{pressed\}/);
+    expect(agentTab).toMatch(/Give your agent the Pamiac skill/);
+    expect(agentTab).toMatch(/The skill contains instructions, not credentials\./);
+    expect(dialog + agentTab).not.toMatch(/Create API key|Grant workspace access|Add key/);
+    expect(page).toMatch(/<TokenShell/);
+    expect(page).toMatch(/getSession\(/);
+    expect(page).not.toMatch(/AppHeader|className="workspace"/);
   });
 });

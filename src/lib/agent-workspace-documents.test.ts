@@ -45,18 +45,19 @@ describe("agent documents in the token workspace", () => {
       /workspaceMembers|agentDocumentWhere|isNull\(documents\.workspaceId\)/.test(owned),
       false,
     );
+    assert.match(where, /if \(scope\.allScopes\) return accountDocumentWhere\(userId\)/);
     assert.match(
       where,
       /and\(eq\(documents\.ownerId, userId\), isNull\(documents\.workspaceId\)\)/,
     );
-    assert.match(where, /exists\(membership\)/);
-    assert.match(where, /eq\(workspaceMembers\.workspaceId, workspaceId\)/);
+    assert.match(where, /exists\(/);
+    assert.match(where, /eq\(workspaceMembers\.workspaceId, documents\.workspaceId\)/);
+    assert.match(where, /inArray\(documents\.workspaceId, selected\)/);
     assert.match(where, /eq\(workspaceMembers\.userId, userId\)/);
-    assert.equal(/eq\(workspaceMembers\.workspaceId, documents\.workspaceId\)/.test(where), false);
     assert.equal(/\brole\b|isWorkspaceAdmin|visibility|updateShare/.test(where), false);
-    assert.match(list, /where\(agentDocumentWhere\(userId, workspaceId\)\)/);
+    assert.match(list, /where\(agentDocumentWhere\(userId, scope\)\)/);
     assert.equal(/eq\(documents\.ownerId/.test(list), false);
-    assert.match(read, /agentDocumentWhere\(userId, workspaceId\)/);
+    assert.match(read, /agentDocumentWhere\(userId, scope\)/);
     assert.equal(/eq\(documents\.ownerId|visibility/.test(read), false);
     assert.match(library, /listDocuments\(ownerId\)/);
     assert.equal(/listAgentDocuments|agentDocumentWhere/.test(library), false);
@@ -80,13 +81,17 @@ describe("agent documents in the token workspace", () => {
       "export async function listAgentDocuments",
     );
 
-    assert.match(search, /const visible = agentDocumentWhere\(userId, workspaceId\)/);
+    assert.match(
+      search,
+      /if \(scope\.allScopes\) return searchAccountDocuments\(userId, query, limit\)/,
+    );
+    assert.match(search, /agentDocumentWhere\(userId, scope\)/);
     assert.match(visible, /\.where\(visible\)/);
     assert.match(visible, /and\(\s*visible,/);
     assert.equal(/eq\(documents\.ownerId/.test(search), false);
     assert.match(where, /isNull\(documents\.workspaceId\)/);
-    assert.match(where, /exists\(membership\)/);
-    assert.match(where, /eq\(documents\.workspaceId, workspaceId\)/);
+    assert.match(where, /exists\(/);
+    assert.match(where, /inArray\(documents\.workspaceId, selected\)/);
     assert.equal(/workspaceInvites/.test(where), false);
   });
 
@@ -114,14 +119,15 @@ describe("agent documents in the token workspace", () => {
     const patch = slice(idRoute, "export async function PATCH");
     const create = slice(listRoute, "const createSchema", "export async function POST");
 
-    assert.match(listRoute, /listAgentDocuments\(agent\.id, agent\.workspaceId\)/);
+    assert.match(listRoute, /listAgentDocuments\(agent\.id, agent\.scope\)/);
     assert.equal(/listDocuments\(/.test(listRoute), false);
     assert.equal(create.includes("workspaceId"), false);
+    assert.match(listRoute, /agentCreateWorkspace\(agent\.id, agent\.scope\)/);
     assert.match(
       listRoute,
-      /createDocument\(\s*agent\.id,\s*input\.type,\s*input\.title,\s*agent\.workspaceId \?\? PERSONAL_SPACE_ID,\s*\)/,
+      /createDocument\(\s*agent\.id,\s*input\.type,\s*input\.title,\s*workspaceId\s*\)/,
     );
-    assert.match(idRoute, /getAgentDocument\(agent\.id, id, agent\.workspaceId\)/);
+    assert.match(idRoute, /getAgentDocument\(agent\.id, id, agent\.scope\)/);
     assert.equal(/getOwnedDocument|updateShare|visibility|input\.workspaceId/.test(idRoute), false);
     assert.match(
       patch,
@@ -130,11 +136,12 @@ describe("agent documents in the token workspace", () => {
     assert.ok(patch.indexOf("getAgentDocument") < patch.indexOf("updateDocumentContent"));
     assert.match(
       patch,
-      /updateDocumentContent\(\s*agent\.id,\s*id,\s*\{\s*title: input\.title,\s*content: input\.content,\s*patch: input\.patch,\s*\},\s*agent\.workspaceId,\s*\)/,
+      /updateDocumentContent\(\s*agent\.id,\s*id,\s*\{\s*title: input\.title,\s*content: input\.content,\s*patch: input\.patch,\s*\},\s*agent\.scope,\s*\)/,
     );
+    assert.match(searchRoute, /agent\.scope\.allScopes/);
     assert.match(
       searchRoute,
-      /searchDocuments\(agent\.id, input\.query, input\.limit \?\? 8, agent\.workspaceId\)/,
+      /searchDocuments\(agent\.id, input\.query, input\.limit \?\? 8, agent\.scope\)/,
     );
     assert.equal(/listAgentDocuments|getAgentDocument/.test(humanList), false);
     assert.match(humanId, /getEditableDocument\(user\.id, id\)/);

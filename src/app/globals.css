@@ -3712,3 +3712,183 @@ code {
   background: #101410;
   color: var(--home-text);
 }
+
+.library-shell .library-rail-link[aria-current="page"] {
+  color: var(--home-on-lime);
+  background: var(--home-lime);
+}
+.library-shell .library-heading-actions > .btn {
+  border-color: var(--home-lime);
+  background: var(--home-lime);
+  color: var(--home-on-lime);
+  border-radius: 999px;
+  font-weight: 650;
+}
+.library-shell .library-heading-actions > .btn:hover:not(:disabled) {
+  border-color: var(--home-lime-deep);
+  background: var(--home-lime-deep);
+  color: var(--home-on-lime);
+}
+.library-shell .token-keys {
+  background: var(--home-panel);
+  border: 1px solid var(--home-hair);
+  border-radius: 16px;
+  padding: 22px;
+}
+.library-shell .token-keys-heading {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.library-shell .token-keys h2 {
+  margin: 0;
+  color: var(--home-text);
+  font-family: var(--sans);
+  font-size: 22px;
+  font-weight: 650;
+  letter-spacing: -0.03em;
+}
+.library-shell .token-count {
+  margin: 0;
+  color: var(--home-soft);
+  font-variant-numeric: tabular-nums;
+}
+.library-shell .token-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  margin: 16px 0;
+}
+.library-shell .token-filters {
+  display: flex;
+  flex: 1 1 280px;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 0;
+}
+.library-shell .token-filters > div {
+  flex: 1 1 180px;
+  min-width: 0;
+}
+.library-shell .token-create {
+  display: contents;
+}
+.library-shell .token-form {
+  flex: 1 1 100%;
+}
+.library-shell .token-keys .btn.secondary {
+  background: transparent;
+  border-color: var(--home-hair-strong);
+  color: var(--home-text);
+}
+.library-shell .token-keys .btn.secondary:hover:not(:disabled) {
+  border-color: var(--home-lime);
+  color: var(--home-lime);
+}
+.library-shell .token-keys .btn:not(.secondary):not(.danger):not(.ghost) {
+  border-color: var(--home-lime);
+  background: var(--home-lime);
+  color: var(--home-on-lime);
+}
+.library-shell .token-keys .btn:not(.secondary):not(.danger):not(.ghost):hover:not(:disabled) {
+  border-color: var(--home-lime-deep);
+  background: var(--home-lime-deep);
+}
+.library-shell input[type="date"] {
+  background: color-mix(in srgb, var(--home-ground) 72%, transparent);
+  border-color: var(--home-hair);
+  color: var(--home-text);
+}
+.library-shell .token-spaces {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 12px;
+  border: 1px solid var(--home-hair);
+  border-radius: 12px;
+}
+.library-shell .token-spaces legend {
+  padding: 0 6px;
+  color: var(--home-soft);
+  font-size: 13px;
+  font-weight: 650;
+}
+.library-shell .token-space {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--home-text);
+  font-weight: 550;
+}
+.library-shell .token-space input {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--home-lime);
+}
+.library-shell .token-table-wrap {
+  overflow-x: auto;
+  margin: 8px 0 16px;
+}
+.library-shell .token-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.library-shell .token-table th {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--home-hair);
+  color: var(--home-soft);
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-align: left;
+  text-transform: uppercase;
+}
+.library-shell .token-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--home-line);
+  vertical-align: middle;
+}
+.library-shell .token-status-active {
+  color: var(--home-lime);
+}
+.library-shell .token-status-expired {
+  color: var(--home-soft);
+}
+.library-shell .token-status-revoked {
+  color: #ffb4ab;
+}
+.library-shell .token-expanded {
+  display: grid;
+  gap: 12px;
+  padding: 4px 0 8px;
+}
+.library-shell .token-connect-dialog {
+  width: min(520px, 100%);
+}
+.library-shell .token-connect-dialog h3 {
+  margin: 16px 0 8px;
+  color: var(--home-text);
+  font-family: var(--sans);
+  font-size: 22px;
+  font-weight: 650;
+  letter-spacing: -0.03em;
+}
+.library-shell .token-connect-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 14px 0;
+}
+.library-shell .token-connect-tabs .btn[aria-pressed="true"] {
+  border-color: var(--home-lime);
+  background: var(--home-lime);
+  color: var(--home-on-lime);
+}
+.library-shell .token-connect-dialog .btn.ghost {
+  color: var(--home-soft);
+}
+.library-shell .token-secret .secret {
+  margin-top: 8px;
+}

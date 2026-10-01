@@ -1,19 +1,26 @@
+"use client";
+
+import { useState } from "react";
 import type { AgentToken } from "@/components/tokens/agent-token";
-import { TokenIdentity } from "@/components/tokens/token-identity";
-import { TokenRevoke } from "@/components/tokens/token-revoke";
+import { TokenRowExpanded } from "@/components/tokens/token-row-expanded";
+import { TokenRowSummary } from "@/components/tokens/token-row-summary";
 
 interface Properties {
   token: AgentToken;
-  onRevoked: () => void;
 }
 
 export function TokenRow(props: Properties) {
-  const { token, onRevoked } = props;
+  const { token } = props;
+  const [expanded, setExpanded] = useState(false);
 
   return (
-    <article className="token-row">
-      <TokenIdentity token={token} />
-      {token.revokedAt ? null : <TokenRevoke id={token.id} onRevoked={onRevoked} />}
-    </article>
+    <>
+      <TokenRowSummary
+        expanded={expanded}
+        onToggle={() => setExpanded((value) => !value)}
+        token={token}
+      />
+      {expanded ? <TokenRowExpanded token={token} /> : null}
+    </>
   );
 }

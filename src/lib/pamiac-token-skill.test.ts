@@ -43,14 +43,11 @@ test("agent skill reads PAMIAC_TOKEN and keeps the diagram contract", () => {
   assert.match(skill, /PATCH \/api\/agent\/v1\/documents\/:id/);
 });
 
-test("token page names PAMIAC_TOKEN in the lede and the agent skill text", () => {
-  const page = readFileSync(join(root, "src/components/tokens/token-manager.tsx"), "utf8");
-  const lede = page.match(/className="lede">([\s\S]*?)<\/p>/)?.[1] ?? "";
-  const skill = page.match(/const SKILL = `([\s\S]*?)`;/)?.[1] ?? "";
+test("token page names PAMIAC_TOKEN when the secret is shown and in the agent skill text", () => {
+  const secret = readFileSync(join(root, "src/components/tokens/token-secret.tsx"), "utf8");
+  const skill = readFileSync(join(root, "src/components/tokens/token-skill.ts"), "utf8");
 
-  assert.match(lede, /PAMIAC_TOKEN/);
-  assert.match(lede, /cloud agent's environment/);
-  assert.match(lede, /token you just/);
+  assert.match(secret, /Set PAMIAC_TOKEN/);
   assert.match(skill, /PAMIAC_TOKEN/);
   assert.doesNotMatch(skill, /Set PAMIAC_TOKEN/);
   assert.match(skill, /Authorization: Bearer <PAMIAC_TOKEN>/);
@@ -58,6 +55,11 @@ test("token page names PAMIAC_TOKEN in the lede and the agent skill text", () =>
   assert.match(skill, /App: https:\/\/pamiac\.com/);
   assert.match(skill, /Base: \/api\/agent\/v1/);
   assert.match(skill, /POST \/search/);
+  assert.match(
+    skill,
+    /All scopes reach personal documents and every workspace the user belongs to/,
+  );
+  assert.match(skill, /A selected scope reaches only the chosen spaces/);
 });
 
 test("agent tokens keep the secret so the token page can show it again", () => {
@@ -70,34 +72,34 @@ test("agent tokens keep the secret so the token page can show it again", () => {
   assert.match(documents, /secret: agentTokens\.secret/);
 });
 
-test("token page copies and downloads the skill", () => {
-  const page = readFileSync(join(root, "src/components/tokens/token-manager.tsx"), "utf8");
+test("connection dialog copies and downloads the skill without minting a key", () => {
+  const actions = readFileSync(
+    join(root, "src/components/tokens/connection-skill-actions.tsx"),
+    "utf8",
+  );
+  const agent = readFileSync(join(root, "src/components/tokens/connection-agent.tsx"), "utf8");
+  const dialog = readFileSync(
+    join(root, "src/components/tokens/connection-dialog-panel.tsx"),
+    "utf8",
+  );
 
-  assert.match(page, />\s*copy skill\s*</);
-  assert.match(page, />\s*copy instructions\s*</);
-  assert.match(page, />\s*download skill\s*</);
-  assert.match(page, /navigator\.clipboard\.writeText\(SKILL\)/);
-  assert.match(page, /navigator\.clipboard\.writeText\(INSTRUCTIONS\)/);
-  assert.match(page, /download = "SKILL\.md"/);
+  assert.match(actions, />\s*Copy skill\s*</);
+  assert.match(actions, />\s*Download SKILL\.md\s*</);
+  assert.match(actions, /navigator\.clipboard\.writeText\(TOKEN_SKILL_FILE\)/);
+  assert.match(actions, /download = "SKILL\.md"/);
+  assert.match(agent, /Give your agent the Pamiac skill/);
+  assert.match(agent, /The skill contains instructions, not credentials\./);
+  assert.doesNotMatch(actions + agent + dialog, /Create API key|Grant workspace access|Add key/);
 });
 
-test("copy instructions name save paths and append the skill after frontmatter", () => {
-  const page = readFileSync(join(root, "src/components/tokens/token-manager.tsx"), "utf8");
-  const skill = page.match(/const SKILL = `([\s\S]*?)`;/)?.[1] ?? "";
-  const template = page.match(/const INSTRUCTIONS = `([\s\S]*?)`;/)?.[1] ?? "";
-  const instructions = template.replaceAll("${SKILL}", skill);
-  const copyInstructions =
-    page.match(/async function copyInstructions\(\) \{[\s\S]*?\n  \}/)?.[0] ?? "";
+test("downloaded skill file keeps the pamiac frontmatter and does not embed a secret", () => {
+  const file = readFileSync(join(root, "src/components/tokens/token-skill.ts"), "utf8");
 
-  assert.match(instructions, /~\/\.cursor\/skills\/pamiac\/SKILL\.md/);
-  assert.match(instructions, /(?<!~\/)\.cursor\/skills\/pamiac\/SKILL\.md/);
-  assert.match(instructions, /~\/\.claude\/skills\/pamiac\/SKILL\.md/);
-  assert.match(instructions, /(?<!~\/)\.claude\/skills\/pamiac\/SKILL\.md/);
-  assert.match(instructions, /Claude in the browser:[\s\S]*skill named pamiac/);
-  assert.match(instructions, /name: pamiac[\s\S]*App: https:\/\/pamiac\.com/);
-  assert.doesNotMatch(instructions, /Set PAMIAC_TOKEN/);
-  assert.match(copyInstructions, /setSkillMessage\("Instructions copied\."\)/);
-  assert.match(copyInstructions, /setSkillMessage\("Could not copy the instructions\."\)/);
+  assert.match(file, /name: pamiac/);
+  assert.match(file, /\$\{TOKEN_SKILL\}/);
+  assert.match(file, /App: https:\/\/pamiac\.com/);
+  assert.doesNotMatch(file, /Set PAMIAC_TOKEN/);
+  assert.doesNotMatch(file, /pam_[A-Za-z0-9_-]{8,}/);
 });
 
 test("readme says the skill reads PAMIAC_TOKEN from the agent environment", () => {

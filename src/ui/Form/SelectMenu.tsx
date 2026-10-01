@@ -12,18 +12,19 @@ interface Properties {
   name: string;
   options: readonly Choice[];
   describedBy?: string;
+  id?: string;
   invalid?: boolean;
 }
 
 export function FormSelectMenu(props: Properties) {
-  const { name, options, describedBy, invalid = false } = props;
+  const { name, options, describedBy, id, invalid = false } = props;
   const { register } = useFormContext();
 
   return (
     <select
       aria-describedby={describedBy}
       aria-invalid={invalid ? true : undefined}
-      id={name}
+      id={id ?? name}
       {...register(name)}
     >
       {options.map((option) => (

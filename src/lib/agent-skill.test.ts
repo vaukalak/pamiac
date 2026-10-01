@@ -8,7 +8,7 @@ const cursorSkill = readFileSync(
   "utf8",
 );
 const apiKeys = readFileSync(
-  new URL("../components/tokens/token-manager.tsx", import.meta.url),
+  new URL("../components/tokens/token-skill.ts", import.meta.url),
   "utf8",
 );
 

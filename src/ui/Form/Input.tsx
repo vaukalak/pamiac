@@ -6,13 +6,15 @@ import { Alert } from "@/ui/Alert";
 interface Properties {
   name: string;
   label: string;
+  id?: string;
   type?: "text" | "email" | "password" | "date";
   autoComplete?: string;
   placeholder?: string;
 }
 
 export function FormInput(props: Properties) {
-  const { name, label, type = "text", autoComplete, placeholder } = props;
+  const { name, label, id, type = "text", autoComplete, placeholder } = props;
+  const fieldId = id ?? name;
   const { register, formState } = useFormContext();
   const fieldError = formState.errors[name];
   const message = typeof fieldError?.message === "string" ? fieldError.message : null;
@@ -20,12 +22,12 @@ export function FormInput(props: Properties) {
 
   return (
     <div>
-      <label htmlFor={name}>{label}</label>
+      <label htmlFor={fieldId}>{label}</label>
       <input
         aria-describedby={message ? errorId : undefined}
         aria-invalid={message ? true : undefined}
         autoComplete={autoComplete}
-        id={name}
+        id={fieldId}
         placeholder={placeholder}
         type={type}
         {...register(name)}

@@ -12,7 +12,7 @@ import type { LibraryFilter } from "@/components/library/board-document";
 import type { NamedWorkspace } from "@/lib/library-spaces";
 import { useState } from "react";
 
-export type LibraryPage = "library" | "settings" | "members" | "document";
+export type LibraryPage = "library" | "settings" | "members" | "document" | "connections";
 
 interface Properties {
   filter: LibraryFilter;

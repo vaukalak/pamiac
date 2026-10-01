@@ -1,45 +1,42 @@
 "use client";
 
-import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { tokensQueryKey } from "@/components/tokens/tokens-query";
+import { Alert } from "@/ui/Alert";
+import { Button } from "@/ui/Button";
 
 interface Properties {
   id: string;
-  onRevoked: () => void;
+}
+
+async function revokeToken(id: string) {
+  const response = await fetch(`/api/tokens?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+  const body = (await response.json().catch(() => null)) as { error?: string } | null;
+  if (!response.ok) throw new Error(body?.error ?? "Could not revoke this key");
 }
 
 export function TokenRevoke(props: Properties) {
-  const { id, onRevoked } = props;
-  const [error, setError] = useState("");
-  const [pending, setPending] = useState(false);
-
-  async function revoke() {
-    setPending(true);
-    setError("");
-    try {
-      const response = await fetch(`/api/tokens?id=${id}`, { method: "DELETE" });
-      if (!response.ok) {
-        setError("Could not revoke this key");
-        setPending(false);
-        return;
-      }
-      onRevoked();
-    } catch {
-      setError("Could not revoke this key");
-      setPending(false);
-    }
-  }
+  const { id } = props;
+  const queryClient = useQueryClient();
+  const mutation = useMutation({
+    mutationFn: () => revokeToken(id),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: tokensQueryKey });
+    },
+  });
+  const error = mutation.error instanceof Error ? mutation.error.message : null;
 
   return (
     <div className="token-revoke">
-      <button
-        className="btn danger small"
-        disabled={pending}
-        onClick={() => void revoke()}
+      <Button
+        className="danger small"
+        disabled={mutation.isPending}
+        onClick={() => mutation.mutate()}
         type="button"
       >
-        {pending ? "Revoking…" : "Revoke"}
-      </button>
-      {error ? <p className="error">{error}</p> : null}
+        {mutation.isPending ? "Revoking…" : "Revoke key"}
+      </Button>
+      {error ? <Alert>{error}</Alert> : null}
     </div>
   );
 }
