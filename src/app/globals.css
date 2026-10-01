@@ -676,8 +676,12 @@ input.title-input:focus {
 }
 .note-block-comment {
   pointer-events: auto;
-  position: absolute;
+  position: fixed;
+  visibility: hidden;
   z-index: 2;
+}
+.note-block-comment.is-placed {
+  visibility: visible;
 }
 .note-block-comment-card {
   background: var(--card);
