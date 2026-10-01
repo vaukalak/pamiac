@@ -5,7 +5,6 @@ import {
   Controls,
   MiniMap,
   ReactFlow,
-  SelectionMode,
   addEdge,
   useEdgesState,
   useNodesState,
@@ -40,8 +39,6 @@ import {
 import { DIAGRAM_NODE_FIELDS } from "@/lib/diagram-patch";
 
 const nodeTypes = { uml: UmlNodeView };
-
-const panOnDrag = [1, 2];
 
 interface Properties {
   id: string;
@@ -183,7 +180,7 @@ export function UmlCanvas(props: Properties) {
   const nodesRef = useRef(nodes);
   const edgesRef = useRef(edges);
   const fitted = useRef(false);
-  const dragOrigins = useRef(new Map<string, { x: number; y: number }>());
+  const dragOrigin = useRef<{ id: string; x: number; y: number } | null>(null);
   nodesRef.current = nodes;
   edgesRef.current = edges;
 
@@ -372,28 +369,18 @@ export function UmlCanvas(props: Properties) {
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
           onInit={fitOnce}
-          onNodeDragStart={(_event, node, dragged) => {
+          onNodeDragStart={(_event, node) => {
             setHold(true);
-            const moving = dragged.length > 0 ? dragged : [node];
-            dragOrigins.current = new Map(
-              moving.map((item) => [item.id, { x: item.position.x, y: item.position.y }]),
-            );
+            dragOrigin.current = { id: node.id, x: node.position.x, y: node.position.y };
           }}
-          onNodeDragStop={(_event, node, dragged) => {
+          onNodeDragStop={(_event, node) => {
             setHold(false);
-            const origins = dragOrigins.current;
-            dragOrigins.current = new Map();
-            if (!editable) return;
-            const moving = dragged.length > 0 ? dragged : [node];
-            let moved = false;
-            for (const item of moving) {
-              const origin = origins.get(item.id);
-              if (!origin) continue;
-              if (origin.x === item.position.x && origin.y === item.position.y) continue;
-              if (!dirty.pendingNodes.has(item.id)) markNodeField(dirty, item.id, "position");
-              moved = true;
-            }
-            if (moved) schedule();
+            const origin = dragOrigin.current;
+            dragOrigin.current = null;
+            if (!editable || !origin || origin.id !== node.id) return;
+            if (origin.x === node.position.x && origin.y === node.position.y) return;
+            if (!dirty.pendingNodes.has(node.id)) markNodeField(dirty, node.id, "position");
+            schedule();
           }}
           onNodesDelete={(removed) => {
             if (!editable) return;
@@ -416,9 +403,6 @@ export function UmlCanvas(props: Properties) {
           nodesDraggable={editable}
           nodesConnectable={editable}
           elementsSelectable
-          selectionOnDrag
-          selectionMode={SelectionMode.Partial}
-          panOnDrag={panOnDrag}
           colorMode="system"
         >
           <Background color="var(--flow-grid)" gap={22} />
