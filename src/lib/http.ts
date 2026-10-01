@@ -1,11 +1,13 @@
 import { ZodError } from "zod";
 
 export class HttpError extends Error {
-  constructor(
-    public status: number,
-    message: string,
-  ) {
+  status: number;
+  version?: number;
+
+  constructor(status: number, message: string, version?: number) {
     super(message);
+    this.status = status;
+    this.version = version;
   }
 }
 
@@ -35,7 +37,13 @@ export function agentJson(data: unknown, status = 200) {
 
 export function errorResponse(error: unknown, agent = false) {
   const respond = agent ? agentJson : json;
-  if (error instanceof HttpError) return respond({ error: error.message }, error.status);
+  if (error instanceof HttpError) {
+    const body =
+      error.version === undefined
+        ? { error: error.message }
+        : { error: error.message, version: error.version };
+    return respond(body, error.status);
+  }
   if (error instanceof ZodError) {
     return respond({ error: error.issues[0]?.message ?? "Invalid request" }, 400);
   }

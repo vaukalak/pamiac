@@ -24,7 +24,7 @@ Call `search_documents` or `list_documents` before `create_note` or `create_diag
 A note stores markdown in `content`.
 
 - `create_note` adds a note. Send the full markdown as `content`.
-- `update_note` replaces that note. Send the full markdown you want kept, not a fragment.
+- `update_note` replaces that note. Send the full markdown you want kept, not a fragment. Send `version` from `read_document`. On conflict, read the document again, re-apply the same change onto that content, and update with the new `version`.
 
 ## Diagrams
 
@@ -35,7 +35,7 @@ A diagram stores `nodes` and `relations` in `content`.
 Relation `type` is `association`, `inheritance`, `composition`, `aggregation`, `dependency`, or `realization`. A relation can name an element by id or by name.
 
 - `create_diagram` adds the whole diagram. Omit `position` unless the user asked for a layout.
-- `update_diagram` merges a change. In the same turn, call `read_document` and send only the nodes you change, using each `id` from that read. Pass `nodes`, `deleteNodes`, `relations`, and `deleteRelations` as arguments of `update_diagram`. Do not wrap them in `patch`. Omit other nodes. Omit `position` to keep the layout. A node object sets only the fields it contains. Those fields are `kind`, `name`, `stereotype`, `attributes`, `methods`, `body`, and `position`. When `attributes` or `methods` is present, it replaces that whole list. Use `deleteNodes` and `deleteRelations` only for elements the user asked to remove.
+- `update_diagram` merges a change. In the same turn, call `read_document` and send only the nodes you change, using each `id` from that read. Send `version` from `read_document`. Pass `nodes`, `deleteNodes`, `relations`, and `deleteRelations` as arguments of `update_diagram`. Do not wrap them in `patch`. Omit other nodes. Omit `position` to keep the layout. A node object sets only the fields it contains. Those fields are `kind`, `name`, `stereotype`, `attributes`, `methods`, `body`, and `position`. When `attributes` or `methods` is present, it replaces that whole list. Use `deleteNodes` and `deleteRelations` only for elements the user asked to remove. On conflict, read the document again, rebuild the change against that document, and update with the new `version`. Do not resend a stale full replace that drops the other writer's work.
 
 ## Account
 
