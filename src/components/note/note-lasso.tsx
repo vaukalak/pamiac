@@ -90,6 +90,12 @@ function collapseEditorSelection(editor: BlockNoteEditor) {
   collapseLeftoverSelection(editor.prosemirrorView, (position) => Selection.near(position));
 }
 
+function clearDomSelection() {
+  const selection = window.getSelection();
+  if (!selection || selection.rangeCount === 0) return;
+  selection.removeAllRanges();
+}
+
 export function NoteLasso(props: Properties) {
   const { editor } = props;
   const anchorRef = useRef<HTMLDivElement>(null);
@@ -105,18 +111,32 @@ export function NoteLasso(props: Properties) {
     let pointerId: number | null = null;
     let lassoEndedAt = 0;
     let committedIds: string[] = [];
+    let highlightedIds: readonly string[] = [];
     let downInEditor = false;
     let frame = 0;
     let pendingPoint: Point | null = null;
 
+    function scheduleRepaint() {
+      queueMicrotask(() => paintHighlight(root, highlightedIds));
+      requestAnimationFrame(() => paintHighlight(root, highlightedIds));
+    }
+
     function show(ids: readonly string[]) {
-      paintHighlight(root, ids);
+      highlightedIds = ids;
+      paintHighlight(root, highlightedIds);
+      scheduleRepaint();
     }
 
     function cancelLassoFrame() {
       if (frame === 0) return;
       cancelAnimationFrame(frame);
       frame = 0;
+    }
+
+    function clearHighlight() {
+      committedIds = [];
+      highlightedIds = [];
+      paintHighlight(root, []);
     }
 
     function clearDrag() {
@@ -136,6 +156,7 @@ export function NoteLasso(props: Properties) {
       start = { x: event.clientX, y: event.clientY };
       active = false;
       pointerId = event.pointerId;
+      root.classList.add("note-lasso-dragging");
     }
 
     function onPointerMove(event: PointerEvent) {
@@ -148,6 +169,7 @@ export function NoteLasso(props: Properties) {
         collapseEditorSelection(editor);
       }
       event.preventDefault();
+      clearDomSelection();
       pendingPoint = current;
       if (frame !== 0) return;
       frame = requestAnimationFrame(() => {
@@ -167,21 +189,20 @@ export function NoteLasso(props: Properties) {
           event.preventDefault();
           cancelLassoFrame();
           pendingPoint = null;
+          clearDomSelection();
           lassoEndedAt = performance.now();
           const next = rectFromPoints(start, { x: event.clientX, y: event.clientY });
           const selection = lassoSelection(blockBoxes(root), next);
           if (selection) committedIds = selection;
           show(selection ?? committedIds);
         } else if (editorPress) {
-          committedIds = [];
-          paintHighlight(root, []);
+          clearHighlight();
         }
         clearDrag();
         return;
       }
       if (editorPress) {
-        committedIds = [];
-        paintHighlight(root, []);
+        clearHighlight();
       }
     }
 
@@ -189,6 +210,7 @@ export function NoteLasso(props: Properties) {
       if (!start || event.pointerId !== pointerId) return;
       cancelLassoFrame();
       pendingPoint = null;
+      highlightedIds = committedIds;
       paintHighlight(root, committedIds);
       clearDrag();
     }
@@ -199,19 +221,46 @@ export function NoteLasso(props: Properties) {
       event.stopPropagation();
     }
 
+    function onSelectStart(event: Event) {
+      if (!active) return;
+      event.preventDefault();
+    }
+
+    function onEditorTransaction() {
+      scheduleRepaint();
+    }
+
+    const observer = new MutationObserver(() => {
+      paintHighlight(root, highlightedIds);
+    });
+    observer.observe(root, {
+      subtree: true,
+      childList: true,
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+    const stopSelectionChange = editor.onSelectionChange(onEditorTransaction);
+    const stopChange = editor.onChange(onEditorTransaction);
+
     editorRoot.addEventListener("pointerdown", onPointerDown);
+    editorRoot.addEventListener("selectstart", onSelectStart);
     window.addEventListener("pointermove", onPointerMove, { passive: false });
     window.addEventListener("pointerup", onPointerUp);
     window.addEventListener("pointercancel", onPointerCancel);
     editorRoot.addEventListener("click", onClick, true);
     return () => {
       cancelLassoFrame();
+      stopSelectionChange();
+      stopChange();
+      observer.disconnect();
       editorRoot.removeEventListener("pointerdown", onPointerDown);
+      editorRoot.removeEventListener("selectstart", onSelectStart);
       window.removeEventListener("pointermove", onPointerMove);
       window.removeEventListener("pointerup", onPointerUp);
       window.removeEventListener("pointercancel", onPointerCancel);
       editorRoot.removeEventListener("click", onClick, true);
       editorRoot.classList.remove("note-lasso-dragging");
+      highlightedIds = [];
       paintHighlight(root, []);
     };
   }, [editor]);
