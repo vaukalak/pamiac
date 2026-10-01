@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import type { BoardChange, BoardDocument } from "@/components/library/board-document";
 import { DocumentMenuPanel } from "@/components/library/document-menu-panel";
+import { DocumentSharePortal } from "@/components/library/document-share-portal";
 import { ShareModal } from "@/components/share/share-modal";
 
 interface Properties {
@@ -13,13 +14,13 @@ interface Properties {
 type MenuMode = "actions" | "rename" | "delete";
 
 export function DocumentMenu(props: Properties) {
-  const item = props.document;
-  const { onChange } = props;
+  const { document: item, onChange } = props;
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<MenuMode>("actions");
   const [sharing, setSharing] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const openedShare = useRef(false);
   const menuId = useId();
 
   useEffect(() => {
@@ -43,6 +44,16 @@ export function DocumentMenu(props: Properties) {
       document.removeEventListener("pointerdown", onPointer);
     };
   }, [open, sharing]);
+
+  useEffect(() => {
+    if (sharing) {
+      openedShare.current = true;
+      return;
+    }
+    if (!openedShare.current) return;
+    openedShare.current = false;
+    buttonRef.current?.focus();
+  }, [sharing]);
 
   function close() {
     setOpen(false);
@@ -89,28 +100,34 @@ export function DocumentMenu(props: Properties) {
           onChange={onChange}
           onClose={close}
           onMode={setMode}
-          onShare={() => setSharing(true)}
+          onShare={() => {
+            close();
+            setSharing(true);
+          }}
         />
       ) : null}
       {sharing ? (
-        <ShareModal
-          emails={item.emails}
-          hasPassword={item.hasPassword}
-          id={item.id}
-          onClose={() => setSharing(false)}
-          onSaved={(share) =>
-            onChange({
-              kind: "share",
-              id: item.id,
-              visibility: share.visibility,
-              emails: share.emails,
-              hasPassword: share.hasPassword,
-              workspaceId: share.workspaceId,
-            })
-          }
-          visibility={item.visibility}
-          workspaceId={item.workspaceId}
-        />
+        <DocumentSharePortal>
+          <ShareModal
+            emails={item.emails}
+            hasPassword={item.hasPassword}
+            id={item.id}
+            lockWorkspace
+            onClose={() => setSharing(false)}
+            onSaved={(share) =>
+              onChange({
+                kind: "share",
+                id: item.id,
+                visibility: share.visibility,
+                emails: share.emails,
+                hasPassword: share.hasPassword,
+                workspaceId: share.workspaceId,
+              })
+            }
+            visibility={item.visibility}
+            workspaceId={item.workspaceId}
+          />
+        </DocumentSharePortal>
       ) : null}
     </div>
   );
