@@ -1,3 +1,4 @@
+import { ShareCircuit } from "@/components/share-preview/share-circuit";
 import { ShareWordmark } from "@/components/share-preview/share-wordmark";
 import { shareFont, sharePalette } from "@/components/share-preview/share-palette";
 import { SHARE_APP_DESCRIPTION } from "@/lib/share-preview";
@@ -11,13 +12,16 @@ export function ShareCard() {
         display: "flex",
         flexDirection: "column",
         justifyContent: "center",
-        background: sharePalette.paper,
-        color: sharePalette.ink,
+        position: "relative",
+        overflow: "hidden",
+        background: sharePalette.ground,
+        color: sharePalette.text,
         padding: "72px 80px",
-        borderLeft: `20px solid ${sharePalette.teal}`,
+        borderLeft: `6px solid ${sharePalette.lime}`,
         fontFamily: shareFont,
       }}
     >
+      <ShareCircuit />
       <ShareWordmark size="display" />
       <div
         style={{
@@ -25,7 +29,7 @@ export function ShareCard() {
           width: 88,
           height: 6,
           marginTop: 28,
-          background: sharePalette.teal,
+          background: sharePalette.lime,
         }}
       />
       <div
@@ -33,7 +37,7 @@ export function ShareCard() {
           display: "flex",
           maxWidth: 920,
           marginTop: 28,
-          color: sharePalette.inkSoft,
+          color: sharePalette.soft,
           fontFamily: shareFont,
           fontSize: 34,
           fontWeight: 400,

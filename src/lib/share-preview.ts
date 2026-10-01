@@ -1,9 +1,11 @@
+import { appBaseUrl } from "./config.ts";
 import { readableBlockMarkdown } from "./block-link.ts";
 import { defaultTitle } from "./content.ts";
 import { excerpt } from "./embeddings.ts";
 import { noteMarkdown } from "./note-blocks.ts";
 
 export const SHARE_APP_TITLE = "Pamiac";
+export const SHARE_GENERIC_TITLE = "A shared mind for you and your agents.";
 export const SHARE_APP_DESCRIPTION =
   "UML diagrams and notes, with links you can share and a token agents can use.";
 export const SHARE_EMPTY_NOTE = "Empty note";
@@ -102,20 +104,53 @@ export function shareImageAlt(preview: SharePreview) {
   return preview.publicNote ? preview.title : SHARE_APP_TITLE;
 }
 
-export function sharePageMetadata(preview: SharePreview) {
+export interface SharePageTarget {
+  url: string;
+  imagePath: string;
+}
+
+export function appShareTarget(): SharePageTarget {
+  return {
+    url: appBaseUrl(),
+    imagePath: "/share-card.png",
+  };
+}
+
+export function documentShareTarget(id: string): SharePageTarget {
+  const documentPath = `/d/${encodeURIComponent(id)}`;
+  return {
+    url: `${appBaseUrl()}${documentPath}`,
+    imagePath: `${documentPath}/share-card.png`,
+  };
+}
+
+export function sharePageMetadata(preview: SharePreview, target: SharePageTarget) {
+  const socialTitle = preview.publicNote ? preview.title : SHARE_GENERIC_TITLE;
+  const imageUrl = new URL(target.imagePath, target.url).href;
+  const image = {
+    url: imageUrl,
+    width: SHARE_IMAGE_SIZE.width,
+    height: SHARE_IMAGE_SIZE.height,
+    alt: shareImageAlt(preview),
+    type: SHARE_IMAGE_CONTENT_TYPE,
+  };
+
   return {
     title: preview.title,
     description: preview.description,
     openGraph: {
-      title: preview.title,
+      title: socialTitle,
       description: preview.description,
       siteName: SHARE_APP_TITLE,
       type: preview.publicNote ? ("article" as const) : ("website" as const),
+      url: target.url,
+      images: [image],
     },
     twitter: {
       card: "summary_large_image" as const,
-      title: preview.title,
+      title: socialTitle,
       description: preview.description,
+      images: [imageUrl],
     },
   };
 }
