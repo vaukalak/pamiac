@@ -114,6 +114,26 @@ export const workspaceInvites = pgTable(
   (table) => [uniqueIndex("workspace_invite_email_idx").on(table.workspaceId, table.email)],
 );
 
+export const folders = pgTable(
+  "folder",
+  {
+    id: text("id").primaryKey(),
+    ownerId: text("owner_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    workspaceId: text("workspace_id").references(() => workspaces.id, { onDelete: "cascade" }),
+    parentId: text("parent_id"),
+    name: text("name").notNull(),
+    sortIndex: integer("sort_index").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index("folder_owner_idx").on(table.ownerId),
+    index("folder_workspace_idx").on(table.workspaceId),
+    index("folder_parent_idx").on(table.parentId),
+  ],
+);
+
 export const documents = pgTable(
   "document",
   {
@@ -129,6 +149,7 @@ export const documents = pgTable(
       .default("private"),
     passwordHash: text("password_hash"),
     workspaceId: text("workspace_id").references(() => workspaces.id, { onDelete: "cascade" }),
+    folderId: text("folder_id").references(() => folders.id),
     sortIndex: integer("sort_index").notNull().default(0),
     version: integer("version").notNull().default(1),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -137,6 +158,7 @@ export const documents = pgTable(
   (table) => [
     index("document_owner_idx").on(table.ownerId, table.sortIndex),
     index("document_workspace_idx").on(table.workspaceId),
+    index("document_folder_idx").on(table.folderId),
   ],
 );
 

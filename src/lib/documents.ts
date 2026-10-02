@@ -149,6 +149,7 @@ export async function listLibraryDocuments(ownerId: string) {
     hasPassword: Boolean(row.passwordHash),
     emails: emails.get(row.id) ?? [],
     workspaceId: row.workspaceId,
+    folderId: row.folderId,
   }));
 }
 

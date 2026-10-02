@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import { useLibraryLocation } from "@/components/library/library-location";
 import { LibraryPlusIcon } from "@/components/library/library-plus-icon";
 import type { DocumentType } from "@/lib/content";
 import { Button } from "@/ui/Button";
@@ -13,6 +14,7 @@ interface Properties {
 
 export function LibraryCreate(props: Properties) {
   const { workspaceId } = props;
+  const { folderId } = useLibraryLocation();
   const router = useRouter();
   const detailsRef = useRef<HTMLDetailsElement>(null);
   const mutation = useMutation({
@@ -20,7 +22,7 @@ export function LibraryCreate(props: Properties) {
       const response = await fetch("/api/documents", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type, workspaceId }),
+        body: JSON.stringify({ type, workspaceId, folderId }),
       }).catch(() => null);
       if (!response) throw new Error("Could not create the document");
       const body = (await response.json().catch(() => null)) as {
