@@ -55,7 +55,7 @@ export function LibraryCreateFolderForm(props: Properties) {
   }
 
   return (
-    <Form.Context className="menu-panel library-folder-form" form={form} onSubmit={submit}>
+    <Form.Context className="library-folder-form" form={form} onSubmit={submit}>
       <Form.Input label="Name" name="name" type="text" />
       <Button disabled={mutation.isPending} type="submit">
         {mutation.isPending ? "Creating…" : "Create folder"}

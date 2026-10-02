@@ -3050,23 +3050,20 @@ code {
   background: var(--home-lime-deep);
   border-color: var(--home-lime-deep);
 }
-.library-shell .library-folder-plus {
-  background: transparent;
-  border-color: var(--home-hair-strong);
-  color: var(--home-text);
-}
-.library-shell .library-folder-plus:hover {
-  background: color-mix(in srgb, var(--home-lime) 12%, transparent);
-  border-color: var(--home-lime);
-  color: var(--home-text);
-}
 .library-shell .library-folder-form {
   display: grid;
-  gap: 10px;
-  width: 240px;
+  gap: 0;
+  padding: 0;
 }
 .library-shell .library-folder-form .btn {
   width: 100%;
+  margin-top: 14px;
+  border-color: var(--home-lime);
+  background: var(--home-lime);
+  color: var(--home-on-lime);
+}
+.library-shell .library-folder-form .error {
+  margin-top: 14px;
 }
 .library-shell .library-folder-trail {
   display: flex;
@@ -3087,7 +3084,6 @@ code {
 }
 .library-shell .folder-card {
   cursor: grab;
-  min-height: 0;
 }
 .library-shell .folder-card.dragging {
   opacity: 0.55;
@@ -3096,26 +3092,48 @@ code {
   border-color: var(--home-lime);
   box-shadow: var(--home-shadow);
 }
-.library-shell .folder-kicker {
-  margin: 0;
+.library-shell .folder-card .doc-card-body {
+  position: relative;
+}
+.library-shell .folder-picture {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  min-height: 64px;
   color: var(--home-lime);
-  font-size: 12px;
-  font-weight: 650;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+}
+.library-shell .folder-picture-icon {
+  flex: none;
 }
 .library-shell .folder-card .btn.folder-open {
+  display: block;
   width: 100%;
+  min-width: 0;
   justify-content: flex-start;
   padding: 0;
   border: 0;
   border-radius: 0;
   background: transparent;
-  color: var(--home-text);
-  font-size: 22px;
-  font-weight: 650;
-  letter-spacing: -0.03em;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
   text-align: left;
+  white-space: normal;
+}
+.library-shell .folder-card .btn.folder-open::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+}
+.library-shell .doc-card.list .folder-card h2 {
+  overflow: visible;
+}
+.library-shell .doc-card.list .btn.folder-open {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .library-shell .folder-card .btn.folder-open:hover {
   background: transparent;

@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import { LibraryCreateFolderItem } from "@/components/library/library-create-folder-item";
 import { useLibraryLocation } from "@/components/library/library-location";
 import { LibraryPlusIcon } from "@/components/library/library-plus-icon";
 import type { DocumentType } from "@/lib/content";
@@ -40,6 +41,12 @@ export function LibraryCreate(props: Properties) {
   });
   const creating = mutation.isPending && mutation.variables ? mutation.variables : null;
   const message = mutation.error instanceof Error ? mutation.error.message : "";
+
+  function close() {
+    const details = detailsRef.current;
+    if (!details) return;
+    details.open = false;
+  }
 
   useEffect(() => {
     function onPointer(event: PointerEvent) {
@@ -96,6 +103,7 @@ export function LibraryCreate(props: Properties) {
           >
             {creating === "diagram" ? "Creating…" : "New UML diagram"}
           </Button>
+          <LibraryCreateFolderItem disabled={mutation.isPending} onOpen={close} />
         </div>
       </details>
     </div>
