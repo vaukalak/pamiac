@@ -2874,6 +2874,59 @@ code {
     padding: 24px 16px 32px;
     padding-top: 72px;
   }
+  .library-shell .note-editor div:has(> .bn-suggestion-menu) {
+    position: static !important;
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+    transform: none !important;
+    width: auto !important;
+    height: auto !important;
+    max-width: none !important;
+    max-height: none !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    visibility: visible !important;
+    pointer-events: none !important;
+    will-change: auto !important;
+  }
+  .library-shell .note-editor .bn-suggestion-menu {
+    position: fixed !important;
+    top: auto !important;
+    right: auto !important;
+    bottom: calc(100dvh - var(--bn-vv-top, 0px) - var(--bn-vv-height, 100dvh)) !important;
+    left: var(--bn-vv-left, 0px) !important;
+    transform: none !important;
+    width: var(--bn-vv-width, 100%) !important;
+    max-width: none !important;
+    height: auto !important;
+    max-height: min(70dvh, var(--bn-vv-height, 70dvh)) !important;
+    margin: 0 !important;
+    border-radius: 16px 16px 0 0 !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    z-index: 80 !important;
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+  }
+  .library-shell .note-editor .note-slash-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    background: var(--scrim);
+  }
+  .library-shell:has(.note-editor .bn-suggestion-menu) {
+    z-index: 50;
+  }
+  .library-shell:has(.note-editor .bn-suggestion-menu) .library-mobile-header {
+    z-index: 1;
+  }
+  .library-shell:has(.note-editor .bn-suggestion-menu) > .library-main {
+    z-index: 8;
+  }
 }
 .library-shell .library-crumb {
   margin: 0 0 14px;
