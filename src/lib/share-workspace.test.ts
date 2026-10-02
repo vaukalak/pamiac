@@ -176,7 +176,7 @@ describe("share workspace choice", () => {
       /createDocument\(\s*agent\.id,\s*input\.type,\s*input\.title,\s*workspaceId\s*\)/,
     );
     assert.equal(/input\.workspaceId/.test(agentRoute), false);
-    assert.match(libraryCreate, /JSON\.stringify\(\{ type, workspaceId \}\)/);
+    assert.match(libraryCreate, /JSON\.stringify\(\{ type, workspaceId, folderId \}\)/);
     assert.match(actions, /<LibraryCreate workspaceId=\{workspaceId\} \/>/);
     assert.equal((store.match(/placeDocumentInWorkspace\(/g) ?? []).length, 2);
     assert.match(apply, /placeDocumentInWorkspace\(/);

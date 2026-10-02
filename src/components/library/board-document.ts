@@ -12,6 +12,7 @@ export type BoardDocument = {
   hasPassword: boolean;
   emails: string[];
   workspaceId: string | null;
+  folderId: string | null;
 };
 
 export type LibraryView = "grid" | "list";
