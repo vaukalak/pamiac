@@ -279,7 +279,7 @@ describe("note lasso wiring", () => {
     assert.match(gesture, /note-lasso-highlight/);
     assert.match(gesture, /lassoSelection/);
     assert.match(gesture, /collapseLeftoverSelection/);
-    assert.equal(gesture.includes("editable"), false);
+    assert.equal(gesture.includes("editable"), true);
     assert.match(gesture, /pointer-events|note-lasso/);
     assert.match(gesture, /className="note-lasso"/);
     assert.match(css, /--note-lasso-fill:/);
@@ -526,11 +526,26 @@ describe("note lasso wiring", () => {
     );
   });
 
+  it("leaves the lasso idle on a mobile screen and in preview", () => {
+    const gesture = read("../components/note/note-lasso.tsx");
+    const effect = gesture.slice(gesture.indexOf("useEffect(() =>"));
+    const beforeListen = effect.slice(0, effect.indexOf("addEventListener"));
+    const cleanup = effect.slice(effect.lastIndexOf("return () =>"));
+    assert.match(gesture, /useSyncExternalStore\(\s*subscribeMobileScreen/);
+    assert.match(gesture, /matchMedia\("\(max-width: 760px\)"\)/);
+    assert.match(gesture, /const lassoEnabled = editable && !mobile/);
+    assert.match(beforeListen, /if \(!editorRoot \|\| !lassoEnabled\) return/);
+    assert.match(effect, /\[editor, lassoEnabled\]/);
+    assert.match(cleanup, /classList\.remove\("note-lasso-dragging"\)/);
+    assert.match(cleanup, /paintHighlight\(root, highlightsRef\.current, \[\]\)/);
+    assert.match(cleanup, /paintLasso\(lassoRef\.current, null\)/);
+  });
+
   it("mounts the lasso on the note editor only", () => {
     const editor = read("../components/note-editor.tsx");
     const canvas = read("../components/diagram/uml-canvas.tsx");
     const board = read("../components/library/document-board.tsx");
-    assert.match(editor, /<NoteLasso editor=\{editor\} \/>/);
+    assert.match(editor, /<NoteLasso editor=\{editor\} editable=\{editable\} \/>/);
     assert.match(canvas, /const dragOrigin = useRef/);
     assert.equal(canvas.includes("SelectionMode"), false);
     assert.equal(canvas.includes("selectionOnDrag"), false);
