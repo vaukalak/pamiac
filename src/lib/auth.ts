@@ -25,8 +25,23 @@ import { appBaseUrl, appSecret } from "@/lib/config";
 import { mcpResourceUrl } from "@/lib/mcp-resource";
 import { sendMagicLink } from "@/lib/mail";
 
+function googleSocialProviders() {
+  const clientId = process.env.GOOGLE_CLIENT_ID?.trim() ?? "";
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET?.trim() ?? "";
+  if (clientId === "" || clientSecret === "") return {};
+  return {
+    socialProviders: {
+      google: {
+        clientId,
+        clientSecret,
+      },
+    },
+  };
+}
+
 function buildAuth() {
   return betterAuth({
+    ...googleSocialProviders(),
     baseURL: appBaseUrl(),
     secret: appSecret(),
     database: drizzleAdapter(getDb(), {

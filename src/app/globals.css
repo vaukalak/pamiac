@@ -3964,6 +3964,21 @@ code {
 .home .home-sign-in-panel [role="status"] p:last-child {
   margin-bottom: 0;
 }
+.home .home-sign-in-panel .login-link-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--home-soft);
+  font-size: 13px;
+  line-height: 1.3;
+}
+.home .home-sign-in-panel .login-link-option::before,
+.home .home-sign-in-panel .login-link-option::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--home-hair);
+}
 .home .home-sign-in-panel label {
   color: var(--home-text);
 }

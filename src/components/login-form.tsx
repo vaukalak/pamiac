@@ -3,6 +3,7 @@
 import { useLayoutEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useForm, type FieldErrors, type Resolver } from "react-hook-form";
+import { LoginGoogleContinue } from "@/components/login/login-google-continue";
 import { LoginLinkSent } from "@/components/login/login-link-sent";
 import { LoginSendFailure } from "@/components/login/login-send-failure";
 import { LoginSignInCopy } from "@/components/login/login-sign-in-copy";
@@ -16,6 +17,7 @@ import {
 } from "@/lib/login-sent-memory";
 import { Button } from "@/ui/Button";
 import { Form } from "@/ui/Form";
+import { Paragraph } from "@/ui/Paragraph";
 
 interface Properties {
   nextPath: string;
@@ -141,6 +143,8 @@ export function LoginForm(props: Properties) {
             mutation.mutate(values.email);
           }}
         >
+          <LoginGoogleContinue nextPath={nextPath} />
+          <Paragraph className="login-link-option">or continue with a magic link</Paragraph>
           <Form.Input autoComplete="email" label="Email" name="email" type="email" />
           <Button disabled={mutation.isPending} type="submit">
             {mutation.isPending ? "Sending link…" : "Email me a link"}
