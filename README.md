@@ -44,5 +44,5 @@ ChatGPT Free and Go can install a plugin from the OpenAI plugin directory. That 
 - OAuth discovery: `/.well-known/oauth-protected-resource/api/mcp`, `/.well-known/oauth-authorization-server/api/auth`, and `/api/auth/.well-known/openid-configuration`.
 - Sign-in stays the magic link, or Google when `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are set. Either path returns to the same login callback, then the consent screen at `/oauth/consent`. ChatGPT does not receive `PAMIAC_TOKEN`.
 - Set `OPENAI_APPS_CHALLENGE` to the domain challenge from the OpenAI submission portal. `GET /.well-known/openai-apps-challenge` returns that value as `text/plain`.
-- Scan Tools imports the skill at `skills/pamiac`. `chatgpt/submission.md` has the starter prompts, test cases, annotation justifications, and release notes for that form.
+- Scan Tools imports the skill at `skills/pamiac`. The uploadable package is `chatgpt/pamiac-plugin.zip`. `chatgpt/submission.md` has the starter prompts, test cases, annotation justifications, and release notes for that form.
 - Free-tier use requires submitting this MCP server in the OpenAI plugin directory. The API keys page shows the endpoint for that submission and for developer mode. The plugin is not listed until that submission is approved.

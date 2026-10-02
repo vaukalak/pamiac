@@ -1,0 +1,99 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "pamiac",
+  "version": "1.0.0",
+  "description": "Search, read, and edit the signed-in Pamiac library of notes and UML diagrams.",
+  "author": {
+    "name": "MIKHAIL BOUTYLIN",
+    "url": "https://pamiac.com"
+  },
+  "homepage": "https://pamiac.com",
+  "license": "MIT",
+  "keywords": ["notes", "uml", "diagrams"],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Pamiac",
+        "shortDescription": "Notes and UML diagrams",
+        "longDescription": "Pamiac keeps the notes and UML diagrams you already have. Search the library, open a note, and edit a diagram without replacing the rest of it. Sign in with the account you already use on pamiac.com. ChatGPT does not receive an API key.",
+        "developerName": "MIKHAIL BOUTYLIN",
+        "category": "Productivity",
+        "capabilities": [
+          "Search notes and diagrams",
+          "Read a note or diagram",
+          "Create a markdown note",
+          "Create a UML diagram",
+          "Update a note",
+          "Update one part of a diagram"
+        ],
+        "websiteURL": "https://pamiac.com",
+        "supportURL": "https://pamiac.com/support",
+        "privacyPolicyURL": "https://pamiac.com/privacy",
+        "termsOfServiceURL": "https://pamiac.com/terms",
+        "defaultPrompt": [
+          "Find my notes about checkout and summarize what they say.",
+          "Draw a UML class diagram of an order, a payment, and how they connect.",
+          "Add a login method to the user class on my checkout diagram."
+        ],
+        "composerIcon": "./assets/icon.svg",
+        "logo": "./assets/logo.svg"
+      },
+      "onboardingSkill": "./skills/pamiac/SKILL.md",
+      "review": {
+        "test_cases": {
+          "positive": [
+            {
+              "description": "Search a note",
+              "prompt": "Find my notes about checkout and summarize what they say.",
+              "tools_triggered": "search_documents, read_document",
+              "expected_behavior": "Call search_documents with a checkout query. When a note is the best hit, call read_document with that id and summarize the markdown. Do not create a document."
+            },
+            {
+              "description": "List diagrams",
+              "prompt": "What diagrams are in my library?",
+              "tools_triggered": "list_documents",
+              "expected_behavior": "Call list_documents with type diagram. Answer from that list. Do not create a document."
+            },
+            {
+              "description": "Create a note",
+              "prompt": "Save a note titled Standup with two bullets, ship the plugin and verify the domain.",
+              "tools_triggered": "create_note",
+              "expected_behavior": "Search or list first. If Standup is absent, call create_note with that title and both bullets in the markdown."
+            },
+            {
+              "description": "Create a diagram",
+              "prompt": "Draw a UML class diagram of an order, a payment, and how they connect.",
+              "tools_triggered": "create_diagram",
+              "expected_behavior": "Search or list first. If that diagram is absent, call create_diagram with class nodes Order and Payment and one relation between them. Omit position."
+            },
+            {
+              "description": "Update one class",
+              "prompt": "Add a login method to the user class on my checkout diagram.",
+              "tools_triggered": "read_document, update_diagram",
+              "expected_behavior": "Find the Checkout diagram, call read_document, then update_diagram with only the User node. Send that node's id and a methods list that includes login(): void. Omit position and omit the other nodes."
+            }
+          ],
+          "negative": [
+            {
+              "description": "Do not send email",
+              "prompt": "Email my checkout notes to the whole company."
+            },
+            {
+              "description": "Do not wipe the library",
+              "prompt": "Delete every note and diagram in my library."
+            },
+            {
+              "description": "Do not browse the web",
+              "prompt": "Look up the weather in Minsk and save it only if it will rain."
+            }
+          ]
+        },
+        "commerce": false,
+        "commerce_description": "This plugin does not sell products or process payments."
+      },
+      "publication": {
+        "release_notes": "First submission of the Pamiac plugin. It signs in through OAuth and exposes the signed-in library: search, list, read, create a note, create a diagram, replace a note, and merge a diagram edit."
+      }
+    }
+  }
+}
