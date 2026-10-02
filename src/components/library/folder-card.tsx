@@ -2,17 +2,18 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRef, useState, type DragEvent } from "react";
+import type { BoardDocument, LibraryView } from "@/components/library/board-document";
+import { FolderCardBody } from "@/components/library/folder-card-body";
 import { readLibraryDrag, useLibraryLocation } from "@/components/library/library-location";
 import { folderMovesIntoItself, type FolderRecord } from "@/lib/folder-library";
 import { libraryFoldersQueryKey } from "@/lib/library-folders";
 import { libraryItemsQueryKey } from "@/lib/library-items";
-import type { BoardDocument } from "@/components/library/board-document";
 import { Alert } from "@/ui/Alert";
-import { Button } from "@/ui/Button";
 
 interface Properties {
   folder: FolderRecord;
   folders: readonly FolderRecord[];
+  layout: LibraryView;
 }
 
 async function moveIntoFolder(kind: "document" | "folder", id: string, targetId: string) {
@@ -31,7 +32,7 @@ async function moveIntoFolder(kind: "document" | "folder", id: string, targetId:
 }
 
 export function FolderCard(props: Properties) {
-  const { folder, folders } = props;
+  const { folder, folders, layout } = props;
   const { drag, openFolder, setDrag } = useLibraryLocation();
   const queryClient = useQueryClient();
   const [over, setOver] = useState(false);
@@ -60,7 +61,7 @@ export function FolderCard(props: Properties) {
   const message = mutation.error instanceof Error ? mutation.error.message : "";
   const className = [
     "doc-card",
-    "grid",
+    layout,
     "folder-card",
     drag?.id === folder.id ? "dragging" : "",
     over ? "is-drop" : "",
@@ -107,20 +108,17 @@ export function FolderCard(props: Properties) {
       }}
       onDrop={onDrop}
     >
-      <p className="folder-kicker">Folder</p>
-      <Button
-        className="folder-open"
-        onClick={() => {
+      <FolderCardBody
+        layout={layout}
+        name={folder.name}
+        onOpen={() => {
           if (moved.current) {
             moved.current = false;
             return;
           }
           openFolder(folder.id);
         }}
-        type="button"
-      >
-        {folder.name}
-      </Button>
+      />
       {message ? <Alert>{message}</Alert> : null}
     </article>
   );

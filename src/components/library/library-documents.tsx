@@ -43,7 +43,12 @@ export function LibraryDocuments(props: Properties) {
     <div className={layout === "grid" ? "doc-grid" : "doc-list"}>
       {message ? <Alert>{message}</Alert> : null}
       {folders.map((folder) => (
-        <FolderCard folder={folder} folders={foldersQuery.data ?? []} key={folder.id} />
+        <FolderCard
+          folder={folder}
+          folders={foldersQuery.data ?? []}
+          key={folder.id}
+          layout={layout}
+        />
       ))}
       {visible.map((document) => (
         <DocumentCard
