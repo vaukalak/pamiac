@@ -16,8 +16,15 @@ const required = [
   "Read `PAMIAC_TOKEN` from the process environment (the agent environment)",
   "Authorization: Bearer <PAMIAC_TOKEN>",
   "Do not ask the user to paste the token.",
-  "If `PAMIAC_TOKEN` is missing, say so and stop.",
   "Do not invent a token.",
+  "If `PAMIAC_TOKEN` is missing, do not open the agent browser and do not ask the user to paste a token.",
+  'POST `/api/agent/v1/connect` with `{ "agentName": "<this agent\'s name>" }`.',
+  "Tell the user to open the returned `url` in their own browser and choose Return to that name.",
+  "Poll `GET /api/agent/v1/connect/:id` until `status` is `ready`.",
+  "The ready body includes `token` once.",
+  "Do not print the token.",
+  "Do not put the token in a message to the user.",
+  "A later run still reads `PAMIAC_TOKEN` from the process environment.",
   "App: https://pamiac.com",
   "Base: `/api/agent/v1`",
   "POST /api/agent/v1/search",
@@ -45,7 +52,7 @@ test("skill reads PAMIAC_TOKEN and does not ask the user to paste it", () => {
 test("API keys page gives the agent the same token rule", () => {
   assert.equal(
     apiKeys.includes(
-      "Read PAMIAC_TOKEN from the agent environment and send Authorization: Bearer <PAMIAC_TOKEN> on every request. Do not ask the user to paste the token. If PAMIAC_TOKEN is missing, say so and stop.",
+      "Read PAMIAC_TOKEN from the agent environment and send Authorization: Bearer <PAMIAC_TOKEN> on every request. Do not ask the user to paste the token. If PAMIAC_TOKEN is missing, do not open the agent browser and do not ask the user to paste a token.",
     ),
     true,
   );

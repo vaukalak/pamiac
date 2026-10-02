@@ -1,4 +1,9 @@
-export const TOKEN_SKILL = `Read PAMIAC_TOKEN from the agent environment and send Authorization: Bearer <PAMIAC_TOKEN> on every request. Do not ask the user to paste the token. If PAMIAC_TOKEN is missing, say so and stop.
+export const TOKEN_SKILL = `Read PAMIAC_TOKEN from the agent environment and send Authorization: Bearer <PAMIAC_TOKEN> on every request. Do not ask the user to paste the token. If PAMIAC_TOKEN is missing, do not open the agent browser and do not ask the user to paste a token. Do not invent a token.
+POST /api/agent/v1/connect with { "agentName": "<this agent's name>" }.
+Tell the user to open the returned url in their own browser and choose Return to that name.
+Poll GET /api/agent/v1/connect/:id until status is ready.
+The ready body includes token once. Send Authorization: Bearer with that value for the rest of this run. Do not print the token. Do not put the token in a message to the user.
+A later run still reads PAMIAC_TOKEN from the process environment.
 
 Authorization: Bearer <PAMIAC_TOKEN>
 App: https://pamiac.com
