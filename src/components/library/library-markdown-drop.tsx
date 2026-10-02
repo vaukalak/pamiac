@@ -3,6 +3,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, type DragEvent, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
+import { useLibraryLocation } from "@/components/library/library-location";
 import { markdownDropChoice, markdownImportTitle, markdownTextError } from "@/lib/note-file";
 import { libraryItemsQueryKey } from "@/lib/library-items";
 import { Alert } from "@/ui/Alert";
@@ -18,7 +19,7 @@ async function readError(response: Response, fallback: string) {
   return body?.error || fallback;
 }
 
-async function importMarkdown(workspaceId: string, file: File) {
+async function importMarkdown(workspaceId: string, folderId: string | null, file: File) {
   const text = await file.text();
   const invalid = markdownTextError(text);
   if (invalid) throw new Error(invalid);
@@ -29,6 +30,7 @@ async function importMarkdown(workspaceId: string, file: File) {
       type: "note",
       title: markdownImportTitle(file.name),
       workspaceId,
+      folderId,
     }),
   }).catch(() => null);
   if (!created) throw new Error("Could not import that file.");
@@ -58,12 +60,13 @@ async function importMarkdown(workspaceId: string, file: File) {
 
 export function LibraryMarkdownDrop(props: Properties) {
   const { children, workspaceId } = props;
+  const { folderId } = useLibraryLocation();
   const router = useRouter();
   const queryClient = useQueryClient();
   const [dragging, setDragging] = useState(false);
   const [notice, setNotice] = useState("");
   const mutation = useMutation({
-    mutationFn: (file: File) => importMarkdown(workspaceId, file),
+    mutationFn: (file: File) => importMarkdown(workspaceId, folderId, file),
     onSuccess: (id) => {
       setNotice("");
       void queryClient.invalidateQueries({ queryKey: libraryItemsQueryKey });

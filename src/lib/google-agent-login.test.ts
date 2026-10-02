@@ -194,7 +194,8 @@ describe("google agent login wiring", () => {
     assert.match(page, /getSession\(\)/);
     assert.match(page, /<Page /);
     assert.match(page, /<Section /);
-    assert.match(page, /<GoogleConnectDecision userCode=\{userCode\} \/>/);
+    assert.match(page, /findGoogleLoginAgentName\(userCode\)/);
+    assert.match(page, /<GoogleConnectDecision agentName=\{agentName\} userCode=\{userCode\} \/>/);
     assert.match(page, /<GoogleConnectSignIn userCode=\{userCode\} \/>/);
     assert.doesNotMatch(page, /LoginForm|magicLink|<main/);
 
@@ -214,13 +215,17 @@ describe("google agent login wiring", () => {
       /Connect lets this agent search, read, and edit your notes and diagrams/,
     );
     assert.match(decision, /User code/);
-    assert.match(decision, />\s*Connect\s*</);
+    assert.match(decision, /Return to \$\{agentName\}/);
+    assert.doesNotMatch(decision, />\s*Connect\s*</);
     assert.match(decision, />\s*Deny\s*</);
     assert.match(decision, /<Alert>/);
     assert.match(decision, /<Button/);
     assert.match(decision, /Denied\. The agent will stop\./);
     assert.match(decision, /mutation\.variables === "approve"/);
-    assert.match(decision, /<GoogleConnectApproved userCode=\{userCode\} \/>/);
+    assert.match(
+      decision,
+      /<GoogleConnectApproved agentName=\{agentName\} userCode=\{userCode\} \/>/,
+    );
     assert.doesNotMatch(decision, /useState|useQuery|window\.close/);
 
     assert.match(approved, /useQuery/);
@@ -228,7 +233,7 @@ describe("google agent login wiring", () => {
     assert.match(approved, /3_000/);
     assert.match(approved, /if \(!status\.data\?\.connected\) return/);
     assert.match(approved, /window\.close\(\)/);
-    assert.match(approved, /Connected\. Return to the agent\./);
+    assert.match(approved, /\$\{agentName\} can continue\./);
     assert.match(approved, /\/api\/connect\/google/);
     assert.doesNotMatch(approved, /useState|tokenSecret|setTimeout/);
 

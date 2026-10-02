@@ -1,5 +1,6 @@
 import type { LibraryFilter } from "@/components/library/board-document";
 import { LibraryBreadcrumb } from "@/components/library/library-breadcrumb";
+import { LibraryFolderTrail } from "@/components/library/library-folder-trail";
 import { PageTitle } from "@/ui/PageTitle";
 
 interface Properties {
@@ -13,6 +14,7 @@ export function LibraryHeadingCopy(props: Properties) {
   return (
     <div className="library-heading-copy">
       <LibraryBreadcrumb filter={filter} spaceName={spaceName} />
+      <LibraryFolderTrail />
       <PageTitle
         eyebrow="Your knowledge, connected"
         subtitle="A shared memory for you and your agents."

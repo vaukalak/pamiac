@@ -46,7 +46,7 @@ describe("create in the open library", () => {
     assert.match(column, /<LibraryDashboard[\s\S]*workspaceId=\{workspaceId\}/);
     assert.match(actions, /<LibraryCreate workspaceId=\{workspaceId\} \/>/);
     assert.match(tools, /<ViewToggle/);
-    assert.match(create, /JSON\.stringify\(\{ type, workspaceId \}\)/);
+    assert.match(create, /JSON\.stringify\(\{ type, workspaceId, folderId \}\)/);
     assert.match(create, /body\?\.error \?\? "Could not create the document"/);
     assert.match(create, /<p className="error">\{message\}<\/p>/);
     assert.match(create, /router\.push\(`\/d\/\$\{id\}`\)/);

@@ -3050,6 +3050,77 @@ code {
   background: var(--home-lime-deep);
   border-color: var(--home-lime-deep);
 }
+.library-shell .library-folder-plus {
+  background: transparent;
+  border-color: var(--home-hair-strong);
+  color: var(--home-text);
+}
+.library-shell .library-folder-plus:hover {
+  background: color-mix(in srgb, var(--home-lime) 12%, transparent);
+  border-color: var(--home-lime);
+  color: var(--home-text);
+}
+.library-shell .library-folder-form {
+  display: grid;
+  gap: 10px;
+  width: 240px;
+}
+.library-shell .library-folder-form .btn {
+  width: 100%;
+}
+.library-shell .library-folder-trail {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 12px;
+}
+.library-shell .library-folder-trail > * + *::before {
+  content: "/";
+  margin-right: 6px;
+  color: var(--home-soft);
+}
+.library-shell .library-folder-current {
+  color: var(--home-text);
+  font-size: 14px;
+  font-weight: 650;
+}
+.library-shell .folder-card {
+  cursor: grab;
+  min-height: 0;
+}
+.library-shell .folder-card.dragging {
+  opacity: 0.55;
+}
+.library-shell .folder-card.is-drop {
+  border-color: var(--home-lime);
+  box-shadow: var(--home-shadow);
+}
+.library-shell .folder-kicker {
+  margin: 0;
+  color: var(--home-lime);
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.library-shell .folder-card .btn.folder-open {
+  width: 100%;
+  justify-content: flex-start;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--home-text);
+  font-size: 22px;
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  text-align: left;
+}
+.library-shell .folder-card .btn.folder-open:hover {
+  background: transparent;
+  color: var(--home-text);
+}
 .library-shell a.btn.library-connect {
   background: transparent;
   border: 1px solid var(--home-hair-strong);

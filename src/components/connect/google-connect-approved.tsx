@@ -6,6 +6,7 @@ import { Alert } from "@/ui/Alert";
 import { Paragraph } from "@/ui/Paragraph";
 
 interface Properties {
+  agentName: string;
   userCode: string;
 }
 
@@ -23,7 +24,7 @@ async function readGoogleConnection(userCode: string) {
 }
 
 export function GoogleConnectApproved(props: Properties) {
-  const { userCode } = props;
+  const { agentName, userCode } = props;
   const status = useQuery({
     queryKey: ["connect-google", userCode],
     queryFn: () => readGoogleConnection(userCode),
@@ -39,7 +40,7 @@ export function GoogleConnectApproved(props: Properties) {
 
   return (
     <>
-      <Paragraph>Connected. Return to the agent.</Paragraph>
+      <Paragraph>{`${agentName} can continue.`}</Paragraph>
       {message ? <Alert>{message}</Alert> : null}
     </>
   );

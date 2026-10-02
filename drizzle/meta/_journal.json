@@ -43,6 +43,13 @@
       "when": 1790810400000,
       "tag": "0005_document-permission-request",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1790810500000,
+      "tag": "0006_folder",
+      "breakpoints": true
     }
   ]
 }

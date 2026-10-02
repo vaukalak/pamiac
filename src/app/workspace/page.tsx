@@ -58,6 +58,7 @@ export default async function WorkspacePage(props: Properties) {
     hasPassword: row.hasPassword,
     emails: row.emails,
     workspaceId: row.workspaceId,
+    folderId: row.folderId,
   }));
 
   return (

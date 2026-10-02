@@ -75,6 +75,16 @@ export async function pollGoogleAgentLogin(deviceCode: string) {
   };
 }
 
+export async function findGoogleLoginAgentName(userCode: string) {
+  const normalized = normalizeUserCode(userCode);
+  if (!normalized) return "agent";
+  const [row] = await getDb()
+    .select({ agentName: agentGoogleLogin.agentName })
+    .from(agentGoogleLogin)
+    .where(eq(agentGoogleLogin.userCodeHash, hashGoogleCode(normalized)));
+  return row?.agentName || "agent";
+}
+
 async function openGoogleLogin(userCode: string) {
   const normalized = normalizeUserCode(userCode);
   if (!normalized) throw new HttpError(400, "Unknown user code");

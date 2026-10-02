@@ -4,6 +4,7 @@ import { describe, it } from "node:test";
 import {
   commentBlockMatchIndex,
   noteCommentBlockClearance,
+  noteCommentBlockMarginRule,
   noteCommentFallbackHeight,
   noteCommentGap,
   placeNoteBlockComment,
@@ -68,6 +69,19 @@ describe("note block comment placement", () => {
     );
   });
 
+  it("builds a block margin rule without writing onto the editor node", () => {
+    assert.equal(
+      noteCommentBlockMarginRule("311428c4-9a38-4038-96de-44959065016d", 200),
+      '.note-editor .bn-block-outer[data-id="311428c4-9a38-4038-96de-44959065016d"]{margin-bottom:200px}',
+    );
+  });
+
+  it("skips a margin rule that could change the stylesheet structure", () => {
+    assert.equal(noteCommentBlockMarginRule('id"}', 40), "");
+    assert.equal(noteCommentBlockMarginRule("", 40), "");
+    assert.equal(noteCommentBlockMarginRule("block", 0), "");
+  });
+
   it("keeps the composer on the block viewport box until the block exists", () => {
     const comment = read("../components/note/note-block-comment.tsx");
     const place = read("./note-block-comment-place.ts");
@@ -81,6 +95,8 @@ describe("note block comment placement", () => {
     assert.match(place, /closest\("\.bn-editor"\)/);
     assert.match(comment, /findNoteCommentBlock\(root, blockId\)/);
     assert.match(comment, /placeNoteBlockComment/);
+    assert.match(comment, /noteCommentBlockMarginRule/);
+    assert.doesNotMatch(comment, /style\.marginBottom/);
     assert.match(comment, /document\.addEventListener\("scroll", place, true\)/);
     assert.match(comment, /window\.addEventListener\("resize", place\)/);
     assert.match(comment, /classList\.add\("is-placed"\)/);
