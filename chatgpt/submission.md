@@ -25,7 +25,9 @@ Website: https://pamiac.com
 
 Support: https://pamiac.com
 
-Privacy policy and terms still need public HTTPS URLs before final submission.
+Privacy policy: https://pamiac.com/privacy
+
+Terms: https://pamiac.com/terms
 
 ## Starter prompts
 

@@ -3609,6 +3609,19 @@ code {
   box-shadow: none;
   caret-color: var(--home-lime);
 }
+.library-shell .note-sheet .text-pretty {
+  margin: 0 0 16px;
+  max-width: 72ch;
+  color: var(--home-text);
+  font-size: 17px;
+  line-height: 1.55;
+}
+.library-shell .note-sheet .text-pretty:last-child {
+  margin-bottom: 0;
+}
+.library-shell .note-sheet .text-pretty a {
+  color: var(--home-lime);
+}
 .library-shell .note-editor .bn-container[data-color-scheme] {
   --bn-colors-editor-text: var(--home-text);
   --bn-colors-editor-background: transparent;
