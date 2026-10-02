@@ -187,6 +187,18 @@ export const agentTokens = pgTable(
   (table) => [index("agent_token_user_idx").on(table.userId)],
 );
 
+export const agentGoogleLogin = pgTable("agent_google_login", {
+  id: text("id").primaryKey(),
+  deviceCodeHash: text("device_code_hash").notNull().unique(),
+  userCodeHash: text("user_code_hash").notNull().unique(),
+  agentName: text("agent_name").notNull(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  deniedAt: timestamp("denied_at", { withTimezone: true }),
+  userId: text("user_id").references(() => user.id, { onDelete: "cascade" }),
+  tokenSecret: text("token_secret"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 const stringList = (name: string) => text(name).array();
 
 export const jwks = pgTable("jwks", {
