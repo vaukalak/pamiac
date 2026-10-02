@@ -16,6 +16,8 @@ test("the ChatGPT skill is a flat front matter file the portal can import", () =
   assert.ok(entry.frontmatter.description.length <= 1024);
   assert.equal(skill.text.includes("PAMIAC_TOKEN"), false);
   assert.equal(skill.text.includes("/api/agent"), false);
+  assert.equal(skill.text.includes("grok"), false);
+  assert.equal(skill.text.includes("subagent"), false);
   assert.match(skill.text, /Do not wrap them in `patch`/);
   assert.deepEqual(
     entry.resources.map((resource) => resource.uri),

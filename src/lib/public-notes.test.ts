@@ -29,6 +29,20 @@ describe("public privacy and terms notes", () => {
       assert.equal(noteContent.markdown.includes("joke"), false);
     }
     assert.match(privacyNote.markdown, /session cookie/);
+    assert.match(privacyNote.markdown, /hash of the password/);
+    assert.match(privacyNote.markdown, /Password sign-up is closed/);
+    assert.match(privacyNote.markdown, /does not receive PAMIAC_TOKEN or your password/);
+    assert.match(termsNote.markdown, /existing email and password/);
+    assert.match(privacyNote.markdown, /Categories we collect/);
+    assert.match(privacyNote.markdown, /IP address/);
+    assert.match(privacyNote.markdown, /Purposes/);
+    assert.match(privacyNote.markdown, /Recipients/);
+    assert.match(privacyNote.markdown, /Resend/);
+    assert.match(privacyNote.markdown, /Retention/);
+    assert.match(privacyNote.markdown, /5 minutes/);
+    assert.match(privacyNote.markdown, /7 days/);
+    assert.match(privacyNote.markdown, /Controls/);
+    assert.match(privacyNote.markdown, /support@pamiac\.com/);
     assert.match(termsNote.markdown, /access you approve/);
     assert.equal(privacyNote.title, "Privacy policy");
     assert.equal(termsNote.title, "Terms");
@@ -56,6 +70,7 @@ describe("public privacy and terms notes", () => {
   it("lists the public HTTPS URLs in the ChatGPT submission", () => {
     assert.match(submission, /https:\/\/pamiac\.com\/privacy/);
     assert.match(submission, /https:\/\/pamiac\.com\/terms/);
+    assert.match(submission, /Support: https:\/\/pamiac\.com\/support/);
     assert.equal(submission.includes("still need public HTTPS URLs"), false);
   });
 });

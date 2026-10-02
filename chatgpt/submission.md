@@ -23,7 +23,7 @@ Capabilities:
 
 Website: https://pamiac.com
 
-Support: https://pamiac.com
+Support: https://pamiac.com/support
 
 Brand color: #b9f542
 
@@ -160,4 +160,8 @@ First submission of the Pamiac plugin. It signs in with the existing magic link 
 
 ## Reviewer account
 
-Use a pamiac.com account that already contains the Checkout note and the Checkout diagram from the tests above. The magic link has to be completable by the reviewer without a second factor.
+Login: openaireview@pamiac.com
+
+Password: AAAaaa1!
+
+Sign in with email and password on https://pamiac.com/login. There is no second factor and no sign-up step. The account should already contain the Checkout note and the Checkout diagram from the tests above.
