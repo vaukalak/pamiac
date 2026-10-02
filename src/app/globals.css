@@ -3052,11 +3052,18 @@ code {
 }
 .library-shell .library-folder-form {
   display: grid;
-  gap: 10px;
-  padding: 4px 6px 6px;
+  gap: 0;
+  padding: 0;
 }
 .library-shell .library-folder-form .btn {
   width: 100%;
+  margin-top: 14px;
+  border-color: var(--home-lime);
+  background: var(--home-lime);
+  color: var(--home-on-lime);
+}
+.library-shell .library-folder-form .error {
+  margin-top: 14px;
 }
 .library-shell .library-folder-trail {
   display: flex;

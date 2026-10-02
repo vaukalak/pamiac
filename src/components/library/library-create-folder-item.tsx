@@ -1,52 +1,39 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { LibraryCreateFolderForm } from "@/components/library/library-create-folder-form";
-import { useLibraryLocation } from "@/components/library/library-location";
+import { useState } from "react";
+import { LibraryCreateFolderDialogPortal } from "@/components/library/library-create-folder-dialog-portal";
 import { Button } from "@/ui/Button";
 
 interface Properties {
   disabled: boolean;
-  onCreated: () => void;
+  onOpen: () => void;
 }
 
 export function LibraryCreateFolderItem(props: Properties) {
-  const { disabled, onCreated } = props;
-  const { folderId, workspaceId } = useLibraryLocation();
-  const rootRef = useRef<HTMLDivElement>(null);
-  const [naming, setNaming] = useState(false);
+  const { disabled, onOpen } = props;
+  const [open, setOpen] = useState(false);
 
-  useEffect(() => {
-    const details = rootRef.current?.closest("details");
-    if (!(details instanceof HTMLDetailsElement)) return;
-    const menu: HTMLDetailsElement = details;
-
-    function onToggle() {
-      if (!menu.open) setNaming(false);
+  function show() {
+    const current = document.activeElement;
+    const details = current instanceof Element ? current.closest("details") : null;
+    onOpen();
+    if (details instanceof HTMLDetailsElement) {
+      const summary = details.querySelector("summary");
+      if (summary instanceof HTMLElement) summary.focus();
     }
+    setOpen(true);
+  }
 
-    menu.addEventListener("toggle", onToggle);
-    return () => menu.removeEventListener("toggle", onToggle);
-  }, []);
+  function hide() {
+    setOpen(false);
+  }
 
   return (
-    <div ref={rootRef}>
-      <Button
-        className="menu-item"
-        disabled={disabled}
-        expanded={naming}
-        onClick={() => setNaming(true)}
-        type="button"
-      >
+    <>
+      <Button className="menu-item" disabled={disabled} onClick={show} type="button">
         New folder
       </Button>
-      {naming ? (
-        <LibraryCreateFolderForm
-          onCreated={onCreated}
-          parentId={folderId}
-          workspaceId={workspaceId}
-        />
-      ) : null}
-    </div>
+      {open ? <LibraryCreateFolderDialogPortal onClose={hide} /> : null}
+    </>
   );
 }

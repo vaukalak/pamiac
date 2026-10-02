@@ -103,7 +103,7 @@ export function LibraryCreate(props: Properties) {
           >
             {creating === "diagram" ? "Creating…" : "New UML diagram"}
           </Button>
-          <LibraryCreateFolderItem disabled={mutation.isPending} onCreated={close} />
+          <LibraryCreateFolderItem disabled={mutation.isPending} onOpen={close} />
         </div>
       </details>
     </div>
