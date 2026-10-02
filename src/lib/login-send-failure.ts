@@ -1,9 +1,9 @@
 const FALLBACK = "We could not send the link.";
 
-export function loginSendFailureSentence(serverMessage: unknown) {
-  if (typeof serverMessage !== "string") return FALLBACK;
+export function loginSendFailureSentence(serverMessage: unknown, fallback = FALLBACK) {
+  if (typeof serverMessage !== "string") return fallback;
   const text = serverMessage.trim();
-  if (!isShortHumanSentence(text)) return FALLBACK;
+  if (!isShortHumanSentence(text)) return fallback;
   if (/[.!?]$/.test(text)) return text;
   return `${text}.`;
 }

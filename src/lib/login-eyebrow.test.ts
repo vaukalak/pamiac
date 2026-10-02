@@ -32,7 +32,9 @@ describe("login eyebrow", () => {
       /We email you a link\. There is no password\. If the address is new, opening the link\s+creates\s+the account\./,
     );
     expect(form).toMatch(/sent \? null : <LoginSignInCopy \/>/);
-    expect(login).toMatch(/<LoginForm nextPath=\{formNext\} showDevLink=\{showDevLink\} \/>/);
+    expect(login).toMatch(
+      /<LoginForm\s+agentConnect=\{isOAuthLoginQuery\(query\)\}\s+googleEnabled=\{googleSignInEnabled\(\)\}\s+nextPath=\{formNext\}\s+showDevLink=\{showDevLink\}\s*\/>/,
+    );
     expect(login).toMatch(/<AppHeader \/>/);
   });
 

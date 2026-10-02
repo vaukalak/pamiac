@@ -124,7 +124,10 @@ describe("dev magic link gate", () => {
 
   it("passes the server gate into the form and fetches only when it is on", () => {
     assert.match(page, /const showDevLink = devMagicLinkVisible\(\)/);
-    assert.match(page, /<LoginForm nextPath=\{formNext\} showDevLink=\{showDevLink\} \/>/);
+    assert.match(
+      page,
+      /<LoginForm\s+agentConnect=\{isOAuthLoginQuery\(query\)\}\s+googleEnabled=\{googleSignInEnabled\(\)\}\s+nextPath=\{formNext\}\s+showDevLink=\{showDevLink\}\s*\/>/,
+    );
     assert.doesNotMatch(page, /NEXT_PUBLIC_/);
     assert.match(
       form,

@@ -22,6 +22,7 @@ import {
   verification,
 } from "@/db/schema";
 import { appBaseUrl, appSecret } from "@/lib/config";
+import { googleSocialProviders } from "@/lib/google-sign-in";
 import { mcpResourceUrl } from "@/lib/mcp-resource";
 import { sendMagicLink } from "@/lib/mail";
 
@@ -29,6 +30,13 @@ function buildAuth() {
   return betterAuth({
     baseURL: appBaseUrl(),
     secret: appSecret(),
+    account: {
+      accountLinking: {
+        enabled: true,
+        trustedProviders: ["google"],
+      },
+    },
+    socialProviders: googleSocialProviders(),
     database: drizzleAdapter(getDb(), {
       provider: "pg",
       schema: {
