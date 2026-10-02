@@ -49,7 +49,8 @@ describe("mobile slash menu sheet", () => {
     assert.match(shell, /transform:\s*none\s*!important/);
     assert.equal(/\btranslate\s*:/.test(shell), false);
     assert.match(shell, /position:\s*static\s*!important/);
-    assert.equal(/\.bn-drag-handle-menu/.test(sheet), false);
+    assert.equal(/\.bn-drag-handle-menu/.test(menu), false);
+    assert.equal(/\.bn-drag-handle-menu/.test(shell), false);
     assert.equal(/bn-formatting-toolbar/.test(sheet), false);
     assert.equal(/bn-grid-suggestion-menu/.test(sheet), false);
   });

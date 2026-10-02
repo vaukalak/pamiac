@@ -3,6 +3,7 @@ import { BlockNoteView } from "@blocknote/mantine";
 import { SideMenuController } from "@blocknote/react";
 import { NoteCommentLayer } from "@/components/note/note-comment-layer";
 import { NoteSideMenu } from "@/components/note/note-side-menu";
+import { NoteBlockMenuSheet } from "@/components/note/note-block-menu-sheet";
 import { NoteSlashMenuSheet } from "@/components/note/note-slash-menu-sheet";
 
 interface Properties {
@@ -26,6 +27,7 @@ export function NoteEditorSurface(props: Properties) {
       <SideMenuController sideMenu={NoteSideMenu} />
       <NoteCommentLayer />
       <NoteSlashMenuSheet />
+      <NoteBlockMenuSheet />
     </BlockNoteView>
   );
 }
