@@ -213,7 +213,7 @@ export function NoteEditor(props: Properties) {
         onChange={handleChange}
         theme={libraryShell || dark ? "dark" : "light"}
       />
-      <NoteLasso editor={editor} />
+      <NoteLasso editor={editor} editable={editable} />
     </NoteEditorFrame>
   );
 }

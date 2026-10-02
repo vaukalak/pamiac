@@ -73,7 +73,9 @@ describe("sign-in email fill", () => {
     expect(form).toMatch(/type="email"/);
     expect(form).not.toMatch(/placeholder=/);
     expect(form).toMatch(/Email me a link/);
-    expect(login).toMatch(/<LoginForm nextPath=\{formNext\} showDevLink=\{showDevLink\} \/>/);
+    expect(login).toMatch(
+      /<LoginForm\s+agentConnect=\{isOAuthLoginQuery\(query\)\}\s+googleEnabled=\{googleSignInEnabled\(\)\}\s+nextPath=\{formNext\}\s+showDevLink=\{showDevLink\}\s*\/>/,
+    );
     expect(locked).not.toMatch(/home-sign-in/);
     expect(member).not.toMatch(/home-sign-in/);
   });
