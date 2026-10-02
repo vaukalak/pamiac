@@ -12,7 +12,7 @@ export function TurnIntoList(props: Properties) {
   if (!Components) return null;
 
   return (
-    <Components.Generic.Menu.Dropdown className="bn-menu-dropdown" sub={true}>
+    <Components.Generic.Menu.Dropdown className="bn-menu-dropdown note-turn-into-menu" sub={true}>
       {choices.map((choice) => (
         <TurnIntoChoice
           key={`${choice.type}:${JSON.stringify(choice.props ?? {})}`}
