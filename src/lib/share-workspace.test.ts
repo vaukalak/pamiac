@@ -279,7 +279,7 @@ describe("share workspace choice", () => {
       access.indexOf("export function resolveAccess"),
       access.indexOf("const EMAIL"),
     );
-    const decision = page.slice(page.indexOf("resolveAccess({"), page.indexOf("if (access.level"));
+    const decision = page.slice(page.indexOf("resolveAccess({"), page.indexOf("let workspaces"));
     const visibilityWrite = update.slice(
       update.indexOf(".set({"),
       update.indexOf(".where(eq(documents.id, id))"),
@@ -310,7 +310,13 @@ describe("share workspace choice", () => {
     assert.equal(/workspace|member/i.test(bundle), false);
     assert.match(decision, /workspaceMember/);
     assert.match(page, /isDocumentWorkspaceMember\(user\.id, bundle\.document\.workspaceId\)/);
-    assert.match(page, /if \(access\.level === "none"\) notFound\(\)/);
+    assert.match(page, /if \(!bundle\) notFound\(\)/);
+    assert.match(page, /access\.level === "none" \?/);
+    assert.match(
+      page,
+      /<PrivateDocument id=\{id\} signedIn=\{Boolean\(user\)\} type=\{documentType\} \/>/,
+    );
+    assert.doesNotMatch(page, /if \(access\.level === "none"\) notFound\(\)/);
     assert.match(page, /canEdit=\{access\.level === "edit"\}/);
     assert.match(page, /isOwner=\{access\.level === "edit" && access\.reason === "owner"\}/);
     assert.match(page, /workspaceId=\{bundle\.document\.workspaceId\}/);

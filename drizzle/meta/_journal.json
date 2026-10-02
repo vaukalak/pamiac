@@ -36,6 +36,13 @@
       "when": 1790810300000,
       "tag": "0004_google-agent-login",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1790810400000,
+      "tag": "0005_document-permission-request",
+      "breakpoints": true
     }
   ]
 }
