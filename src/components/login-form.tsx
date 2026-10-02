@@ -1,24 +1,10 @@
 "use client";
 
 import { useLayoutEffect, useState } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { useForm, type FieldErrors, type Resolver } from "react-hook-form";
-import { LoginGoogle } from "@/components/login/login-google";
-import { LoginPassword } from "@/components/login/login-password";
-import { LoginLinkSent } from "@/components/login/login-link-sent";
-import { LoginSendFailure } from "@/components/login/login-send-failure";
-import { LoginSignInCopy } from "@/components/login/login-sign-in-copy";
-import { authClient } from "@/lib/auth-client";
-import { loginAnnouncement } from "@/lib/login-announcement";
-import { loginSendFailureSentence } from "@/lib/login-send-failure";
-import {
-  forgetSentLoginAddress,
-  readSentLoginAddress,
-  rememberSentLoginAddress,
-} from "@/lib/login-sent-memory";
-import { Button } from "@/ui/Button";
-import { Form } from "@/ui/Form";
-import { Paragraph } from "@/ui/Paragraph";
+import { LoginChooser } from "@/components/login/login-chooser";
+import { LoginMagicLinkForm } from "@/components/login/login-magic-link-form";
+import { LoginPasswordForm } from "@/components/login/login-password-form";
+import { readSentLoginAddress } from "@/lib/login-sent-memory";
 
 interface Properties {
   agentConnect: boolean;
@@ -27,139 +13,51 @@ interface Properties {
   showDevLink: boolean;
 }
 
-interface LoginValues {
-  email: string;
-}
-
-interface SentLink {
-  address: string;
-  devUrl: string | null;
-}
-
-function loginEmailMessage(email: string) {
-  if (email.includes("@")) return "";
-  if (email.trim() === "") return "Enter an email address.";
-  return "That address needs an @.";
-}
-
-const loginResolver: Resolver<LoginValues> = (values) => {
-  const message = loginEmailMessage(values.email);
-  if (!message) return { values, errors: {} };
-  const errors: FieldErrors<LoginValues> = {
-    email: { type: "validate", message },
-  };
-  return { values: {}, errors };
-};
-
-async function sendMagicLink(input: { email: string; nextPath: string; showDevLink: boolean }) {
-  const { email, nextPath, showDevLink } = input;
-  let result: Awaited<ReturnType<typeof authClient.signIn.magicLink>>;
-  try {
-    result = await authClient.signIn.magicLink({
-      email,
-      name: email.split("@")[0] || "User",
-      callbackURL: nextPath,
-    });
-  } catch (error) {
-    throw new Error(loginSendFailureSentence(error instanceof Error ? error.message : undefined));
-  }
-  if (result.error) {
-    throw new Error(loginSendFailureSentence(result.error.message));
-  }
-  rememberSentLoginAddress(email);
-  if (!showDevLink) return { devUrl: null };
-  try {
-    const dev = await fetch(`/api/dev/magic-link?email=${encodeURIComponent(email)}`);
-    if (!dev.ok) return { devUrl: null };
-    const body = (await dev.json()) as { url?: string };
-    return { devUrl: body.url ?? null };
-  } catch {
-    return { devUrl: null };
-  }
-}
+type LoginStep = "chooser" | "magic" | "password";
 
 export function LoginForm(props: Properties) {
   const { agentConnect, googleEnabled, nextPath, showDevLink } = props;
-  const form = useForm<LoginValues>({
-    defaultValues: { email: "" },
-    mode: "onSubmit",
-    reValidateMode: "onChange",
-    resolver: loginResolver,
-  });
-  const [sent, setSent] = useState<SentLink | null>(null);
-  const mutation = useMutation({
-    mutationFn: (email: string) => sendMagicLink({ email, nextPath, showDevLink }),
-    onSuccess: (result, email) => {
-      setSent({ address: email, devUrl: result.devUrl });
-    },
-  });
+  const [step, setStep] = useState<LoginStep>("chooser");
 
   useLayoutEffect(() => {
-    const remembered = readSentLoginAddress();
-    if (!remembered) return;
-    setSent({ address: remembered, devUrl: null });
+    if (!readSentLoginAddress()) return;
+    setStep("magic");
   }, []);
 
-  function chooseDifferentEmail() {
-    forgetSentLoginAddress();
-    form.reset({ email: "" });
-    mutation.reset();
-    setSent(null);
+  if (step === "magic") {
+    return (
+      <LoginMagicLinkForm
+        nextPath={nextPath}
+        onBack={() => {
+          setStep("chooser");
+        }}
+        showDevLink={showDevLink}
+      />
+    );
   }
 
-  const email = sent?.address ?? form.watch("email");
-  const fieldError = form.formState.errors.email?.message;
-  const addressError = sent ? "" : typeof fieldError === "string" ? fieldError : "";
-  const message = mutation.error instanceof Error ? mutation.error.message : "";
-  const status = sent
-    ? "sent"
-    : mutation.isPending
-      ? "sending"
-      : mutation.isError
-        ? "error"
-        : "idle";
-
-  const announcement = loginAnnouncement({
-    status,
-    addressError,
-    failure: message,
-    address: email,
-  });
+  if (step === "password") {
+    return (
+      <LoginPasswordForm
+        nextPath={nextPath}
+        onBack={() => {
+          setStep("chooser");
+        }}
+      />
+    );
+  }
 
   return (
-    <>
-      {sent ? null : <LoginSignInCopy />}
-      {sent || !googleEnabled ? null : (
-        <LoginGoogle agentConnect={agentConnect} nextPath={nextPath} />
-      )}
-      <div aria-atomic="true" aria-live="polite" className="login-announcement">
-        {announcement}
-      </div>
-      {sent ? (
-        <LoginLinkSent
-          address={sent.address}
-          devUrl={sent.devUrl}
-          onChooseDifferentEmail={chooseDifferentEmail}
-        />
-      ) : (
-        <Form.Context
-          className="form-stack"
-          form={form}
-          onSubmit={(values) => {
-            mutation.mutate(values.email);
-          }}
-        >
-          {googleEnabled ? (
-            <Paragraph className="login-link-option">or continue with a magic link</Paragraph>
-          ) : null}
-          <Form.Input autoComplete="email" label="Email" name="email" type="email" />
-          <Button disabled={mutation.isPending} type="submit">
-            {mutation.isPending ? "Sending link…" : "Email me a link"}
-          </Button>
-          {mutation.isError && !addressError ? <LoginSendFailure happened={message} /> : null}
-        </Form.Context>
-      )}
-      {sent ? null : <LoginPassword nextPath={nextPath} />}
-    </>
+    <LoginChooser
+      agentConnect={agentConnect}
+      googleEnabled={googleEnabled}
+      nextPath={nextPath}
+      onMagicLink={() => {
+        setStep("magic");
+      }}
+      onPassword={() => {
+        setStep("password");
+      }}
+    />
   );
 }

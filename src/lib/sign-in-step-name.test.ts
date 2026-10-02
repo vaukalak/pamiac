@@ -8,7 +8,10 @@ const nav = readFileSync(
   new URL("../components/header/app-header-nav.tsx", import.meta.url),
   "utf8",
 );
-const form = readFileSync(new URL("../components/login-form.tsx", import.meta.url), "utf8");
+const form = readFileSync(
+  new URL("../components/login/login-magic-link-form.tsx", import.meta.url),
+  "utf8",
+);
 const locked = readFileSync(
   new URL("../components/document/locked-sign-in.tsx", import.meta.url),
   "utf8",

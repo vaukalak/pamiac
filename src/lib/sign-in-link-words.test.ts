@@ -8,7 +8,14 @@ const copy = readFileSync(
   new URL("../components/login/login-sign-in-copy.tsx", import.meta.url),
   "utf8",
 );
-const form = readFileSync(new URL("../components/login-form.tsx", import.meta.url), "utf8");
+const chooser = readFileSync(
+  new URL("../components/login/login-chooser.tsx", import.meta.url),
+  "utf8",
+);
+const magic = readFileSync(
+  new URL("../components/login/login-magic-link-form.tsx", import.meta.url),
+  "utf8",
+);
 const sent = readFileSync(
   new URL("../components/login/login-link-sent.tsx", import.meta.url),
   "utf8",
@@ -52,12 +59,15 @@ describe("sign-in link words", () => {
       /We email you a link\. If the address is new, opening the link\s+creates\s+the account\./,
     );
     expect(copy).not.toMatch(/magic/i);
+    expect(copy).not.toMatch(/There is no password/);
     expect(panel).not.toMatch(/magic/i);
-    expect(form).toMatch(/loginSendFailureSentence\(result\.error\.message\)/);
-    expect(form).toMatch(/or continue with a magic link/);
-    expect(form.replaceAll("or continue with a magic link", "")).not.toMatch(/magic link/i);
-    expect(form).not.toMatch(/Could not send the magic link/);
+    expect(magic).toMatch(/loginSendFailureSentence\(result\.error\.message\)/);
+    expect(chooser).toMatch(/Send Magic Link/);
+    expect(chooser).toMatch(/Or continue with email \/ password/);
+    expect(chooser).not.toMatch(/authClient\.signIn\.magicLink/);
+    expect(magic).toMatch(/authClient\.signIn\.magicLink\(/);
+    expect(magic).not.toMatch(/Could not send the magic link/);
     expect(sent).toMatch(/Development only: open the link/);
-    expect(form).toMatch(/mutation\.isPending \? "Sending link…" : "Email me a link"/);
+    expect(magic).toMatch(/mutation\.isPending \? "Sending link…" : "Email me a link"/);
   });
 });

@@ -2,7 +2,10 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 
-const form = readFileSync(new URL("../components/login-form.tsx", import.meta.url), "utf8");
+const form = readFileSync(
+  new URL("../components/login/login-magic-link-form.tsx", import.meta.url),
+  "utf8",
+);
 const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8");
 const member = readFileSync(
   new URL("../components/library/workspace-member-add.tsx", import.meta.url),

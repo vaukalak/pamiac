@@ -3,7 +3,14 @@ import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 
 const page = readFileSync(new URL("../app/login/page.tsx", import.meta.url), "utf8");
-const form = readFileSync(new URL("../components/login-form.tsx", import.meta.url), "utf8");
+const form = readFileSync(
+  new URL("../components/login/login-magic-link-form.tsx", import.meta.url),
+  "utf8",
+);
+const chooser = readFileSync(
+  new URL("../components/login/login-chooser.tsx", import.meta.url),
+  "utf8",
+);
 const sent = readFileSync(
   new URL("../components/login/login-link-sent.tsx", import.meta.url),
   "utf8",
@@ -73,6 +80,7 @@ describe("sent sign-in heading", () => {
     expect(sentBranch).toMatch(/<LoginLinkSent/);
     expect(sentBranch).not.toMatch(/LoginSignInCopy/);
     expect(sentBranch).not.toMatch(/Sign in or register/);
-    expect(form).toMatch(/sent \? null : <LoginSignInCopy \/>/);
+    expect(chooser).toMatch(/<LoginSignInCopy \/>/);
+    expect(form).not.toMatch(/LoginSignInCopy/);
   });
 });

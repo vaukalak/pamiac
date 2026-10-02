@@ -2,7 +2,10 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 
-const form = readFileSync(new URL("../components/login-form.tsx", import.meta.url), "utf8");
+const form = readFileSync(
+  new URL("../components/login/login-magic-link-form.tsx", import.meta.url),
+  "utf8",
+);
 const sent = readFileSync(
   new URL("../components/login/login-link-sent.tsx", import.meta.url),
   "utf8",
@@ -32,7 +35,11 @@ function slice(source: string, startMark: string, endMark: string) {
 
 describe("sign-in sent address", () => {
   it("repeats the submitted address and points recovery at the quiet action", () => {
-    const submit = slice(form, "async function sendMagicLink", "export function LoginForm");
+    const submit = slice(
+      form,
+      "async function sendMagicLink",
+      "export function LoginMagicLinkForm",
+    );
     const hint = slice(css, ".login-sent .hint {", "}");
 
     expect(submit).toMatch(/rememberSentLoginAddress\(email\)/);
