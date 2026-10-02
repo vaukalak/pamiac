@@ -19,6 +19,8 @@ Open http://localhost:3000. Without `RESEND_API_KEY`, the login page shows the m
 
 In production, set `BETTER_AUTH_URL` to the public origin (`https://pamiac.com`) and set `BETTER_AUTH_API_KEY` to the Infrastructure project key so the dashboard can verify that origin.
 
+Set `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` to the PostHog project token. Set `NEXT_PUBLIC_POSTHOG_HOST` for a non-US project; when it is unset the host is `https://us.i.posthog.com`. Leave the token empty to disable analytics.
+
 ## Sharing
 
 Each document lives at `/d/<id>`.

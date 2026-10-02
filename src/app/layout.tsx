@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, IBM_Plex_Mono, Literata, Manrope, Outfit } from "next/font/google";
+import { PostHogIdentify } from "@/components/posthog-identify";
 import { QueryProvider } from "@/components/query-provider";
 import { appBaseUrl } from "@/lib/config";
 import { appShareTarget, sharePageMetadata, sharePreviewFromDocument } from "@/lib/share-preview";
@@ -47,7 +48,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       suppressHydrationWarning
     >
       <body>
-        <QueryProvider>{children}</QueryProvider>
+        <QueryProvider>
+          <PostHogIdentify />
+          {children}
+        </QueryProvider>
       </body>
     </html>
   );

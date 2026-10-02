@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { authClient } from "@/lib/auth-client";
+import { posthogLogoutEffect } from "@/lib/posthog-identity";
+import { resetPostHog } from "@/lib/posthog-browser";
 
 interface Properties {
   email: string;
@@ -20,6 +22,7 @@ export function ProfileMenuPanel(props: Properties) {
 
   function logOut() {
     onClose();
+    if (posthogLogoutEffect() === "reset") resetPostHog();
     void authClient.signOut({
       fetchOptions: {
         onSuccess: () => {
