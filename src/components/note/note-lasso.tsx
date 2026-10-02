@@ -1,6 +1,6 @@
 import type { BlockNoteEditor } from "@blocknote/core";
 import { Selection } from "prosemirror-state";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useSyncExternalStore } from "react";
 import {
   collapseLeftoverSelection,
   dragPastThreshold,
@@ -15,6 +15,21 @@ import {
 
 interface Properties {
   editor: BlockNoteEditor<any, any, any>;
+  editable: boolean;
+}
+
+function subscribeMobileScreen(onStoreChange: () => void) {
+  const query = window.matchMedia("(max-width: 760px)");
+  query.addEventListener("change", onStoreChange);
+  return () => query.removeEventListener("change", onStoreChange);
+}
+
+function mobileScreenSnapshot() {
+  return window.matchMedia("(max-width: 760px)").matches;
+}
+
+function mobileScreenServerSnapshot() {
+  return false;
 }
 
 const HIGHLIGHT_CLASS = "note-lasso-highlight";
@@ -150,14 +165,20 @@ function clearDomSelection() {
 }
 
 export function NoteLasso(props: Properties) {
-  const { editor } = props;
+  const { editor, editable } = props;
+  const mobile = useSyncExternalStore(
+    subscribeMobileScreen,
+    mobileScreenSnapshot,
+    mobileScreenServerSnapshot,
+  );
+  const lassoEnabled = editable && !mobile;
   const anchorRef = useRef<HTMLDivElement>(null);
   const lassoRef = useRef<HTMLDivElement>(null);
   const highlightsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const editorRoot = anchorRef.current?.parentElement;
-    if (!editorRoot) return;
+    if (!editorRoot || !lassoEnabled) return;
     const root = editorRoot;
 
     let start: Point | null = null;
@@ -324,7 +345,7 @@ export function NoteLasso(props: Properties) {
       paintHighlight(root, highlightsRef.current, []);
       paintLasso(lassoRef.current, null);
     };
-  }, [editor]);
+  }, [editor, lassoEnabled]);
 
   return (
     <div ref={anchorRef} className="note-lasso-host">
