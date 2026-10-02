@@ -105,6 +105,17 @@ export function dragPastThreshold(
   return dx * dx + dy * dy > threshold * threshold;
 }
 
+export function cursorPlacement(
+  clientY: number,
+  inlineBottom: number | null,
+  blockTop: number,
+  blockBottom: number,
+): "start" | "end" {
+  if (inlineBottom != null) return clientY > inlineBottom ? "end" : "start";
+  const middle = blockTop + (blockBottom - blockTop) / 2;
+  return clientY >= middle ? "end" : "start";
+}
+
 export function lassoStartAllowed(start: LassoStart): boolean {
   if (!start.inEditor || start.button !== 0) return false;
   if (start.inInlineContent) return false;
