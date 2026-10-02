@@ -101,6 +101,19 @@ body {
   margin: 0;
   padding: 0;
 }
+
+body:has(.note-raw) {
+  background: Canvas;
+  color: CanvasText;
+  font-family: ui-monospace, monospace;
+}
+
+.note-raw {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: inherit;
+}
 html {
   scrollbar-color: var(--line) transparent;
   caret-color: var(--teal);

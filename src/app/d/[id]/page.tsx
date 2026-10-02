@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { DocumentScreen } from "@/components/document-screen";
 import { DocumentShell } from "@/components/document/document-shell";
+import { NoteRawView } from "@/components/document/note-raw-view";
 import { PrivateDocument } from "@/components/document/private-document";
 import { LockedDocument } from "@/components/locked-document";
 import { SetupScreen } from "@/components/setup-screen";
@@ -11,6 +12,8 @@ import { appSecret } from "@/lib/config";
 import { getDocumentBundle, isDocumentWorkspaceMember } from "@/lib/documents";
 import { documentSpaceLabel, type NamedWorkspace } from "@/lib/library-spaces";
 import { loadSharePreview } from "@/lib/load-share-preview";
+import { noteExportMarkdown } from "@/lib/note-file";
+import { isRawNoteView } from "@/lib/note-raw";
 import { unlockCookieName, unlockMatches } from "@/lib/passwords";
 import { documentShareTarget, sharePageMetadata } from "@/lib/share-preview";
 import { getLibrarySession } from "@/lib/session";
@@ -20,6 +23,7 @@ export const dynamic = "force-dynamic";
 
 interface Properties {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ view?: string | string[] }>;
 }
 
 export async function generateMetadata(props: Properties): Promise<Metadata> {
@@ -29,8 +33,9 @@ export async function generateMetadata(props: Properties): Promise<Metadata> {
 }
 
 export default async function DocumentPage(props: Properties) {
-  const { params } = props;
+  const { params, searchParams } = props;
   const { id } = await params;
+  const query = await searchParams;
   if (!process.env.DATABASE_URL) return <SetupScreen />;
   const result = await getLibrarySession();
   if (result.status === "error") return <SetupScreen detail={result.message} />;
@@ -77,6 +82,13 @@ export default async function DocumentPage(props: Properties) {
   }
 
   const documentType = bundle.document.type === "diagram" ? "diagram" : "note";
+  if (
+    isRawNoteView(query.view) &&
+    documentType === "note" &&
+    (access.level === "view" || access.level === "edit")
+  ) {
+    return <NoteRawView markdown={noteExportMarkdown(bundle.document.content)} />;
+  }
   const spaceName = user ? documentSpaceLabel(bundle.document.workspaceId, workspaces) : null;
   const body =
     access.level === "none" ? (
