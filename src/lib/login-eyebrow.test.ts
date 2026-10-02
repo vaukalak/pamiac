@@ -29,7 +29,7 @@ describe("login eyebrow", () => {
     expect(copy).toMatch(/<PageTitle title="Sign in or register" \/>/);
     expect(copy).not.toMatch(/eyebrow/);
     expect(copy).toMatch(
-      /We email you a link\. There is no password\. If the address is new, opening the link\s+creates\s+the account\./,
+      /We email you a link\. If the address is new, opening the link\s+creates\s+the account\./,
     );
     expect(form).toMatch(/sent \? null : <LoginSignInCopy \/>/);
     expect(login).toMatch(

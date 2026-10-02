@@ -1,0 +1,123 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { describe, it } from "node:test";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const root = join(dirname(fileURLToPath(import.meta.url)), "../..");
+
+function read(path: string) {
+  return readFileSync(join(root, path), "utf8");
+}
+
+function expect(actual: string) {
+  return {
+    toMatch(pattern: RegExp) {
+      assert.match(actual, pattern);
+    },
+    not: {
+      toMatch(pattern: RegExp) {
+        assert.doesNotMatch(actual, pattern);
+      },
+    },
+  };
+}
+
+function slice(source: string, startMark: string, endMark: string) {
+  const start = source.indexOf(startMark);
+  assert.ok(start >= 0, startMark);
+  const end = source.indexOf(endMark, start + startMark.length);
+  assert.ok(end > start, endMark);
+  return source.slice(start, end);
+}
+
+describe("email and password sign-in", () => {
+  it("keeps the password control on the idle login form and off the sent state", () => {
+    const form = read("src/components/login-form.tsx");
+    const sentBranch = slice(form, "sent ? (", ") : (");
+    const idleStart = form.indexOf(") : (");
+    const password = form.indexOf("<LoginPassword nextPath={nextPath} />");
+
+    expect(sentBranch).toMatch(/<LoginLinkSent/);
+    expect(sentBranch).not.toMatch(/LoginPassword/);
+    expect(form).toMatch(/\{sent \? null : <LoginPassword nextPath=\{nextPath\} \/>\}/);
+    assert.ok(password > idleStart);
+  });
+
+  it("reveals a validated password form that signs in through better-auth", () => {
+    const toggle = read("src/components/login/login-password.tsx");
+    const fields = read("src/components/login/login-password-form.tsx");
+
+    expect(toggle).toMatch(/className="ghost"/);
+    expect(toggle).toMatch(/type="button"/);
+    expect(toggle).toMatch(/expanded=\{open\}/);
+    expect(toggle).toMatch(/Or continue with email and password/);
+    expect(toggle).toMatch(/\{open \? <LoginPasswordForm nextPath=\{nextPath\} \/> : null\}/);
+    expect(toggle).not.toMatch(/<input|<select|signIn\.email|useMutation/);
+
+    expect(fields).toMatch(/"Enter an email address\."/);
+    expect(fields).toMatch(/"That address needs an @\."/);
+    expect(fields).toMatch(/"Enter a password\."/);
+    expect(fields).toMatch(/authClient\.signIn\.email\(\{/);
+    expect(fields).toMatch(/callbackURL: nextPath/);
+    expect(fields).toMatch(/"That email or password did not match\."/);
+    expect(fields).toMatch(/loginSendFailureSentence\(/);
+    expect(fields).not.toMatch(/We could not send the link|magic link/i);
+    expect(fields).toMatch(
+      /<Form\.Input[^>]*autoComplete="email"[^>]*label="Email"[^>]*type="email"/s,
+    );
+    expect(fields).toMatch(
+      /<Form\.Input[^>]*autoComplete="current-password"[^>]*label="Password"[^>]*type="password"/s,
+    );
+    expect(fields).toMatch(/disabled=\{mutation\.isPending\}/);
+    expect(fields).toMatch(/>\s*Submit\s*</);
+    expect(fields).toMatch(/<LoginSendFailure happened=\{message\} \/>/);
+    expect(fields).not.toMatch(/useState|<input|<select|signUp/);
+  });
+
+  it("adds the same password option under Google connect, including when Google is absent", () => {
+    const signIn = read("src/components/connect/google-connect-sign-in.tsx");
+
+    expect(signIn).toMatch(/Google sign-in is not set up\./);
+    expect(signIn).toMatch(/<LoginGoogle agentConnect nextPath=\{nextPath\} \/>/);
+    expect(signIn).toMatch(/<LoginPassword nextPath=\{nextPath\} \/>/);
+    expect(signIn).toMatch(/const nextPath = googleConnectPath\(userCode\)/);
+    expect(signIn).not.toMatch(/magicLink|LoginForm|<input|signUp/);
+  });
+
+  it("enables password sign-in without a public sign-up", () => {
+    const auth = read("src/lib/auth.ts");
+    const client = read("src/lib/auth-client.ts");
+    const copy = read("src/components/login/login-sign-in-copy.tsx");
+
+    expect(auth).toMatch(
+      /emailAndPassword:\s*\{\s*enabled:\s*true,\s*disableSignUp:\s*true,\s*\}/s,
+    );
+    expect(client).not.toMatch(/signUp\.email/);
+    expect(copy).toMatch(/title="Sign in or register"/);
+    expect(copy).toMatch(
+      /We email you a link\. If the address is new, opening the link creates the account\./,
+    );
+    expect(copy).not.toMatch(/There is no password/);
+  });
+
+  it("seeds the review user with a hash and does not replace an existing credential", () => {
+    const sql = read("drizzle/0007_openai-review-user.sql");
+    const journal = read("drizzle/meta/_journal.json");
+
+    expect(sql).toMatch(/ON CONFLICT \("email"\) DO NOTHING/);
+    expect(sql).toMatch(/'user_openai_review'/);
+    expect(sql).toMatch(/'OpenAI Review'/);
+    expect(sql).toMatch(/'openaireview@pamiac.com'/);
+    expect(sql).toMatch(/'account_openai_review'/);
+    expect(sql).toMatch(/'credential'/);
+    expect(sql).toMatch(/"user"\."id"/);
+    expect(sql).toMatch(/provider_id" = 'credential'/);
+    expect(sql).toMatch(/NOT EXISTS/);
+    expect(sql).not.toMatch(/AAAaaa1!|ON CONFLICT \("id"\) DO UPDATE|password" =/);
+    expect(sql).toMatch(/[0-9a-f]{32}:[0-9a-f]{128}/);
+    expect(journal).toMatch(/"idx": 7/);
+    expect(journal).toMatch(/"tag": "0007_openai-review-user"/);
+    expect(journal).toMatch(/"when": 1790810600000/);
+  });
+});

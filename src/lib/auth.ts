@@ -36,6 +36,10 @@ function buildAuth() {
         trustedProviders: ["google"],
       },
     },
+    emailAndPassword: {
+      enabled: true,
+      disableSignUp: true,
+    },
     socialProviders: googleSocialProviders(),
     database: drizzleAdapter(getDb(), {
       provider: "pg",

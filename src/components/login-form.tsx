@@ -4,6 +4,7 @@ import { useLayoutEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useForm, type FieldErrors, type Resolver } from "react-hook-form";
 import { LoginGoogle } from "@/components/login/login-google";
+import { LoginPassword } from "@/components/login/login-password";
 import { LoginLinkSent } from "@/components/login/login-link-sent";
 import { LoginSendFailure } from "@/components/login/login-send-failure";
 import { LoginSignInCopy } from "@/components/login/login-sign-in-copy";
@@ -158,6 +159,7 @@ export function LoginForm(props: Properties) {
           {mutation.isError && !addressError ? <LoginSendFailure happened={message} /> : null}
         </Form.Context>
       )}
+      {sent ? null : <LoginPassword nextPath={nextPath} />}
     </>
   );
 }
