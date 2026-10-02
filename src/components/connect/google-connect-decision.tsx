@@ -7,6 +7,7 @@ import { PageTitle } from "@/ui/PageTitle";
 import { Paragraph } from "@/ui/Paragraph";
 
 interface Properties {
+  agentName: string;
   userCode: string;
 }
 
@@ -23,7 +24,7 @@ async function sendDecision(userCode: string, decision: "approve" | "deny") {
 }
 
 export function GoogleConnectDecision(props: Properties) {
-  const { userCode } = props;
+  const { agentName, userCode } = props;
   const mutation = useMutation({
     mutationFn: (decision: "approve" | "deny") => sendDecision(userCode, decision),
   });
@@ -31,7 +32,7 @@ export function GoogleConnectDecision(props: Properties) {
   const settled = mutation.isPending || mutation.isSuccess;
   const outcome =
     mutation.isSuccess && mutation.variables === "approve"
-      ? "Connected. Return to the agent."
+      ? `${agentName} can continue.`
       : "Denied. The agent will stop.";
 
   return (
@@ -40,7 +41,7 @@ export function GoogleConnectDecision(props: Properties) {
       <Paragraph>Connect lets this agent search, read, and edit your notes and diagrams.</Paragraph>
       <Paragraph>{userCode ? `User code ${userCode}` : "The link has no user code."}</Paragraph>
       <Button disabled={settled} onClick={() => mutation.mutate("approve")} type="button">
-        Connect
+        {`Return to ${agentName}`}
       </Button>
       <Button
         className="ghost"

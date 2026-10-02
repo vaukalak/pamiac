@@ -169,7 +169,8 @@ describe("google agent login wiring", () => {
     assert.match(page, /getSession\(\)/);
     assert.match(page, /<Page /);
     assert.match(page, /<Section /);
-    assert.match(page, /<GoogleConnectDecision userCode=\{userCode\} \/>/);
+    assert.match(page, /findGoogleLoginAgentName\(userCode\)/);
+    assert.match(page, /<GoogleConnectDecision agentName=\{agentName\} userCode=\{userCode\} \/>/);
     assert.match(page, /<GoogleConnectSignIn userCode=\{userCode\} \/>/);
     assert.doesNotMatch(page, /LoginForm|magicLink|<main/);
 
@@ -189,7 +190,8 @@ describe("google agent login wiring", () => {
       /Connect lets this agent search, read, and edit your notes and diagrams/,
     );
     assert.match(decision, /User code/);
-    assert.match(decision, />\s*Connect\s*</);
+    assert.match(decision, /Return to \$\{agentName\}/);
+    assert.doesNotMatch(decision, />\s*Connect\s*</);
     assert.match(decision, />\s*Deny\s*</);
     assert.match(decision, /<Alert>/);
     assert.match(decision, /<Button/);
