@@ -100,6 +100,33 @@ export async function sendWorkspaceInvite({
   });
 }
 
+export async function sendDocumentPermissionRequest({
+  email,
+  requesterEmail,
+  documentTitle,
+  url,
+}: {
+  email: string;
+  requesterEmail: string;
+  documentTitle: string;
+  url: string;
+}) {
+  const title = documentTitle.replace(/[\r\n]+/g, " ").trim() || "a private document";
+  const who = requesterEmail.replace(/[\r\n]+/g, " ").trim();
+  const safeTitle = escapeHtml(title);
+  const safeWho = escapeHtml(who);
+  const safeUrl = escapeHtml(url);
+  await deliverEmail({
+    email,
+    url,
+    subject: `Permission request for ${title}`,
+    html: `<p>${safeWho} asked to open “${safeTitle}”.</p><p><a href="${safeUrl}">Open the document</a></p>`,
+    missingKey: "RESEND_API_KEY is required to send permission requests",
+    log: `Permission request for ${email}: ${url}`,
+    failure: "Could not send the permission request email",
+  });
+}
+
 export async function sendSupportRequest(input: { email: string; message: string }) {
   const request = supportRequestSchema.parse(input);
   const safeEmail = escapeHtml(request.email);

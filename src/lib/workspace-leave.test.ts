@@ -157,7 +157,12 @@ describe("member leaving a workspace", () => {
     assert.match(read, /getEditableDocument\(user\.id, id\)/);
     assert.match(read, /Document not found/);
     assert.match(page, /isDocumentWorkspaceMember\(user\.id, bundle\.document\.workspaceId\)/);
-    assert.match(page, /if \(access\.level === "none"\) notFound\(\)/);
+    assert.match(page, /if \(!bundle\) notFound\(\)/);
+    assert.match(
+      page,
+      /<PrivateDocument id=\{id\} signedIn=\{Boolean\(user\)\} type=\{documentType\} \/>/,
+    );
+    assert.doesNotMatch(page, /if \(access\.level === "none"\) notFound\(\)/);
   });
 
   it("keeps a former editor out of the workspace library and lets them post leave", () => {

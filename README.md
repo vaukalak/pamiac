@@ -34,7 +34,7 @@ Owners edit. Shared visitors view.
 
 ## Agents
 
-Create a key under API keys and set it as `PAMIAC_TOKEN` in the agent environment. The `/pamiac` skill is `agent/SKILL.md`. The skill reads `PAMIAC_TOKEN` from the agent environment. When that variable is missing, the agent sends the user to a connect link, the user signs in and chooses Return to the agent name, and the key is claimed once by the agent. The token can list, read, create, and update that user's notes and diagrams, and search them by embedding. The same token in a `pamiac_token` cookie opens `/workspace` in a browser.
+Create a key under API keys and set it as `PAMIAC_TOKEN` in the agent environment. The `/pamiac` skill is `agent/SKILL.md`. The skill reads `PAMIAC_TOKEN` from the agent environment. Library calls go through the pamiac MCP server at https://pamiac.com/api/mcp. Cursor config is `.cursor/mcp.json`, which sends Authorization: Bearer ${env:PAMIAC_TOKEN}. Allowlist the pamiac tools so Cursor does not ask on every call. The token can list, read, create, and update that user's notes and diagrams, and search them by embedding. The same token in a `pamiac_token` cookie opens `/workspace` in a browser. An agent without `PAMIAC_TOKEN` follows the skill and offers Google sign-in.
 
 ## ChatGPT plugin
 

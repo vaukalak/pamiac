@@ -152,6 +152,26 @@ export const documentShares = pgTable(
   (table) => [uniqueIndex("document_share_email_idx").on(table.documentId, table.email)],
 );
 
+export const documentPermissionRequests = pgTable(
+  "document_permission_request",
+  {
+    id: text("id").primaryKey(),
+    documentId: text("document_id")
+      .notNull()
+      .references(() => documents.id, { onDelete: "cascade" }),
+    requesterId: text("requester_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("document_permission_request_document_requester_idx").on(
+      table.documentId,
+      table.requesterId,
+    ),
+  ],
+);
+
 export const documentEmbeddings = pgTable(
   "document_embedding",
   {
@@ -187,20 +207,17 @@ export const agentTokens = pgTable(
   (table) => [index("agent_token_user_idx").on(table.userId)],
 );
 
-export const agentConnect = pgTable(
-  "agent_connect",
-  {
-    id: text("id").primaryKey(),
-    agentName: text("agent_name").notNull(),
-    userId: text("user_id").references(() => user.id, { onDelete: "cascade" }),
-    tokenId: text("token_id").references(() => agentTokens.id, { onDelete: "cascade" }),
-    secret: text("secret"),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
-    claimedAt: timestamp("claimed_at", { withTimezone: true }),
-  },
-  (table) => [index("agent_connect_expires_at_idx").on(table.expiresAt)],
-);
+export const agentGoogleLogin = pgTable("agent_google_login", {
+  id: text("id").primaryKey(),
+  deviceCodeHash: text("device_code_hash").notNull().unique(),
+  userCodeHash: text("user_code_hash").notNull().unique(),
+  agentName: text("agent_name").notNull(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  deniedAt: timestamp("denied_at", { withTimezone: true }),
+  userId: text("user_id").references(() => user.id, { onDelete: "cascade" }),
+  tokenSecret: text("token_secret"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
 
 const stringList = (name: string) => text(name).array();
 

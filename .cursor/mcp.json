@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "pamiac": {
+      "url": "https://pamiac.com/api/mcp",
+      "headers": {
+        "Authorization": "Bearer ${env:PAMIAC_TOKEN}"
+      }
+    }
+  }
+}

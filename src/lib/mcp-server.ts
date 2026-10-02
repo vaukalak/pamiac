@@ -5,9 +5,11 @@ import { getDb } from "@/db";
 import { user } from "@/db/schema";
 import { MAX_CONTENT_LENGTH } from "@/lib/config";
 import {
+  agentCreateWorkspace,
   createDocument,
-  getOwnedDocument,
-  listDocuments,
+  getAgentDocument,
+  listAgentDocuments,
+  listAgentWorkspaces,
   presentDocument,
   searchAccountDocuments,
   searchDocuments,
@@ -74,6 +76,12 @@ const listInput = z
   .strict();
 
 const readInput = z.object({ id: documentId }).strict();
+
+const workspaceOutput = z
+  .object({
+    workspaces: z.array(z.object({ id: z.string(), name: z.string() }).strict()),
+  })
+  .strict();
 
 const createNoteInput = z
   .object({
@@ -169,8 +177,8 @@ async function loadUser(userId: string) {
   return row ?? null;
 }
 
-async function readableOwned(userId: string, id: string, origin: string) {
-  const document = await getOwnedDocument(userId, id);
+async function readableDocument(userId: string, id: string, origin: string, scope: AgentScope) {
+  const document = await getAgentDocument(userId, id, scope);
   if (!document) return null;
   return presentReadableDocument(presentDocument(document, origin));
 }
@@ -231,6 +239,26 @@ export function createPamiacMcpServer(
   );
 
   server.registerTool(
+    "list_workspaces",
+    {
+      description:
+        "List the workspaces this connection can reach. Call it when the user does not name a workspace.",
+      inputSchema: z.object({}).strict(),
+      outputSchema: workspaceOutput,
+      annotations: readAnnotations,
+    },
+    async () => {
+      if (!userId) return errorResult("Sign-in required");
+      try {
+        const workspaces = await listAgentWorkspaces(userId, scope);
+        return textResult({ workspaces });
+      } catch (error) {
+        return errorResult(failureMessage(error));
+      }
+    },
+  );
+
+  server.registerTool(
     "list_documents",
     {
       description: "List this account's notes and diagrams.",
@@ -241,7 +269,7 @@ export function createPamiacMcpServer(
     async ({ type }) => {
       if (!userId) return errorResult("Sign-in required");
       try {
-        const rows = await listDocuments(userId);
+        const rows = await listAgentDocuments(userId, scope);
         const documents = rows
           .filter((row) => !type || row.type === type)
           .map((row) => presentListedDocument(row, origin));
@@ -262,7 +290,7 @@ export function createPamiacMcpServer(
     async ({ id }) => {
       if (!userId) return errorResult("Sign-in required");
       try {
-        const document = await readableOwned(userId, id, origin);
+        const document = await readableDocument(userId, id, origin, scope);
         if (!document) return errorResult("Document not found");
         return textResult(document);
       } catch (error) {
@@ -281,8 +309,9 @@ export function createPamiacMcpServer(
     async ({ title, content }) => {
       if (!userId) return errorResult("Sign-in required");
       try {
-        const created = await createDocument(userId, "note", title);
-        const document = await updateDocumentContent(userId, created.id, { content });
+        const workspaceId = await agentCreateWorkspace(userId, scope);
+        const created = await createDocument(userId, "note", title, workspaceId);
+        const document = await updateDocumentContent(userId, created.id, { content }, scope);
         return textResult(presentReadableDocument(presentDocument(document, origin)));
       } catch (error) {
         return errorResult(failureMessage(error));
@@ -301,10 +330,14 @@ export function createPamiacMcpServer(
     async ({ title, nodes, relations }) => {
       if (!userId) return errorResult("Sign-in required");
       try {
-        const created = await createDocument(userId, "diagram", title);
-        const document = await updateDocumentContent(userId, created.id, {
-          content: { nodes, relations },
-        });
+        const workspaceId = await agentCreateWorkspace(userId, scope);
+        const created = await createDocument(userId, "diagram", title, workspaceId);
+        const document = await updateDocumentContent(
+          userId,
+          created.id,
+          { content: { nodes, relations } },
+          scope,
+        );
         return textResult(presentReadableDocument(presentDocument(document, origin)));
       } catch (error) {
         return errorResult(failureMessage(error));
@@ -323,11 +356,16 @@ export function createPamiacMcpServer(
     async ({ id, title, content, version }) => {
       if (!userId) return errorResult("Sign-in required");
       try {
-        const document = await updateDocumentContent(userId, id, {
-          title,
-          content,
-          expectedVersion: version,
-        });
+        const document = await updateDocumentContent(
+          userId,
+          id,
+          {
+            title,
+            content,
+            expectedVersion: version,
+          },
+          scope,
+        );
         return textResult(presentReadableDocument(presentDocument(document, origin)));
       } catch (error) {
         return errorResult(failureMessage(error));
@@ -345,11 +383,16 @@ export function createPamiacMcpServer(
     async ({ id, title, version, nodes, deleteNodes, relations, deleteRelations }) => {
       if (!userId) return errorResult("Sign-in required");
       try {
-        const document = await updateDocumentContent(userId, id, {
-          title,
-          patch: { nodes, deleteNodes, relations, deleteRelations },
-          expectedVersion: version,
-        });
+        const document = await updateDocumentContent(
+          userId,
+          id,
+          {
+            title,
+            patch: { nodes, deleteNodes, relations, deleteRelations },
+            expectedVersion: version,
+          },
+          scope,
+        );
         return textResult(presentReadableDocument(presentDocument(document, origin)));
       } catch (error) {
         return errorResult(failureMessage(error));
