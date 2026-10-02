@@ -25,6 +25,19 @@ Website: https://pamiac.com
 
 Support: https://pamiac.com
 
+Brand color: #b9f542
+
+Brand color, dark: #8ed42a
+
+Icons, square PNG and SVG, at least 48×48:
+
+- `chatgpt/assets/logo.png` — directory logo on a light surface. Dark tile, lime note behind a brighter diagram card.
+- `chatgpt/assets/logo-dark.png` — directory logo on a dark surface. Lime tile, ink note and diagram.
+- `chatgpt/assets/icon.png` — composer icon. Ink cards on a transparent ground.
+- `chatgpt/assets/icon-dark.png` — composer icon for a dark composer. Lime cards on a transparent ground.
+
+The site favicon is the same mark: `src/app/icon.svg`, with `src/app/apple-icon.png` for Apple touch.
+
 Privacy policy: https://pamiac.com/privacy
 
 Terms: https://pamiac.com/terms
