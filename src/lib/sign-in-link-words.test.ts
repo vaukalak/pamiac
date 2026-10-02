@@ -54,7 +54,8 @@ describe("sign-in link words", () => {
     expect(copy).not.toMatch(/magic/i);
     expect(panel).not.toMatch(/magic/i);
     expect(form).toMatch(/loginSendFailureSentence\(result\.error\.message\)/);
-    expect(form).not.toMatch(/magic link/i);
+    expect(form).toMatch(/or continue with a magic link/);
+    expect(form.replaceAll("or continue with a magic link", "")).not.toMatch(/magic link/i);
     expect(form).not.toMatch(/Could not send the magic link/);
     expect(sent).toMatch(/Development only: open the link/);
     expect(form).toMatch(/mutation\.isPending \? "Sending link…" : "Email me a link"/);

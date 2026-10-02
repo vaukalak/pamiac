@@ -17,6 +17,7 @@ import {
 } from "@/lib/login-sent-memory";
 import { Button } from "@/ui/Button";
 import { Form } from "@/ui/Form";
+import { Paragraph } from "@/ui/Paragraph";
 
 interface Properties {
   agentConnect: boolean;
@@ -147,6 +148,9 @@ export function LoginForm(props: Properties) {
             mutation.mutate(values.email);
           }}
         >
+          {googleEnabled ? (
+            <Paragraph className="login-link-option">or continue with a magic link</Paragraph>
+          ) : null}
           <Form.Input autoComplete="email" label="Email" name="email" type="email" />
           <Button disabled={mutation.isPending} type="submit">
             {mutation.isPending ? "Sending link…" : "Email me a link"}

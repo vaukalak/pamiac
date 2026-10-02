@@ -61,6 +61,12 @@ export function LoginGoogle(props: Properties) {
         {announcement}
       </div>
       <Button disabled={mutation.isPending} onClick={authorize} type="button">
+        <svg aria-hidden="true" focusable="false" height="18" viewBox="0 0 48 48" width="18">
+          <path
+            d="M43.6 20.5H24.5v7.1h11c-1 4.6-5 8-11 8-6.4 0-11.6-5.2-11.6-11.6S18.1 12.4 24.5 12.4c2.9 0 5.5 1.1 7.5 2.8l5.1-5.1C33.6 6.8 29.3 5 24.5 5 14 5 5.5 13.5 5.5 24S14 43 24.5 43c10.1 0 17.5-7.1 17.5-17.1 0-1.2-.1-2.3-.4-3.4z"
+            fill="currentColor"
+          />
+        </svg>
         {agentConnect ? "Authorize with Google" : "Continue with Google"}
       </Button>
       {mutation.isError ? <LoginSendFailure happened={message} /> : null}
