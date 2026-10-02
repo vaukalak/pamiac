@@ -1,8 +1,9 @@
 import type { BlockNoteEditor } from "@blocknote/core";
-import { Selection } from "prosemirror-state";
+import { Selection, TextSelection } from "prosemirror-state";
 import { useEffect, useRef } from "react";
 import {
   collapseLeftoverSelection,
+  cursorPlacement,
   dragPastThreshold,
   lassoSelection,
   lassoStartAllowed,
@@ -133,6 +134,65 @@ function paintLasso(node: HTMLDivElement | null, rect: Rect | null) {
   node.style.height = `${rect.bottom - rect.top}px`;
 }
 
+function blockInlineBottom(block: HTMLElement) {
+  for (const child of block.children) {
+    if (!(child instanceof HTMLElement) || !child.classList.contains("bn-block-content")) continue;
+    const inline = child.querySelector(".bn-inline-content");
+    if (!(inline instanceof HTMLElement)) return null;
+    return inline.getBoundingClientRect().bottom;
+  }
+  return null;
+}
+
+function caretPlacementForBlock(block: HTMLElement, clientY: number) {
+  const rect = block.getBoundingClientRect();
+  return cursorPlacement(clientY, blockInlineBottom(block), rect.top, rect.bottom);
+}
+
+function placeCollapsedBlockCaret(
+  view: BlockNoteEditor<any, any, any>["prosemirrorView"],
+  blockId: string,
+  placement: "start" | "end",
+) {
+  if (!view) return;
+  let target: number | null = null;
+  view.state.doc.descendants((node, pos) => {
+    if (target !== null) return false;
+    if (node.attrs.id !== blockId) return undefined;
+    target = placement === "end" ? pos + node.nodeSize - 1 : pos + 1;
+    return false;
+  });
+  if (target === null) return;
+  const position = Math.min(Math.max(target, 0), view.state.doc.content.size);
+  const $pos = view.state.doc.resolve(position);
+  let selection: Selection;
+  try {
+    selection = TextSelection.create(view.state.doc, position);
+  } catch {
+    const near = Selection.near($pos, placement === "end" ? -1 : 1);
+    if (!near.empty) return;
+    selection = near;
+  }
+  view.dispatch(view.state.tr.setSelection(selection));
+  view.focus();
+}
+
+function focusBlockCaret(
+  editor: BlockNoteEditor<any, any, any>,
+  blockId: string,
+  placement: "start" | "end",
+) {
+  const cursor = editor as BlockNoteEditor<any, any, any> & {
+    setTextCursorPosition?: (id: string, place: "start" | "end") => void;
+  };
+  if (typeof cursor.setTextCursorPosition === "function") {
+    cursor.setTextCursorPosition(blockId, placement);
+    editor.focus();
+    return;
+  }
+  placeCollapsedBlockCaret(editor.prosemirrorView, blockId, placement);
+}
+
 function collapseEditorSelection(editor: BlockNoteEditor<any, any, any>) {
   if (collapsingSelection) return;
   collapsingSelection = true;
@@ -168,6 +228,8 @@ export function NoteLasso(props: Properties) {
     let highlightedIds: readonly string[] = [];
     let downInEditor = false;
     let armed = false;
+    let caretBlockId: string | null = null;
+    let caretPlacement: "start" | "end" = "start";
     let frame = 0;
     let scrollFrame = 0;
     let pendingPoint: Point | null = null;
@@ -196,6 +258,7 @@ export function NoteLasso(props: Properties) {
       start = null;
       active = false;
       armed = false;
+      caretBlockId = null;
       pointerId = null;
       root.classList.remove("note-lasso-dragging");
       paintLasso(lassoRef.current, null);
@@ -203,14 +266,15 @@ export function NoteLasso(props: Properties) {
 
     function onPointerDown(event: PointerEvent) {
       downInEditor = root.contains(event.target as Node);
+      caretBlockId = null;
       if (start || !lassoStartAllowed(lassoStartFromPointer(event, root))) return;
-      event.preventDefault();
-      event.stopPropagation();
-      armed = true;
       start = { x: event.clientX, y: event.clientY };
       active = false;
       pointerId = event.pointerId;
-      root.classList.add("note-lasso-dragging");
+      const block = eventElement(event.target)?.closest(".bn-block[data-id]");
+      if (!(block instanceof HTMLElement) || !block.dataset.id) return;
+      caretBlockId = block.dataset.id;
+      caretPlacement = caretPlacementForBlock(block, event.clientY);
     }
 
     function onPointerMove(event: PointerEvent) {
@@ -219,6 +283,7 @@ export function NoteLasso(props: Properties) {
       if (!active && !dragPastThreshold(start, current)) return;
       if (!active) {
         active = true;
+        armed = true;
         root.classList.add("note-lasso-dragging");
         collapseEditorSelection(editor);
         clearDomSelection();
@@ -248,8 +313,9 @@ export function NoteLasso(props: Properties) {
           const selection = lassoSelection(blockBoxes(root), next);
           if (selection) committedIds = selection;
           show(selection ?? committedIds);
-        } else if (editorPress) {
-          clearHighlight();
+        } else {
+          if (editorPress) clearHighlight();
+          if (caretBlockId) focusBlockCaret(editor, caretBlockId, caretPlacement);
         }
         clearDrag();
         return;

@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import {
   collapseLeftoverSelection,
+  cursorPlacement,
   dragPastThreshold,
   lassoSelection,
   lassoStartAllowed,
@@ -243,6 +244,15 @@ describe("note lasso geometry", () => {
     assert.equal(dragPastThreshold(start, { x: 16, y: 16 }), true);
   });
 
+  it("places the caret at the end below inline content and in the lower half of a contentless block", () => {
+    assert.equal(cursorPlacement(80, 60, 20, 100), "end");
+    assert.equal(cursorPlacement(60, 60, 20, 100), "start");
+    assert.equal(cursorPlacement(40, 60, 20, 100), "start");
+    assert.equal(cursorPlacement(70, null, 20, 100), "end");
+    assert.equal(cursorPlacement(60, null, 20, 100), "end");
+    assert.equal(cursorPlacement(59, null, 20, 100), "start");
+  });
+
   it("allows a left-button press on editor chrome outside text and controls", () => {
     assert.equal(lassoStartAllowed(allowedStart()), true);
   });
@@ -273,9 +283,10 @@ describe("note lasso wiring", () => {
     const move = gesture.slice(gesture.indexOf("function onPointerMove"));
     const beforePrevent = move.slice(0, move.indexOf("event.preventDefault()"));
     assert.match(beforePrevent, /dragPastThreshold/);
-    assert.equal(gesture.includes("setSelection"), false);
-    assert.equal(gesture.includes("TextSelection"), false);
-    assert.equal(gesture.includes("NodeSelection"), false);
+    assert.equal(move.includes("setSelection"), false);
+    assert.equal(move.includes("TextSelection"), false);
+    assert.equal(move.includes("NodeSelection"), false);
+    assert.match(gesture, /setTextCursorPosition\(blockId, placement\)/);
     assert.match(gesture, /note-lasso-highlight/);
     assert.match(gesture, /lassoSelection/);
     assert.match(gesture, /collapseLeftoverSelection/);
@@ -379,8 +390,12 @@ describe("note lasso wiring", () => {
       gesture.indexOf("function show"),
       gesture.indexOf("function cancelLassoFrame"),
     );
-    const beforePrevent = down.slice(0, down.indexOf("event.preventDefault()"));
-    assert.match(beforePrevent, /lassoStartAllowed/);
+    assert.equal(down.includes("preventDefault"), false);
+    assert.equal(down.includes("stopPropagation"), false);
+    assert.equal(down.includes("note-lasso-dragging"), false);
+    assert.match(down, /lassoStartAllowed/);
+    const beforePrevent = move.slice(0, move.indexOf("event.preventDefault()"));
+    assert.match(beforePrevent, /dragPastThreshold/);
     assert.match(move, /collapseEditorSelection\(editor\)/);
     assert.match(move, /requestAnimationFrame/);
     assert.equal(show.includes("collapse"), false);
@@ -461,8 +476,11 @@ describe("note lasso wiring", () => {
     assert.equal(css.includes(".note-lasso-block:not(:has(> .bn-block-content))"), false);
     const down = gesture.slice(gesture.indexOf("function onPointerDown"));
     const downBody = down.slice(0, down.indexOf("function onPointerMove"));
-    assert.match(downBody, /classList\.add\("note-lasso-dragging"\)/);
-    assert.match(downBody, /event\.stopPropagation\(\)/);
+    assert.equal(downBody.includes("note-lasso-dragging"), false);
+    assert.equal(downBody.includes("stopPropagation"), false);
+    assert.equal(downBody.includes("preventDefault"), false);
+    assert.match(activation, /classList\.add\("note-lasso-dragging"\)/);
+    assert.match(activation, /armed = true/);
     assert.match(gesture, /classList\.remove\("note-lasso-dragging"\)/);
   });
 
@@ -477,7 +495,10 @@ describe("note lasso wiring", () => {
       gesture.indexOf("function onPointerDown"),
       gesture.indexOf("function onPointerMove"),
     );
-    const beforePrevent = down.slice(0, down.indexOf("event.preventDefault()"));
+    assert.equal(down.includes("preventDefault"), false);
+    assert.equal(down.includes("stopPropagation"), false);
+    assert.match(down, /if \(start \|\| !lassoStartAllowed/);
+    assert.match(down, /return/);
     const change = gesture.slice(
       gesture.indexOf("function onDocumentChange"),
       gesture.indexOf("const stopChange"),
@@ -486,9 +507,6 @@ describe("note lasso wiring", () => {
     assert.match(frame, /show\(lassoSelection\(blockBoxes\(root\), next\) \?\? \[\]\)/);
     assert.equal(frame.includes("clearDomSelection"), false);
     assert.equal(frame.includes("removeAllRanges"), false);
-    assert.match(beforePrevent, /if \(start \|\| !lassoStartAllowed/);
-    assert.match(beforePrevent, /return/);
-    assert.equal(beforePrevent.includes("stopPropagation"), false);
     assert.match(change, /paintHighlight\(root, highlightsRef\.current, highlightedIds\)/);
     assert.equal(change.includes("lassoSelection"), false);
     assert.equal(change.includes("onSelectionChange"), false);
@@ -538,5 +556,43 @@ describe("note lasso wiring", () => {
     assert.equal(canvas.includes("dragOrigins"), false);
     assert.equal(board.includes("NoteLasso"), false);
     assert.equal(board.includes("selectionOnDrag"), false);
+  });
+
+  it("places the caret on a stationary click outside inline text after the lasso would have captured it", () => {
+    const gesture = read("../components/note/note-lasso.tsx");
+    const down = gesture.slice(
+      gesture.indexOf("function onPointerDown"),
+      gesture.indexOf("function onPointerMove"),
+    );
+    const up = gesture.slice(
+      gesture.indexOf("function onPointerUp"),
+      gesture.indexOf("function onPointerCancel"),
+    );
+    const inactive = up.slice(up.indexOf("} else {"), up.indexOf("clearDrag()"));
+    assert.equal(down.includes("preventDefault"), false);
+    assert.equal(down.includes("stopPropagation"), false);
+    assert.equal(down.includes("note-lasso-dragging"), false);
+    assert.match(down, /lassoStartAllowed\(lassoStartFromPointer/);
+    assert.match(down, /closest\("\.bn-block\[data-id\]"\)/);
+    assert.match(down, /caretPlacementForBlock\(block, event\.clientY\)/);
+    assert.match(inactive, /focusBlockCaret\(editor, caretBlockId, caretPlacement\)/);
+    assert.match(inactive, /clearHighlight\(\)/);
+    assert.match(gesture, /setTextCursorPosition\(blockId, placement\)/);
+    assert.match(
+      gesture,
+      /cursorPlacement\(clientY, blockInlineBottom\(block\), rect\.top, rect\.bottom\)/,
+    );
+    assert.match(
+      gesture,
+      /placeCollapsedBlockCaret\(editor\.prosemirrorView, blockId, placement\)/,
+    );
+    assert.match(gesture, /view\.focus\(\)/);
+    const activeBranch = up.slice(up.indexOf("if (active)"), up.indexOf("} else {"));
+    assert.equal(activeBranch.includes("focusBlockCaret"), false);
+    assert.match(activeBranch, /lassoEndedAt = performance\.now\(\)/);
+    assert.match(
+      gesture,
+      /function onClick\(event: MouseEvent\) \{\s*if \(performance\.now\(\) - lassoEndedAt > 100\) return;\s*event\.preventDefault\(\);\s*event\.stopPropagation\(\);/,
+    );
   });
 });
