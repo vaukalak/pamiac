@@ -49,7 +49,7 @@ describe("sign-in link words", () => {
     const panel = slice(login, '<Section className="home-sign-in-panel">', "</Section>");
 
     expect(copy).toMatch(
-      /We email you a link\. There is no password\. If the address is new, opening the link\s+creates\s+the account\./,
+      /We email you a link\. If the address is new, opening the link\s+creates\s+the account\./,
     );
     expect(copy).not.toMatch(/magic/i);
     expect(panel).not.toMatch(/magic/i);

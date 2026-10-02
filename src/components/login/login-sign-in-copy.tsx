@@ -6,8 +6,7 @@ export function LoginSignInCopy() {
     <div className="login-sign-in-copy">
       <PageTitle title="Sign in or register" />
       <Paragraph>
-        We email you a link. There is no password. If the address is new, opening the link creates
-        the account.
+        We email you a link. If the address is new, opening the link creates the account.
       </Paragraph>
     </div>
   );
