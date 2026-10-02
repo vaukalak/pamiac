@@ -337,6 +337,7 @@ select:focus {
   display: contents;
 }
 html[data-login-sent] .login-sign-in-copy,
+html[data-login-sent] .login-google,
 html[data-login-sent] .home-sign-in-panel form.form-stack {
   display: none;
 }
@@ -2874,6 +2875,119 @@ code {
     padding: 24px 16px 32px;
     padding-top: 72px;
   }
+  .library-shell .note-editor div:has(> .bn-suggestion-menu) {
+    position: static !important;
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+    transform: none !important;
+    width: auto !important;
+    height: auto !important;
+    max-width: none !important;
+    max-height: none !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    visibility: visible !important;
+    pointer-events: none !important;
+    will-change: auto !important;
+  }
+  .library-shell .note-editor .bn-suggestion-menu {
+    position: fixed !important;
+    top: auto !important;
+    right: auto !important;
+    bottom: calc(100dvh - var(--bn-vv-top, 0px) - var(--bn-vv-height, 100dvh)) !important;
+    left: var(--bn-vv-left, 0px) !important;
+    transform: none !important;
+    width: var(--bn-vv-width, 100%) !important;
+    max-width: none !important;
+    height: auto !important;
+    max-height: min(70dvh, var(--bn-vv-height, 70dvh)) !important;
+    margin: 0 !important;
+    border-radius: 16px 16px 0 0 !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    z-index: 80 !important;
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+  }
+  .library-shell .note-editor .note-slash-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    background: var(--scrim);
+  }
+  .library-shell:has(.note-editor .bn-suggestion-menu) {
+    z-index: 50;
+  }
+  .library-shell:has(.note-editor .bn-suggestion-menu) .library-mobile-header {
+    z-index: 1;
+  }
+  .library-shell:has(.note-editor .bn-suggestion-menu) > .library-main {
+    z-index: 8;
+  }
+  .library-shell .note-editor div:has(> .bn-portal-anchor-holder .bn-drag-handle-menu) {
+    position: static !important;
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+    transform: none !important;
+    width: auto !important;
+    height: auto !important;
+    max-width: none !important;
+    max-height: none !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    visibility: visible !important;
+    pointer-events: none !important;
+    will-change: auto !important;
+    z-index: auto !important;
+  }
+  .library-shell .note-editor .bn-drag-handle-menu,
+  .library-shell .note-editor .note-turn-into-menu,
+  .library-shell .note-editor .bn-drag-handle-menu .bn-color-picker-dropdown {
+    position: fixed !important;
+    top: auto !important;
+    right: auto !important;
+    bottom: calc(100dvh - var(--bn-vv-top, 0px) - var(--bn-vv-height, 100dvh)) !important;
+    left: var(--bn-vv-left, 0px) !important;
+    transform: none !important;
+    width: var(--bn-vv-width, 100%) !important;
+    max-width: none !important;
+    height: auto !important;
+    max-height: min(70dvh, var(--bn-vv-height, 70dvh)) !important;
+    margin: 0 !important;
+    border-radius: 16px 16px 0 0 !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    z-index: 80 !important;
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+  }
+  .library-shell .note-editor .note-turn-into-menu,
+  .library-shell .note-editor .bn-drag-handle-menu .bn-color-picker-dropdown {
+    z-index: 90 !important;
+  }
+  .library-shell .note-editor .bn-drag-handle-menu:has(.note-turn-into-menu),
+  .library-shell .note-editor .bn-drag-handle-menu:has(.bn-color-picker-dropdown) {
+    overflow: visible !important;
+  }
+  .library-shell .note-editor .note-block-menu-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    background: var(--scrim);
+  }
+  .library-shell:has(.note-editor .bn-drag-handle-menu),
+  .library-shell:has(.note-editor .note-turn-into-menu),
+  .library-shell:has(.note-editor .bn-drag-handle-menu .bn-color-picker-dropdown) {
+    z-index: 50;
+  }
 }
 .library-shell .library-crumb {
   margin: 0 0 14px;
@@ -3978,6 +4092,9 @@ code {
   flex: 1;
   height: 1px;
   background: var(--home-hair);
+}
+.home .home-sign-in-panel .login-google {
+  margin-bottom: 16px;
 }
 .home .home-sign-in-panel label {
   color: var(--home-text);

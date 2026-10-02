@@ -22,8 +22,14 @@ test("agent skill reads PAMIAC_TOKEN and keeps the diagram contract", () => {
   assert.match(skill, /Read `PAMIAC_TOKEN` from the process environment/);
   assert.match(skill, /Authorization: Bearer <PAMIAC_TOKEN>/);
   assert.match(skill, /Do not ask the user to paste the token/);
-  assert.match(skill, /If `PAMIAC_TOKEN` is missing, say so and stop/);
+  assert.match(
+    skill,
+    /If `PAMIAC_TOKEN` is missing, do not stop and do not ask for a pasted token/,
+  );
+  assert.match(skill, /Offer sign-in with Google/);
+  assert.match(skill, /POST https:\/\/pamiac\.com\/api\/agent\/v1\/google-login/);
   assert.match(skill, /Do not invent a token/);
+  assert.doesNotMatch(skill, /If `PAMIAC_TOKEN` is missing, say so and stop/);
   assert.doesNotMatch(skill, /Ask the user for a Pamiac token/);
   assert.doesNotMatch(skill, /PAMIAC_(?!TOKEN)\w*/);
   assert.match(skill, /https:\/\/pamiac\.com/);

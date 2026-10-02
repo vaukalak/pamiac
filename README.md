@@ -19,6 +19,8 @@ Open http://localhost:3000. Without `RESEND_API_KEY`, the login page shows the m
 
 In production, set `BETTER_AUTH_URL` to the public origin (`https://pamiac.com`) and set `BETTER_AUTH_API_KEY` to the Infrastructure project key so the dashboard can verify that origin.
 
+Google sign-in is optional. Set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` to show it beside the magic link. The redirect URI is `http://localhost:3000/api/auth/callback/google` locally and `https://pamiac.com/api/auth/callback/google` in production. Leave both empty to keep magic-link sign-in only.
+
 ## Sharing
 
 Each document lives at `/d/<id>`.
@@ -32,7 +34,7 @@ Owners edit. Shared visitors view.
 
 ## Agents
 
-Create a key under API keys and set it as `PAMIAC_TOKEN` in the agent environment. The `/pamiac` skill is `agent/SKILL.md`. The skill reads `PAMIAC_TOKEN` from the agent environment. The token can list, read, create, and update that user's notes and diagrams, and search them by embedding. The same token in a `pamiac_token` cookie opens `/workspace` in a browser.
+Create a key under API keys and set it as `PAMIAC_TOKEN` in the agent environment. The `/pamiac` skill is `agent/SKILL.md`. The skill reads `PAMIAC_TOKEN` from the agent environment. The token can list, read, create, and update that user's notes and diagrams, and search them by embedding. The same token in a `pamiac_token` cookie opens `/workspace` in a browser. An agent without `PAMIAC_TOKEN` follows the skill and offers Google sign-in.
 
 ## ChatGPT plugin
 
@@ -40,7 +42,7 @@ ChatGPT Free and Go can install a plugin from the OpenAI plugin directory. That 
 
 - MCP URL: `/api/mcp` on the public origin (`https://your-app.example/api/mcp`).
 - OAuth discovery: `/.well-known/oauth-protected-resource/api/mcp`, `/.well-known/oauth-authorization-server/api/auth`, and `/api/auth/.well-known/openid-configuration`.
-- Sign-in is the existing magic link, then the consent screen at `/oauth/consent`. ChatGPT does not receive `PAMIAC_TOKEN`.
+- Sign-in stays the magic link, or Google when `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are set. Either path returns to the same login callback, then the consent screen at `/oauth/consent`. ChatGPT does not receive `PAMIAC_TOKEN`.
 - Set `OPENAI_APPS_CHALLENGE` to the domain challenge from the OpenAI submission portal. `GET /.well-known/openai-apps-challenge` returns that value as `text/plain`.
 - Scan Tools imports the skill at `skills/pamiac`. `chatgpt/submission.md` has the starter prompts, test cases, annotation justifications, and release notes for that form.
 - Free-tier use requires submitting this MCP server in the OpenAI plugin directory. The API keys page shows the endpoint for that submission and for developer mode. The plugin is not listed until that submission is approved.

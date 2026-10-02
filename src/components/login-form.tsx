@@ -3,7 +3,7 @@
 import { useLayoutEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useForm, type FieldErrors, type Resolver } from "react-hook-form";
-import { LoginGoogleContinue } from "@/components/login/login-google-continue";
+import { LoginGoogle } from "@/components/login/login-google";
 import { LoginLinkSent } from "@/components/login/login-link-sent";
 import { LoginSendFailure } from "@/components/login/login-send-failure";
 import { LoginSignInCopy } from "@/components/login/login-sign-in-copy";
@@ -20,6 +20,8 @@ import { Form } from "@/ui/Form";
 import { Paragraph } from "@/ui/Paragraph";
 
 interface Properties {
+  agentConnect: boolean;
+  googleEnabled: boolean;
   nextPath: string;
   showDevLink: boolean;
 }
@@ -76,7 +78,7 @@ async function sendMagicLink(input: { email: string; nextPath: string; showDevLi
 }
 
 export function LoginForm(props: Properties) {
-  const { nextPath, showDevLink } = props;
+  const { agentConnect, googleEnabled, nextPath, showDevLink } = props;
   const form = useForm<LoginValues>({
     defaultValues: { email: "" },
     mode: "onSubmit",
@@ -126,6 +128,9 @@ export function LoginForm(props: Properties) {
   return (
     <>
       {sent ? null : <LoginSignInCopy />}
+      {sent || !googleEnabled ? null : (
+        <LoginGoogle agentConnect={agentConnect} nextPath={nextPath} />
+      )}
       <div aria-atomic="true" aria-live="polite" className="login-announcement">
         {announcement}
       </div>
@@ -143,8 +148,9 @@ export function LoginForm(props: Properties) {
             mutation.mutate(values.email);
           }}
         >
-          <LoginGoogleContinue nextPath={nextPath} />
-          <Paragraph className="login-link-option">or continue with a magic link</Paragraph>
+          {googleEnabled ? (
+            <Paragraph className="login-link-option">or continue with a magic link</Paragraph>
+          ) : null}
           <Form.Input autoComplete="email" label="Email" name="email" type="email" />
           <Button disabled={mutation.isPending} type="submit">
             {mutation.isPending ? "Sending link…" : "Email me a link"}

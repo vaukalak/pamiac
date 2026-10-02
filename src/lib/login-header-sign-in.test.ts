@@ -53,7 +53,9 @@ describe("login header sign-in", () => {
   it("leaves the login form in place and keeps the home hero free of sign-in links", () => {
     expect(home).not.toMatch(/hero-actions/);
     expect(home).not.toMatch(/href="\/login"/);
-    expect(login).toMatch(/<LoginForm nextPath=\{formNext\} showDevLink=\{showDevLink\} \/>/);
+    expect(login).toMatch(
+      /<LoginForm\s+agentConnect=\{isOAuthLoginQuery\(query\)\}\s+googleEnabled=\{googleSignInEnabled\(\)\}\s+nextPath=\{formNext\}\s+showDevLink=\{showDevLink\}\s*\/>/,
+    );
     expect(login).not.toMatch(/href="\/login"/);
   });
 });

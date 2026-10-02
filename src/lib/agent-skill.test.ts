@@ -16,8 +16,22 @@ const required = [
   "Read `PAMIAC_TOKEN` from the process environment (the agent environment)",
   "Authorization: Bearer <PAMIAC_TOKEN>",
   "Do not ask the user to paste the token.",
-  "If `PAMIAC_TOKEN` is missing, say so and stop.",
+  "Do not print the token.",
   "Do not invent a token.",
+  "If `PAMIAC_TOKEN` is missing, do not stop and do not ask for a pasted token.",
+  "Offer sign-in with Google.",
+  "Say this connects Cursor, Grok, Cloud, Codex, DeepSeek, and any other agent the same way.",
+  "POST https://pamiac.com/api/agent/v1/google-login",
+  "No `Authorization` header.",
+  "verificationUrl",
+  "/connect/google?user_code=<userCode>",
+  "Do not ask for a Google password.",
+  "GET https://pamiac.com/api/agent/v1/google-login?device_code=<deviceCode>",
+  `{ "status": "pending" }`,
+  `{ "status": "ready", "token": "pam_..." }`,
+  `{ "status": "denied" }`,
+  `{ "status": "expired" }`,
+  "If the POST returns that Google sign-in is not configured, say so and stop.",
   "App: https://pamiac.com",
   "Base: `/api/agent/v1`",
   "POST /api/agent/v1/search",
@@ -45,7 +59,7 @@ test("skill reads PAMIAC_TOKEN and does not ask the user to paste it", () => {
 test("API keys page gives the agent the same token rule", () => {
   assert.equal(
     apiKeys.includes(
-      "Read PAMIAC_TOKEN from the agent environment and send Authorization: Bearer <PAMIAC_TOKEN> on every request. Do not ask the user to paste the token. If PAMIAC_TOKEN is missing, say so and stop.",
+      "Read PAMIAC_TOKEN from the agent environment and send Authorization: Bearer <PAMIAC_TOKEN> on every request. Do not print the token. Do not ask the user to paste the token. Do not invent a token.",
     ),
     true,
   );
