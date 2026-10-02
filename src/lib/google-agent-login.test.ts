@@ -260,6 +260,14 @@ describe("google agent login wiring", () => {
     assert.match(skill, /Do not ask the user to paste the token/);
     assert.match(skill, /Do not invent a token/);
     assert.match(skill, /Do not ask for a Google password/);
+    assert.match(
+      skill,
+      /If the sandbox, proxy, or safety check refuses https:\/\/pamiac\.com \(including host_not_allowed or a data-exfiltration flag\), stop/,
+    );
+    assert.match(
+      skill,
+      /Do not send that request through the browser, Chrome, a proxy, or another tool/,
+    );
     assert.doesNotMatch(skill, /If PAMIAC_TOKEN is missing, say so and stop/);
     assert.doesNotMatch(skill, /pam_[A-Za-z0-9_-]{8,}/);
 
