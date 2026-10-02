@@ -22,6 +22,11 @@ export interface CommentBlockMatch {
   outerInBnEditor: boolean;
 }
 
+export function noteCommentBlockMarginRule(blockId: string, marginBottom: number) {
+  if (!blockId || marginBottom <= 0 || !/^[\w-]+$/.test(blockId)) return "";
+  return `.note-editor .bn-block-outer[data-id="${blockId}"]{margin-bottom:${marginBottom}px}`;
+}
+
 export function placeNoteBlockComment(
   block: NoteCommentBlockBox,
   cardHeight: number,

@@ -7,6 +7,7 @@ import { useNoteComments } from "@/components/note/note-comments";
 import {
   findNoteCommentBlock,
   findNoteCommentBlockInDocument,
+  noteCommentBlockMarginRule,
   placeNoteBlockComment,
 } from "@/lib/note-block-comment-place";
 
@@ -27,8 +28,9 @@ export function NoteBlockComment(props: Properties) {
     if (!node) return;
     const composer = node;
 
-    let block: HTMLElement | null = null;
     const observed = new Set<Element>();
+    const rule = document.createElement("style");
+    document.head.appendChild(rule);
     const resize = new ResizeObserver(() => {
       place();
     });
@@ -44,11 +46,9 @@ export function NoteBlockComment(props: Properties) {
     function watchEditor(editor: Element) {
       if (observed.has(editor)) return;
       observed.add(editor);
-      resize.observe(editor);
       mutations.observe(editor, {
         attributeFilter: ["data-id", "id"],
         attributes: true,
-        childList: true,
         subtree: true,
       });
     }
@@ -61,27 +61,25 @@ export function NoteBlockComment(props: Properties) {
         : findNoteCommentBlockInDocument(document, blockId);
       if (!next) {
         composer.classList.remove("is-placed");
-        if (block) block.style.marginBottom = "";
-        block = null;
+        rule.textContent = "";
         return;
       }
 
-      if (block && block !== next) block.style.marginBottom = "";
-      block = next;
       if (!observed.has(next)) {
         observed.add(next);
         resize.observe(next);
       }
 
       const box = next.getBoundingClientRect();
-      const frame = placeNoteBlockComment(
+      const placed = placeNoteBlockComment(
         { bottom: box.bottom, left: box.left, width: box.width },
         composer.offsetHeight,
       );
-      composer.style.left = `${frame.left}px`;
-      composer.style.top = `${frame.top}px`;
-      composer.style.width = `${frame.width}px`;
-      next.style.marginBottom = `${frame.marginBottom}px`;
+      composer.style.left = `${placed.left}px`;
+      composer.style.top = `${placed.top}px`;
+      composer.style.width = `${placed.width}px`;
+      const marginRule = noteCommentBlockMarginRule(blockId, placed.marginBottom);
+      if (rule.textContent !== marginRule) rule.textContent = marginRule;
       composer.classList.add("is-placed");
     }
 
@@ -97,11 +95,11 @@ export function NoteBlockComment(props: Properties) {
     return () => {
       resize.disconnect();
       mutations.disconnect();
+      rule.remove();
       window.removeEventListener("resize", place);
       document.removeEventListener("scroll", place, true);
       window.visualViewport?.removeEventListener("resize", place);
       window.visualViewport?.removeEventListener("scroll", place);
-      if (block) block.style.marginBottom = "";
     };
   }, [blockId, editing, revision, text]);
 
