@@ -3050,20 +3050,10 @@ code {
   background: var(--home-lime-deep);
   border-color: var(--home-lime-deep);
 }
-.library-shell .library-folder-plus {
-  background: transparent;
-  border-color: var(--home-hair-strong);
-  color: var(--home-text);
-}
-.library-shell .library-folder-plus:hover {
-  background: color-mix(in srgb, var(--home-lime) 12%, transparent);
-  border-color: var(--home-lime);
-  color: var(--home-text);
-}
 .library-shell .library-folder-form {
   display: grid;
   gap: 10px;
-  width: 240px;
+  padding: 4px 6px 6px;
 }
 .library-shell .library-folder-form .btn {
   width: 100%;
