@@ -121,7 +121,7 @@ describe("sent login first paint", () => {
     expect(
       block(
         css,
-        "html[data-login-sent] .login-sign-in-copy,\nhtml[data-login-sent] .home-sign-in-panel form.form-stack {",
+        "html[data-login-sent] .login-sign-in-copy,\nhtml[data-login-sent] .login-google,\nhtml[data-login-sent] .home-sign-in-panel form.form-stack {",
       ),
     ).toMatch(/display:\s*none/);
   });

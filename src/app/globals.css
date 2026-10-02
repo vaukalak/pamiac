@@ -337,6 +337,7 @@ select:focus {
   display: contents;
 }
 html[data-login-sent] .login-sign-in-copy,
+html[data-login-sent] .login-google,
 html[data-login-sent] .home-sign-in-panel form.form-stack {
   display: none;
 }
@@ -3963,6 +3964,9 @@ code {
 .home .home-sign-in-panel .form-stack p,
 .home .home-sign-in-panel [role="status"] p:last-child {
   margin-bottom: 0;
+}
+.home .home-sign-in-panel .login-google {
+  margin-bottom: 16px;
 }
 .home .home-sign-in-panel label {
   color: var(--home-text);

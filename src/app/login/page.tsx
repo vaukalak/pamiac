@@ -6,7 +6,13 @@ import { SetupScreen } from "@/components/setup-screen";
 import { safeNext } from "@/lib/config";
 import { devMagicLinkVisible } from "@/lib/dev-magic-link";
 import { loginSentBootScript } from "@/lib/login-sent-memory";
-import { oauthAuthorizeResumePath, oauthLoginReturnPath, toSearchParams } from "@/lib/oauth-return";
+import { googleSignInEnabled } from "@/lib/google-sign-in";
+import {
+  isOAuthLoginQuery,
+  oauthAuthorizeResumePath,
+  oauthLoginReturnPath,
+  toSearchParams,
+} from "@/lib/oauth-return";
 import { getLibrarySession, getSession } from "@/lib/session";
 import { Page } from "@/ui/Page";
 import { Section } from "@/ui/Section";
@@ -39,7 +45,12 @@ export default async function LoginPage(props: Properties) {
       <Page className="home-sign-in">
         <script dangerouslySetInnerHTML={{ __html: loginSentBootScript() }} />
         <Section className="home-sign-in-panel">
-          <LoginForm nextPath={formNext} showDevLink={showDevLink} />
+          <LoginForm
+            agentConnect={isOAuthLoginQuery(query)}
+            googleEnabled={googleSignInEnabled()}
+            nextPath={formNext}
+            showDevLink={showDevLink}
+          />
         </Section>
       </Page>
       <footer className="home-foot">

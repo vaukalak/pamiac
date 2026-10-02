@@ -25,7 +25,9 @@ describe("login desk", () => {
     expect(page).toMatch(/<AppHeader \/>/);
     expect(page).toMatch(/<Page className="home-sign-in">/);
     expect(page).toMatch(/<Section className="home-sign-in-panel">/);
-    expect(page).toMatch(/<LoginForm nextPath=\{formNext\} showDevLink=\{showDevLink\} \/>/);
+    expect(page).toMatch(
+      /<LoginForm\s+agentConnect=\{isOAuthLoginQuery\(query\)\}\s+googleEnabled=\{googleSignInEnabled\(\)\}\s+nextPath=\{formNext\}\s+showDevLink=\{showDevLink\}\s*\/>/,
+    );
     expect(page).toMatch(
       /<footer className="home-foot">\s*<p>Built for human ideas and machine intelligence\.<\/p>/,
     );
