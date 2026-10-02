@@ -42,7 +42,7 @@ test("the ChatGPT plugin zip is the package folder and the served skill", () => 
   assert.match(served, /Do not wrap them in `patch`/);
   assert.match(served, /rebuild the change against that document/);
   assert.match(yaml, /url: https:\/\/pamiac\.com\/api\/mcp/);
-  assert.equal(manifest.name, "pamiac");
+  assert.equal(manifest.name, "app-6abba40fd4d08191bc497f23ba1212fa");
   assert.equal(manifest.version, "1.0.0");
   assert.equal(manifest.extensions["com.openai"].interface.displayName, "Pamiac");
   assert.ok(manifest.extensions["com.openai"].interface.shortDescription.length <= 30);

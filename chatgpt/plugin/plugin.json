@@ -1,6 +1,6 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
-  "name": "pamiac",
+  "name": "app-6abba40fd4d08191bc497f23ba1212fa",
   "version": "1.0.0",
   "description": "Search, read, and edit the signed-in Pamiac library of notes and UML diagrams.",
   "author": {
