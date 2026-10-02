@@ -42,11 +42,18 @@ test("agent skill reads PAMIAC_TOKEN and keeps the diagram contract", () => {
     assert.match(skill, new RegExp(`\\b${relationType}\\b`));
   }
 
-  assert.match(skill, /POST \/api\/agent\/v1\/search/);
-  assert.match(skill, /GET \/api\/agent\/v1\/documents\?type=diagram/);
-  assert.match(skill, /GET \/api\/agent\/v1\/documents\/:id/);
-  assert.match(skill, /POST \/api\/agent\/v1\/documents/);
-  assert.match(skill, /PATCH \/api\/agent\/v1\/documents\/:id/);
+  assert.match(skill, /search_documents/);
+  assert.match(skill, /list_workspaces/);
+  assert.match(skill, /list_documents/);
+  assert.match(skill, /read_document/);
+  assert.match(skill, /create_note/);
+  assert.match(skill, /create_diagram/);
+  assert.match(skill, /update_note/);
+  assert.match(skill, /update_diagram/);
+  assert.match(skill, /checkout payment classes/);
+  assert.match(skill, /"limit": 8/);
+  assert.doesNotMatch(skill, /POST \/api\/agent\/v1\/search/);
+  assert.doesNotMatch(skill, /GET \/api\/agent\/v1\/documents/);
 });
 
 test("token page names PAMIAC_TOKEN when the secret is shown and in the agent skill text", () => {
@@ -59,8 +66,11 @@ test("token page names PAMIAC_TOKEN when the secret is shown and in the agent sk
   assert.match(skill, /Authorization: Bearer <PAMIAC_TOKEN>/);
   assert.match(skill, /Do not ask the user to paste the token/);
   assert.match(skill, /App: https:\/\/pamiac\.com/);
-  assert.match(skill, /Base: \/api\/agent\/v1/);
-  assert.match(skill, /POST \/search/);
+  assert.match(skill, /search_documents/);
+  assert.match(skill, /list_workspaces/);
+  assert.match(skill, /Do not curl the document API/);
+  assert.doesNotMatch(skill, /Base: \/api\/agent\/v1/);
+  assert.doesNotMatch(skill, /POST \/search/);
   assert.match(
     skill,
     /All scopes reach personal documents and every workspace the user belongs to/,

@@ -612,7 +612,7 @@ export function presentDocumentWrite(document: {
 
 export const PAMIAC_TOKEN_COOKIE = "pamiac_token";
 
-async function authenticateAgentToken(token: string) {
+export async function authenticateAgentToken(token: string) {
   const value = token.trim();
   if (!value.startsWith("pam_")) return { status: "missing" as const };
   const tokenHash = hashAgentToken(value);
