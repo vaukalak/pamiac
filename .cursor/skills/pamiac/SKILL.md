@@ -123,6 +123,8 @@ A matching `version` writes and the response includes the new `version`. On conf
 
 Use that flow only when the pamiac MCP tools are not available.
 
+If the sandbox, proxy, or safety check refuses `https://pamiac.com` (including `host_not_allowed` or a data-exfiltration flag), stop. Tell the user this session must allow `https://pamiac.com`. Do not send that request through the browser, Chrome, a proxy, or another tool. Do not ask the user to paste a token. Do not invent a token.
+
 If `PAMIAC_TOKEN` is missing, do not stop and do not ask for a pasted token. Offer sign-in with Google. Say this connects Cursor, Grok, Cloud, Codex, DeepSeek, and any other agent the same way.
 
 `POST https://pamiac.com/api/agent/v1/google-login` with JSON `{ "agent": "cursor" }` (or `grok`, `cloud`, `codex`, `deepseek`, or another short agent name). No `Authorization` header.
@@ -139,3 +141,42 @@ Poll `GET https://pamiac.com/api/agent/v1/google-login?device_code=<deviceCode>`
 - `{ "status": "expired" }` means start the POST again once.
 
 If the POST returns that Google sign-in is not configured, say so and stop. Do not invent a token.
+
+Once a token exists (`PAMIAC_TOKEN` in the environment, or status `ready` from Google login), call the document HTTP API with `Authorization: Bearer` and that token. Do not print the token. This HTTP API is only for a session where the pamiac MCP tools are not available.
+
+- `GET https://pamiac.com/api/agent/v1/workspaces` returns `{ workspaces }`. Same rule as `list_workspaces`: more than one workspace means list them and ask; one workspace needs no question.
+- `POST https://pamiac.com/api/agent/v1/search` with JSON `{ "query": "checkout payment classes", "limit": 8 }`. Results include `id`, `type`, `title`, `url`, `score`, and `excerpt`.
+- `GET https://pamiac.com/api/agent/v1/documents` with optional query `type=note` or `type=diagram`.
+- `GET https://pamiac.com/api/agent/v1/documents/<id>`
+- `POST https://pamiac.com/api/agent/v1/documents` with JSON `{ "type": "note" | "diagram", "title" optional, "content" optional }`. Note content is markdown. Diagram content is `{ nodes, relations }`.
+- `PATCH https://pamiac.com/api/agent/v1/documents/<id>`
+
+Notes stay a full markdown content replace plus `version` from the GET in the same turn:
+
+```json
+{ "content": "# updated markdown", "version": 3 }
+```
+
+Diagrams: the HTTP body wraps the merge in `patch`. Do not send nodes at the top level of the PATCH body.
+
+```json
+{
+  "version": 4,
+  "patch": {
+    "nodes": [{ "id": "user", "methods": ["login(): void"] }],
+    "deleteNodes": [],
+    "relations": [
+      {
+        "id": "rel-1",
+        "from": "user",
+        "to": "order",
+        "type": "association",
+        "label": "places"
+      }
+    ],
+    "deleteRelations": []
+  }
+}
+```
+
+Same field rules as `update_diagram`: only fields present, omit other nodes, omit `position` to keep layout. A version conflict returns the current `version`, `title`, and `content`.
