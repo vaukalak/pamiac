@@ -152,6 +152,26 @@ export const documentShares = pgTable(
   (table) => [uniqueIndex("document_share_email_idx").on(table.documentId, table.email)],
 );
 
+export const documentPermissionRequests = pgTable(
+  "document_permission_request",
+  {
+    id: text("id").primaryKey(),
+    documentId: text("document_id")
+      .notNull()
+      .references(() => documents.id, { onDelete: "cascade" }),
+    requesterId: text("requester_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("document_permission_request_document_requester_idx").on(
+      table.documentId,
+      table.requesterId,
+    ),
+  ],
+);
+
 export const documentEmbeddings = pgTable(
   "document_embedding",
   {

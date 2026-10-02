@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { DocumentScreen } from "@/components/document-screen";
 import { DocumentShell } from "@/components/document/document-shell";
+import { PrivateDocument } from "@/components/document/private-document";
 import { LockedDocument } from "@/components/locked-document";
 import { SetupScreen } from "@/components/setup-screen";
 import { resolveAccess, type Visibility } from "@/lib/access";
@@ -65,8 +66,6 @@ export default async function DocumentPage(props: Properties) {
     workspaceMember,
   });
 
-  if (access.level === "none") notFound();
-
   let workspaces: NamedWorkspace[] = [];
   if (user) {
     try {
@@ -80,7 +79,9 @@ export default async function DocumentPage(props: Properties) {
   const documentType = bundle.document.type === "diagram" ? "diagram" : "note";
   const spaceName = user ? documentSpaceLabel(bundle.document.workspaceId, workspaces) : null;
   const body =
-    access.level === "locked" ? (
+    access.level === "none" ? (
+      <PrivateDocument id={id} signedIn={Boolean(user)} type={documentType} />
+    ) : access.level === "locked" ? (
       <LockedDocument id={id} reason={access.reason} />
     ) : (
       <DocumentScreen
