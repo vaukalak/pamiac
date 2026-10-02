@@ -74,3 +74,7 @@ export function googleLoginHttpStatus(status: ReturnType<typeof googleLoginPoll>
   if (status === "expired") return 410;
   return 200;
 }
+
+export function googleAgentConnected(row: { userId: string | null; tokenSecret: string | null }) {
+  return row.userId !== null && row.tokenSecret === null;
+}

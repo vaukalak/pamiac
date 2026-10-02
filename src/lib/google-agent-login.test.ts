@@ -9,6 +9,7 @@ import {
   createDeviceCode,
   createUserCode,
   formatUserCode,
+  googleAgentConnected,
   googleAgentName,
   googleConnectPath,
   googleLoginHttpStatus,
@@ -113,6 +114,29 @@ describe("google agent login poll", () => {
   });
 });
 
+describe("google agent connection status", () => {
+  it("is connected only after the user is stored and the token secret is gone", () => {
+    assert.equal(googleAgentConnected({ userId: "user", tokenSecret: null }), true);
+    assert.equal(googleAgentConnected({ userId: "user", tokenSecret: "pam_secret" }), false);
+    assert.equal(googleAgentConnected({ userId: null, tokenSecret: null }), false);
+    assert.equal(googleAgentConnected({ userId: null, tokenSecret: "pam_secret" }), false);
+    assert.equal(typeof googleAgentConnected({ userId: "user", tokenSecret: null }), "boolean");
+    assert.equal(googleAgentConnected({ userId: "user", tokenSecret: "" }), false);
+  });
+
+  it("rejects an unknown code before it reports a connection", () => {
+    const store = read("src/lib/google-agent-login.ts");
+    const status = store.slice(
+      store.indexOf("export async function readGoogleAgentConnection"),
+      store.indexOf("export async function decideGoogleAgentLogin"),
+    );
+    assert.match(status, /throw new HttpError\(400, "Unknown user code"\)/);
+    assert.match(status, /if \(!normalized\) throw new HttpError\(400, "Unknown user code"\)/);
+    assert.match(status, /if \(!row\) throw new HttpError\(400, "Unknown user code"\)/);
+    assert.doesNotMatch(status, /token:\s*row|tokenSecret: row\.tokenSecret/);
+  });
+});
+
 describe("google agent login wiring", () => {
   it("stores hashes, skips bearer auth, and returns 503 when Google is off", () => {
     const store = read("src/lib/google-agent-login.ts");
@@ -163,6 +187,7 @@ describe("google agent login wiring", () => {
     const page = read("src/app/connect/google/page.tsx");
     const signIn = read("src/components/connect/google-connect-sign-in.tsx");
     const decision = read("src/components/connect/google-connect-decision.tsx");
+    const approved = read("src/components/connect/google-connect-approved.tsx");
     const connect = read("src/app/api/connect/google/route.ts");
 
     assert.match(page, /user_code/);
@@ -193,11 +218,29 @@ describe("google agent login wiring", () => {
     assert.match(decision, />\s*Deny\s*</);
     assert.match(decision, /<Alert>/);
     assert.match(decision, /<Button/);
-    assert.doesNotMatch(decision, /useState/);
+    assert.match(decision, /Denied\. The agent will stop\./);
+    assert.match(decision, /mutation\.variables === "approve"/);
+    assert.match(decision, /<GoogleConnectApproved userCode=\{userCode\} \/>/);
+    assert.doesNotMatch(decision, /useState|useQuery|window\.close/);
 
+    assert.match(approved, /useQuery/);
+    assert.match(approved, /refetchInterval/);
+    assert.match(approved, /3_000/);
+    assert.match(approved, /if \(!status\.data\?\.connected\) return/);
+    assert.match(approved, /window\.close\(\)/);
+    assert.match(approved, /Connected\. Return to the agent\./);
+    assert.match(approved, /\/api\/connect\/google/);
+    assert.doesNotMatch(approved, /useState|tokenSecret|setTimeout/);
+
+    assert.match(connect, /export async function GET/);
     assert.match(connect, /requireUserId\(\)/);
+    assert.match(connect, /readGoogleAgentConnection\(userCode\)/);
     assert.match(connect, /decideGoogleAgentLogin\(user\.id, input\.userCode, input\.decision\)/);
-    assert.doesNotMatch(connect, /requireAgentUser/);
+    assert.match(
+      read("src/lib/google-agent-login.ts"),
+      /return \{ connected: googleAgentConnected\(row\) \}/,
+    );
+    assert.doesNotMatch(connect, /requireAgentUser|tokenSecret|token:/);
   });
 
   it("teaches the downloaded skill the same Google flow and keeps the agent tab sentence", () => {

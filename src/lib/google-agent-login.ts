@@ -8,6 +8,7 @@ import {
   createDeviceCode,
   createUserCode,
   googleAgentName,
+  googleAgentConnected,
   googleLoginHttpStatus,
   googleLoginPoll,
   googleTokenName,
@@ -101,6 +102,20 @@ function pendingLogin(id: string) {
     isNull(agentGoogleLogin.deniedAt),
     gt(agentGoogleLogin.expiresAt, new Date()),
   );
+}
+
+export async function readGoogleAgentConnection(userCode: string) {
+  const normalized = normalizeUserCode(userCode);
+  if (!normalized) throw new HttpError(400, "Unknown user code");
+  const [row] = await getDb()
+    .select({
+      userId: agentGoogleLogin.userId,
+      tokenSecret: agentGoogleLogin.tokenSecret,
+    })
+    .from(agentGoogleLogin)
+    .where(eq(agentGoogleLogin.userCodeHash, hashGoogleCode(normalized)));
+  if (!row) throw new HttpError(400, "Unknown user code");
+  return { connected: googleAgentConnected(row) };
 }
 
 export async function decideGoogleAgentLogin(

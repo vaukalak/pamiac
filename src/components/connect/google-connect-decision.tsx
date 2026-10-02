@@ -1,6 +1,7 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
+import { GoogleConnectApproved } from "@/components/connect/google-connect-approved";
 import { Alert } from "@/ui/Alert";
 import { Button } from "@/ui/Button";
 import { PageTitle } from "@/ui/PageTitle";
@@ -29,10 +30,7 @@ export function GoogleConnectDecision(props: Properties) {
   });
   const message = mutation.error instanceof Error ? mutation.error.message : "";
   const settled = mutation.isPending || mutation.isSuccess;
-  const outcome =
-    mutation.isSuccess && mutation.variables === "approve"
-      ? "Connected. Return to the agent."
-      : "Denied. The agent will stop.";
+  const approved = mutation.isSuccess && mutation.variables === "approve";
 
   return (
     <div className="form-stack">
@@ -51,7 +49,10 @@ export function GoogleConnectDecision(props: Properties) {
         Deny
       </Button>
       {message ? <Alert>{message}</Alert> : null}
-      {mutation.isSuccess ? <Paragraph>{outcome}</Paragraph> : null}
+      {approved ? <GoogleConnectApproved userCode={userCode} /> : null}
+      {mutation.isSuccess && mutation.variables === "deny" ? (
+        <Paragraph>Denied. The agent will stop.</Paragraph>
+      ) : null}
     </div>
   );
 }
