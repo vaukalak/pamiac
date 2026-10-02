@@ -71,7 +71,8 @@ describe("agent workspaces for a token", () => {
     );
     expect(frontmatter).toMatch(/fast: false/);
     expect(frontmatter).not.toMatch(/model:/);
-    expect(skill).toMatch(/GET \/api\/agent\/v1\/workspaces/);
+    expect(skill).toMatch(/list_workspaces/);
+    expect(skill).not.toMatch(/GET \/api\/agent\/v1\/workspaces/);
     expect(skill).toMatch(
       /When more than one workspace is returned, list those workspaces and ask the user which one to use before searching, reading, or writing\./,
     );

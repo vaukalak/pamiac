@@ -141,7 +141,7 @@ describe("agent document version", () => {
     assert.match(published, /"version": 4/);
     assert.match(
       published,
-      /On 409, the response includes the current `version`, `title`, and `content`/,
+      /On conflict the tool returns the current `version`, `title`, and `content`/,
     );
     assert.match(published, /Rebuild a diagram `patch` against the new document/);
     assert.match(mcp, /Send `version` from `read_document`/);
