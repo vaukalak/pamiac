@@ -2,6 +2,7 @@
 
 import { useCreateBlockNote } from "@blocknote/react";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { bindNoteSelectAll } from "@/components/note/note-select-all";
 import { NoteEditorFrame } from "@/components/note/note-editor-frame";
 import { NoteEditorSurface } from "@/components/note/note-editor-surface";
 import { NoteLasso } from "@/components/note/note-lasso";
@@ -125,6 +126,10 @@ export function NoteEditor(props: Properties) {
 
   useEffect(() => {
     return bindNoteMarkdownPublisher(editor, () => publishRef.current());
+  }, [editor]);
+
+  useEffect(() => {
+    return bindNoteSelectAll(editor, () => storedMarkdown());
   }, [editor]);
 
   useEffect(() => {

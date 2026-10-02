@@ -15,6 +15,7 @@ import {
   type SavedDocument,
 } from "@/components/document/document-client";
 import { useDocumentVersion } from "@/components/document/use-document-version";
+import { NoteCopyMarkdown } from "@/components/note/note-copy-markdown";
 import { NoteExport } from "@/components/note/note-export";
 import { defaultTitle } from "@/lib/content";
 import { remoteNoteMarkdown, remoteNoteTitle } from "@/lib/note-sync";
@@ -236,6 +237,7 @@ export function NoteDocument(props: Properties) {
         }
         tools={
           <div className="library-heading-actions topbar-tools">
+            <NoteCopyMarkdown readMarkdown={() => latest.current.content} />
             <NoteExport readMarkdown={() => latest.current.content} title={name.trim() || title} />
             {tools}
           </div>
