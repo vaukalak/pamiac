@@ -3005,6 +3005,23 @@ code {
   .library-shell:has(.note-editor .bn-drag-handle-menu .bn-color-picker-dropdown) {
     z-index: 50;
   }
+  .library-shell .note-editor .bn-side-menu,
+  .library-shell .note-editor div:has(> .bn-side-menu) {
+    display: none !important;
+    pointer-events: none !important;
+  }
+  .note-editor .bn-block[data-note-drop="before"] {
+    box-shadow: inset 0 2px 0 var(--bn-colors-highlights-blue-text, var(--teal));
+  }
+  .note-editor .bn-block[data-note-drop="after"] {
+    box-shadow: inset 0 -2px 0 var(--bn-colors-highlights-blue-text, var(--teal));
+  }
+  :root:has(.library-shell .note-editor .bn-suggestion-menu) .bn-mobile-formatting-toolbar,
+  :root:has(.library-shell .note-editor .bn-drag-handle-menu) .bn-mobile-formatting-toolbar,
+  :root:has(.library-shell .note-editor .note-turn-into-menu) .bn-mobile-formatting-toolbar {
+    visibility: hidden;
+    pointer-events: none;
+  }
 }
 .library-shell .library-crumb {
   margin: 0 0 14px;

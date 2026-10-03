@@ -3,6 +3,7 @@
 import { SuggestionMenu } from "@blocknote/core/extensions";
 import { useBlockNoteEditor, useExtension, useExtensionState } from "@blocknote/react";
 import { useSyncExternalStore } from "react";
+import { cancelResumeEditing } from "@/lib/note-menu-keyboard";
 
 const NARROW_QUERY = "(max-width: 760px)";
 
@@ -36,8 +37,9 @@ export function NoteSlashMenuSheet() {
       className="note-slash-backdrop"
       onPointerDown={(event) => {
         event.preventDefault();
+        cancelResumeEditing();
         suggestionMenu.closeMenu();
-        editor.focus();
+        editor.blur();
       }}
     />
   );

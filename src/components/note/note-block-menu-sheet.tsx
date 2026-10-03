@@ -3,6 +3,7 @@
 import { SideMenuExtension } from "@blocknote/core/extensions";
 import { useBlockNoteEditor, useExtension } from "@blocknote/react";
 import { useSyncExternalStore } from "react";
+import { cancelResumeEditing } from "@/lib/note-menu-keyboard";
 
 const NARROW_QUERY = "(max-width: 760px)";
 const MENU_SELECTOR = [
@@ -62,7 +63,8 @@ export function NoteBlockMenuSheet() {
         event.currentTarget.dispatchEvent(
           new MouseEvent("mousedown", { bubbles: true, cancelable: true }),
         );
-        editor.focus();
+        cancelResumeEditing();
+        editor.blur();
         window.setTimeout(() => {
           if (menu && !menu.isConnected) sideMenu.unfreezeMenu();
         }, 320);
