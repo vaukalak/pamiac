@@ -38,7 +38,7 @@ function buildAuth() {
     },
     emailAndPassword: {
       enabled: true,
-      disableSignUp: true,
+      disableSignUp: false,
     },
     socialProviders: googleSocialProviders(),
     database: drizzleAdapter(getDb(), {
