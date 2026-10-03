@@ -27,28 +27,36 @@ describe("dashboard share popup", () => {
 
   it("keeps escape, backdrop dismiss, and the focus trap on the shared dialog", () => {
     const modal = read("../components/share/share-modal.tsx");
+    const frame = read("../components/share/share-dialog-frame.tsx");
+    const surface = read("../components/share/share-dialog-surface.tsx");
 
-    assert.match(modal, /className="share-backdrop"/);
-    assert.match(modal, /onClick=\{onClose\}/);
+    assert.match(frame, /className="share-backdrop"/);
+    assert.match(frame, /onClick=\{onClose\}/);
     assert.match(modal, /event\.key === "Escape"/);
     assert.match(modal, /event\.key !== "Tab"/);
-    assert.match(modal, /aria-modal="true"/);
-    assert.match(modal, /enabled: !lockWorkspace/);
+    assert.match(surface, /aria-modal="true"/);
+    assert.match(surface, /role="dialog"/);
+    assert.equal(modal.includes("workspacesQueryOptions"), false);
+    assert.equal(modal.includes("ShareWorkspaceChoice"), false);
   });
 
   it("uses the shared controls and lime save only when the workspace stays put", () => {
     const modal = read("../components/share/share-modal.tsx");
+    const surface = read("../components/share/share-dialog-surface.tsx");
+    const heading = read("../components/share/share-dialog-heading.tsx");
+    const hint = read("../components/share/share-dialog-hint.tsx");
     const shareActions = read("../components/share/share-actions.tsx");
     const screen = read("../components/document-screen.tsx");
     const css = read("../app/globals.css");
 
-    assert.match(modal, /<Button className="ghost small"/);
-    assert.match(modal, /<Paragraph className="hint" id="share-dialog-hint">/);
-    assert.match(shareActions, /<Button className=\{saveClassName\}/);
+    assert.match(heading, /<Button className="ghost small"/);
+    assert.match(hint, /<Paragraph>Control who can open this document\.<\/Paragraph>/);
+    assert.match(hint, /<Paragraph>Only you can edit\.<\/Paragraph>/);
+    assert.match(shareActions, /<Button className="library-lime"/);
     assert.match(shareActions, /<Alert>/);
     assert.match(shareActions, /<Paragraph className="hint">/);
-    assert.match(modal, /saveClassName=\{lockWorkspace \? "library-lime" : undefined\}/);
-    assert.match(modal, /lockWorkspace \? "share-dialog workspace-add-dialog" : "share-dialog"/);
+    assert.match(surface, /share-access-dialog/);
+    assert.equal(modal.includes("shareWorkspaceBody"), false);
     assert.equal(screen.includes("lockWorkspace"), false);
     assert.match(screen, /<ShareModal/);
     assert.match(
