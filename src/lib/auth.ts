@@ -75,6 +75,8 @@ function buildAuth() {
         loginPage: "/login",
         consentPage: "/oauth/consent",
         resource: mcpResourceUrl(),
+        allowDynamicClientRegistration: true,
+        allowUnauthenticatedClientRegistration: true,
       }),
       cimd({
         fetchClientMetadataResource,
