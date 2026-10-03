@@ -29,13 +29,16 @@ describe("mobile slash menu sheet", () => {
       css.slice(css.lastIndexOf("@media (max-width: 760px)")),
       "@media (max-width: 760px) {",
     );
-    const menu = block(sheet, ".library-shell .note-editor .bn-suggestion-menu {");
+    const menu = block(
+      sheet,
+      ".library-shell .note-editor .bn-suggestion-menu,\n  .library-shell .note-editor .bn-select {",
+    );
     const shell = block(sheet, ".library-shell .note-editor div:has(> .bn-suggestion-menu) {");
 
     assert.match(menu, /position:\s*fixed\s*!important/);
     assert.match(
       menu,
-      /bottom:\s*calc\(100dvh - var\(--bn-vv-top, 0px\) - var\(--bn-vv-height, 100dvh\)\)\s*!important/,
+      /bottom:\s*calc\(var\(--note-keyboard-inset, 0px\) \+ var\(--note-formatting-bar, 0px\)\)\s*!important/,
     );
     assert.match(menu, /left:\s*var\(--bn-vv-left, 0px\)\s*!important/);
     assert.match(menu, /right:\s*auto\s*!important/);
@@ -61,7 +64,10 @@ describe("mobile slash menu sheet", () => {
       css.slice(css.lastIndexOf("@media (max-width: 760px)")),
       "@media (max-width: 760px) {",
     );
-    const menu = block(sheet, ".library-shell .note-editor .bn-suggestion-menu {");
+    const menu = block(
+      sheet,
+      ".library-shell .note-editor .bn-suggestion-menu,\n  .library-shell .note-editor .bn-select {",
+    );
     const shell = block(sheet, ".library-shell .note-editor div:has(> .bn-suggestion-menu) {");
 
     assert.match(shell, /will-change:\s*auto\s*!important/);

@@ -2,14 +2,15 @@
 
 import { SideMenuExtension } from "@blocknote/core/extensions";
 import { useBlockNoteEditor, useExtension } from "@blocknote/react";
-import { useSyncExternalStore } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import { cancelResumeEditing } from "@/lib/note-menu-keyboard";
 
 const NARROW_QUERY = "(max-width: 760px)";
 const MENU_SELECTOR = [
   ".bn-drag-handle-menu",
   ".note-turn-into-menu",
-  ".bn-drag-handle-menu .bn-color-picker-dropdown",
+  ".bn-color-picker-dropdown",
+  ".bn-select",
 ].join(", ");
 
 function subscribeToNarrow(onChange: () => void) {
@@ -50,6 +51,33 @@ export function NoteBlockMenuSheet() {
   const sideMenu = useExtension(SideMenuExtension);
   const narrow = useSyncExternalStore(subscribeToNarrow, readNarrow, narrowOnServer);
   const open = useSyncExternalStore(subscribeToMenus, readMenus, menusOnServer);
+
+  useEffect(() => {
+    const html = document.documentElement;
+    const write = () => {
+      const menu = document.querySelector<HTMLElement>(".bn-drag-handle-menu");
+      if (!menu) {
+        html.style.removeProperty("--note-menu-line");
+        return;
+      }
+      html.style.setProperty("--note-menu-line", `${menu.offsetHeight}px`);
+    };
+    write();
+    const observer = new ResizeObserver(write);
+    const watch = () => {
+      write();
+      const menu = document.querySelector(".bn-drag-handle-menu");
+      if (menu) observer.observe(menu);
+    };
+    watch();
+    const mutation = new MutationObserver(watch);
+    mutation.observe(document.body, { childList: true, subtree: true });
+    return () => {
+      observer.disconnect();
+      mutation.disconnect();
+      html.style.removeProperty("--note-menu-line");
+    };
+  }, []);
 
   if (!open || !narrow) return null;
 

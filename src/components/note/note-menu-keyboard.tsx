@@ -9,6 +9,8 @@ import {
   focusAfterMenuClose,
   hideSoftwareKeyboard,
   inputModeWhileMenu,
+  keyboardCoversViewport,
+  keyboardInset,
   noteMenuOpen,
   pointerResumesEditing,
 } from "@/lib/note-menu-keyboard";
@@ -65,10 +67,34 @@ export function NoteMenuKeyboard() {
     document.addEventListener("pointerdown", onPointerDown, true);
     apply();
 
+    const html = document.documentElement;
+    let largestViewportHeight = 0;
+    const placeAboveKeyboard = () => {
+      const viewport = window.visualViewport;
+      const viewportHeight = viewport?.height ?? window.innerHeight;
+      largestViewportHeight = Math.max(largestViewportHeight, viewportHeight);
+      const inset = keyboardInset(window.innerHeight, viewport);
+      html.style.setProperty("--note-keyboard-inset", `${inset}px`);
+      if (keyboardCoversViewport(viewportHeight, largestViewportHeight, inset)) {
+        html.setAttribute("data-note-keyboard", "");
+      } else {
+        html.removeAttribute("data-note-keyboard");
+      }
+    };
+    placeAboveKeyboard();
+    window.visualViewport?.addEventListener("resize", placeAboveKeyboard);
+    window.visualViewport?.addEventListener("scroll", placeAboveKeyboard);
+    window.addEventListener("resize", placeAboveKeyboard);
+
     return () => {
       observer.disconnect();
       narrowQuery();
       document.removeEventListener("pointerdown", onPointerDown, true);
+      window.visualViewport?.removeEventListener("resize", placeAboveKeyboard);
+      window.visualViewport?.removeEventListener("scroll", placeAboveKeyboard);
+      window.removeEventListener("resize", placeAboveKeyboard);
+      html.style.removeProperty("--note-keyboard-inset");
+      html.removeAttribute("data-note-keyboard");
       root.removeAttribute("inputmode");
     };
   }, [editor]);

@@ -1,11 +1,9 @@
 "use client";
 
-import { SideMenuExtension } from "@blocknote/core/extensions";
-import { useBlockNoteEditor, useExtension } from "@blocknote/react";
+import { useBlockNoteEditor } from "@blocknote/react";
 import { useEffect, useSyncExternalStore } from "react";
 import {
   blockIdFromTarget,
-  blockIds,
   canDropBlock,
   dropPlacement,
   LONG_PRESS_MS,
@@ -25,7 +23,6 @@ interface Properties {
 export function NoteBlockDrag(props: Properties) {
   const { editable } = props;
   const editor = useBlockNoteEditor();
-  const sideMenu = useExtension(SideMenuExtension);
   const narrow = useSyncExternalStore(
     subscribeNarrowNote,
     narrowNoteSnapshot,
@@ -43,7 +40,6 @@ export function NoteBlockDrag(props: Properties) {
     let sourceId: string | null = null;
     let dragging = false;
     let suppressClick = false;
-    let dataTransfer: DataTransfer | null = null;
 
     const clearMarker = () => {
       for (const node of root.querySelectorAll<HTMLElement>("[data-note-drop]")) {
@@ -77,34 +73,10 @@ export function NoteBlockDrag(props: Properties) {
     };
 
     const finishDrag = (x: number, y: number) => {
-      const before = blockIds(editor.document);
-      if (editor.prosemirrorView.dragging !== null && dataTransfer) {
-        const target = document.elementFromPoint(x, y) ?? root;
-        target.dispatchEvent(
-          new DragEvent("drop", {
-            bubbles: true,
-            cancelable: true,
-            clientX: x,
-            clientY: y,
-            dataTransfer,
-          }),
-        );
-        document.dispatchEvent(
-          new DragEvent("dragend", {
-            bubbles: true,
-            cancelable: true,
-            clientX: x,
-            clientY: y,
-            dataTransfer,
-          }),
-        );
-      }
-      if (blockIds(editor.document) === before) moveBlock(x, y);
-
-      sideMenu.blockDragEnd();
+      moveBlock(x, y);
       clearMarker();
+      root.classList.remove("note-block-dragging");
       root.removeAttribute("inputmode");
-      dataTransfer = null;
       dragging = false;
       sourceId = null;
       suppressClick = true;
@@ -116,27 +88,10 @@ export function NoteBlockDrag(props: Properties) {
       if (!block) return;
 
       dragging = true;
+      window.getSelection()?.removeAllRanges();
+      root.classList.add("note-block-dragging");
       root.setAttribute("inputmode", "none");
       hideSoftwareKeyboard();
-
-      try {
-        if (typeof DataTransfer !== "undefined") {
-          dataTransfer = new DataTransfer();
-          sideMenu.blockDragStart({ dataTransfer, clientY: y }, block);
-          document.dispatchEvent(
-            new DragEvent("dragstart", {
-              bubbles: true,
-              cancelable: true,
-              clientX: x,
-              clientY: y,
-              dataTransfer,
-            }),
-          );
-        }
-      } catch {
-        dataTransfer = null;
-      }
-
       markDrop(x, y);
     };
 
@@ -163,17 +118,6 @@ export function NoteBlockDrag(props: Properties) {
       }
 
       event.preventDefault();
-      if (dataTransfer && editor.prosemirrorView.dragging) {
-        root.dispatchEvent(
-          new DragEvent("dragover", {
-            bubbles: true,
-            cancelable: true,
-            clientX: event.clientX,
-            clientY: event.clientY,
-            dataTransfer,
-          }),
-        );
-      }
       markDrop(event.clientX, event.clientY);
     };
 
@@ -206,6 +150,10 @@ export function NoteBlockDrag(props: Properties) {
       event.stopPropagation();
     };
 
+    const onDragStart = (event: DragEvent) => {
+      event.preventDefault();
+    };
+
     root.addEventListener("pointerdown", onPointerDown);
     root.addEventListener("pointermove", onPointerMove);
     root.addEventListener("pointerup", onPointerUp);
@@ -213,6 +161,7 @@ export function NoteBlockDrag(props: Properties) {
     root.addEventListener("touchend", onTouchEnd, { passive: false });
     root.addEventListener("contextmenu", onContextMenu);
     root.addEventListener("click", onClick, true);
+    root.addEventListener("dragstart", onDragStart);
 
     return () => {
       window.clearTimeout(timer);
@@ -223,10 +172,12 @@ export function NoteBlockDrag(props: Properties) {
       root.removeEventListener("touchend", onTouchEnd);
       root.removeEventListener("contextmenu", onContextMenu);
       root.removeEventListener("click", onClick, true);
+      root.removeEventListener("dragstart", onDragStart);
       clearMarker();
+      root.classList.remove("note-block-dragging");
       root.removeAttribute("inputmode");
     };
-  }, [editable, editor, narrow, sideMenu]);
+  }, [editable, editor, narrow]);
 
   return null;
 }

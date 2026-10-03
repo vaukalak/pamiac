@@ -63,8 +63,36 @@ export function formattingToolbarMenuOpen() {
   return false;
 }
 
+export const MOBILE_SHEET_SELECTOR = [
+  ".bn-suggestion-menu",
+  ".bn-select",
+  ".bn-color-picker-dropdown",
+  ".note-turn-into-menu",
+  ".bn-drag-handle-menu",
+].join(", ");
+
 export function noteMenuOpen() {
   return document.querySelector(NOTE_MENU_SELECTOR) !== null;
+}
+
+export function mobileSheetOpen() {
+  return document.querySelector(MOBILE_SHEET_SELECTOR) !== null;
+}
+
+export function keyboardInset(
+  innerHeight: number,
+  viewport: { height: number; offsetTop: number } | null,
+) {
+  if (!viewport) return 0;
+  return Math.max(0, Math.round(innerHeight - viewport.offsetTop - viewport.height));
+}
+
+export function keyboardCoversViewport(
+  viewportHeight: number,
+  largestViewportHeight: number,
+  inset: number,
+) {
+  return inset > 0 || largestViewportHeight - viewportHeight > 150;
 }
 
 export function hideSoftwareKeyboard() {
