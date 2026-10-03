@@ -9,6 +9,7 @@ import { connectPlatform, type ConnectPlatformId } from "@/lib/connect-platforms
 
 interface Properties {
   embedded?: boolean;
+  initialPlatformId?: ConnectPlatformId;
   onClose?: () => void;
   titleId?: string;
 }
@@ -19,8 +20,10 @@ type ConnectScreen =
   | { kind: "advanced"; platformId: ConnectPlatformId; tab: ConnectionTabId };
 
 export function ConnectChooser(props: Properties) {
-  const { embedded = false, onClose, titleId } = props;
-  const [screen, setScreen] = useState<ConnectScreen>({ kind: "picker" });
+  const { embedded = false, initialPlatformId, onClose, titleId } = props;
+  const [screen, setScreen] = useState<ConnectScreen>(
+    initialPlatformId ? { kind: "platform", platformId: initialPlatformId } : { kind: "picker" },
+  );
 
   useEffect(() => {
     if (!titleId) return;

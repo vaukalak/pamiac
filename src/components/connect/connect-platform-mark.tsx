@@ -43,12 +43,6 @@ export function ConnectPlatformMark(props: Properties) {
           <path d="M10.5 21.5 21.5 10.5" />
         </svg>
       ) : null}
-      {id === "deepseek" ? (
-        <svg viewBox="0 0 32 32">
-          <path d="M7 18c2.5-7 8-11 14-9 3 .8 5 3.2 5 6.2 0 4.4-4.2 7.3-9.2 7.3H12l-2.2 4.2" />
-          <path d="M12 18.5h6.5" />
-        </svg>
-      ) : null}
       {id === "other" ? (
         <svg viewBox="0 0 32 32">
           <circle cx="8" cy="16" r="2" />

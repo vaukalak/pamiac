@@ -1,3 +1,4 @@
+import { TokenConnectOpener } from "@/components/tokens/token-connect-opener";
 import { TokenHeading } from "@/components/tokens/token-heading";
 import { TokenKeys } from "@/components/tokens/token-keys";
 
@@ -11,6 +12,7 @@ export function TokenManager(props: Properties) {
   return (
     <>
       <TokenHeading spaceName={spaceName} />
+      <TokenConnectOpener />
       <TokenKeys />
     </>
   );

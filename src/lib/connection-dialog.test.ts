@@ -80,9 +80,11 @@ describe("new connection dialog", () => {
     expect(agent).not.toMatch(/Paste this endpoint\./);
     expect(platforms).not.toMatch(/https:\/\/pamiac\.com\/oauth\/consent/);
     expect(platforms).not.toMatch(/https:\/\/cursor\.com|https:\/\/chatgpt\.com/);
-    expect(platforms.replace("Connect Pamiac to Cursor in one click.", "")).not.toMatch(
-      /one click/i,
-    );
+    expect(
+      platforms
+        .replace("Connect Pamiac to Cursor in one click.", "")
+        .replace('blurb: "One click"', ""),
+    ).not.toMatch(/one click/i);
   });
 
   it("publishes the public MCP URL instead of the page origin", () => {
@@ -131,6 +133,34 @@ describe("new connection dialog", () => {
     const css = read("src/app/globals.css");
 
     expect(css).toMatch(/\.library-shell \.token-connect-dialog \.error \{\s*color: #ffb4ab;\s*\}/);
+  });
+
+  it("paints the connection dialog opaque and keeps the home panel and consent card translucent", () => {
+    const css = read("src/app/globals.css");
+    const chrome = slice(css, ".home .connect-agent-panel,", ".home .connect-agent-panel {");
+    const home = slice(
+      css,
+      ".home .connect-agent-panel {",
+      ".library-shell .token-connect-dialog.token-connect {",
+    );
+    const dialog = slice(
+      css,
+      ".library-shell .token-connect-dialog.token-connect {\n  background:",
+      ".token-connect h2,",
+    );
+    const consent = slice(css, ".auth-card.connect-consent {", ".auth-card.connect-consent h1 {");
+    const backdrop = slice(css, ".share-backdrop {", ".share-dialog {");
+
+    expect(chrome).toMatch(/\.library-shell \.token-connect-dialog\.token-connect \{/);
+    expect(chrome).toMatch(/width: min\(660px, 100%\);/);
+    expect(chrome).toMatch(/border: 1px solid rgba\(185, 245, 66, 0\.32\);/);
+    expect(chrome).toMatch(/border-radius: 22px;/);
+    expect(chrome).not.toMatch(/background:/);
+    expect(home).toMatch(/background:\s*rgba\(8, 14, 11, 0\.94\);/);
+    expect(dialog).toMatch(/background:\s*rgb\(8, 14, 11\);/);
+    expect(dialog).not.toMatch(/rgba\(/);
+    expect(consent).toMatch(/background:\s*rgba\(8, 14, 11, 0\.94\);/);
+    expect(backdrop).toMatch(/background:\s*var\(--scrim\);/);
   });
 
   it("keeps the selected connection tab label readable on hover", () => {

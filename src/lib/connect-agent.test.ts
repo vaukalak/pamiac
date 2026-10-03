@@ -66,7 +66,9 @@ describe("connect agent platforms", () => {
       /\/api\/tokens|Create token/,
     );
     assert.doesNotMatch(
-      platforms.replace("Connect Pamiac to Cursor in one click.", ""),
+      platforms
+        .replace("Connect Pamiac to Cursor in one click.", "")
+        .replace('blurb: "One click"', ""),
       /one click/i,
     );
     assert.doesNotMatch(platforms, /https:\/\/cursor\.com|https:\/\/chatgpt\.com/);
@@ -106,9 +108,8 @@ describe("connect agent platforms", () => {
     assert.equal(connectTokenName("cursor"), "Cursor on this computer");
     assert.equal(connectTokenName("claude"), "Claude on work laptop");
     assert.equal(connectTokenName("chatgpt"), "ChatGPT on this computer");
-    assert.equal(connectTokenName("gemini"), "Gemini on this computer");
+    assert.equal(connectTokenName("gemini"), "Gemini Spark on this computer");
     assert.equal(connectTokenName("grok"), "Grok on this computer");
-    assert.equal(connectTokenName("deepseek"), "DeepSeek on this computer");
     assert.equal(connectTokenName("other"), "Custom coding agent");
     const fields = read("src/components/connect/connect-api-token-fields.tsx");
     assert.match(connect, /<ConnectApiTokenFields /);

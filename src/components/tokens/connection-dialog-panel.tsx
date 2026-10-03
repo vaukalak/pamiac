@@ -2,13 +2,15 @@
 
 import { useEffect, useId, useRef } from "react";
 import { ConnectChooser } from "@/components/connect/connect-chooser";
+import type { ConnectPlatformId } from "@/lib/connect-platforms";
 
 interface Properties {
+  initialPlatformId?: ConnectPlatformId;
   onClose: () => void;
 }
 
 export function ConnectionDialogPanel(props: Properties) {
-  const { onClose } = props;
+  const { initialPlatformId, onClose } = props;
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
   const onCloseRef = useRef(onClose);
@@ -60,7 +62,7 @@ export function ConnectionDialogPanel(props: Properties) {
       role="dialog"
       tabIndex={-1}
     >
-      <ConnectChooser onClose={onClose} titleId={titleId} />
+      <ConnectChooser initialPlatformId={initialPlatformId} onClose={onClose} titleId={titleId} />
     </div>
   );
 }
