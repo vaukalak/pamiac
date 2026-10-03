@@ -2842,7 +2842,7 @@ code {
   right: 0;
   bottom: auto;
   left: auto;
-  background: var(--home-panel);
+  background: rgba(13, 17, 14, 0.96);
   border-color: var(--home-hair);
   color: var(--home-text);
 }

@@ -61,7 +61,7 @@ describe("library profile corner", () => {
     assert.match(menu, /right:\s*0/);
     assert.match(menu, /bottom:\s*auto/);
     assert.match(menu, /left:\s*auto/);
-    assert.match(menu, /background:\s*var\(--home-panel\)/);
+    assert.match(menu, /background:\s*rgba\(13,\s*17,\s*14,\s*0\.96\)/);
     assert.equal(/bottom:\s*calc\(100% \+ 8px\)/.test(menu), false);
     assert.match(button, /border-color:\s*var\(--home-lime\)/);
     assert.match(button, /color:\s*var\(--home-lime\)/);
