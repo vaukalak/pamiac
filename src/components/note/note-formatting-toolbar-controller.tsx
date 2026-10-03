@@ -9,7 +9,7 @@ import {
 import { useSyncExternalStore } from "react";
 import { NoteFormattingToolbar } from "@/components/note/note-formatting-toolbar";
 import { NoteMobileFormattingToolbar } from "@/components/note/note-mobile-formatting-toolbar";
-import { formattingToolbarMenuOpen } from "@/lib/note-menu-keyboard";
+import { formattingToolbarMenuOpen, mobileSheetOpen } from "@/lib/note-menu-keyboard";
 import {
   narrowNoteServerSnapshot,
   narrowNoteSnapshot,
@@ -28,7 +28,7 @@ function subscribeFormattingToolbarMenu(onChange: () => void) {
 }
 
 function formattingToolbarMenuSnapshot() {
-  return formattingToolbarMenuOpen();
+  return formattingToolbarMenuOpen() || mobileSheetOpen();
 }
 
 function formattingToolbarMenuServerSnapshot() {

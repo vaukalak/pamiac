@@ -35,13 +35,13 @@ describe("mobile block menu sheets", () => {
     const sheet = sheetMedia();
     const menus = block(
       sheet,
-      ".library-shell .note-editor .bn-drag-handle-menu,\n  .library-shell .note-editor .note-turn-into-menu,\n  .library-shell .note-editor .bn-drag-handle-menu .bn-color-picker-dropdown {",
+      ".library-shell .note-editor .bn-drag-handle-menu,\n  .library-shell .note-editor .note-turn-into-menu,\n  .library-shell .note-editor .bn-color-picker-dropdown {",
     );
 
     assert.match(menus, /position:\s*fixed\s*!important/);
     assert.match(
       menus,
-      /bottom:\s*calc\(100dvh - var\(--bn-vv-top, 0px\) - var\(--bn-vv-height, 100dvh\)\)\s*!important/,
+      /bottom:\s*calc\(var\(--note-keyboard-inset, 0px\) \+ var\(--note-formatting-bar, 0px\)\)\s*!important/,
     );
     assert.match(menus, /left:\s*var\(--bn-vv-left, 0px\)\s*!important/);
     assert.match(menus, /right:\s*auto\s*!important/);
@@ -55,29 +55,24 @@ describe("mobile block menu sheets", () => {
     assert.match(menus, /border-radius:\s*16px 16px 0 0\s*!important/);
     assert.match(menus, /padding-bottom:\s*max\(8px, env\(safe-area-inset-bottom\)\)/);
     assert.match(menus, /\.note-turn-into-menu/);
-    assert.match(menus, /\.bn-drag-handle-menu \.bn-color-picker-dropdown/);
-    assert.equal(/^\.library-shell \.note-editor \.bn-color-picker-dropdown/m.test(menus), false);
+    assert.match(menus, /\.bn-color-picker-dropdown/);
+    assert.match(sheet, /\.bn-select/);
   });
 
-  it("stacks an open submenu above the drag-handle sheet without pinning the toolbar color menu", () => {
+  it("stacks turn-into and color above the menu line in the same scrollable sheet", () => {
     const sheet = sheetMedia();
     const header =
-      ".library-shell .note-editor .note-turn-into-menu,\n  .library-shell .note-editor .bn-drag-handle-menu .bn-color-picker-dropdown {";
+      ".library-shell .note-editor .note-turn-into-menu,\n  .library-shell .note-editor .bn-color-picker-dropdown {";
     const raised = block(sheet.slice(sheet.lastIndexOf(header)), header);
-    let sawColorPicker = false;
-    for (const chunk of sheet.split("}")) {
-      const brace = chunk.indexOf("{");
-      if (brace < 0 || !chunk.slice(0, brace).includes(".bn-color-picker-dropdown")) continue;
-      sawColorPicker = true;
-      for (const part of chunk.slice(0, brace).split(",")) {
-        if (!part.includes(".bn-color-picker-dropdown")) continue;
-        assert.match(part, /\.bn-drag-handle-menu/);
-      }
-    }
 
+    assert.match(
+      raised,
+      /bottom:\s*calc\(\s*var\(--note-keyboard-inset, 0px\) \+ var\(--note-formatting-bar, 0px\) \+\s*var\(--note-menu-line, 0px\)\s*\)\s*!important/,
+    );
     assert.match(raised, /z-index:\s*90\s*!important/);
-    assert.equal(sawColorPicker, true);
-    assert.equal(/bn-formatting-toolbar/.test(sheet), false);
+    assert.match(sheet, /html\[data-note-keyboard\][^{]*\.bn-color-picker-dropdown/);
+    assert.match(sheet, /padding-bottom:\s*0\s*!important/);
+    assert.equal(/visibility:\s*hidden/.test(sheet), false);
     assert.equal(/bn-table-handle-menu/.test(sheet), false);
   });
 
@@ -124,7 +119,8 @@ describe("mobile block menu sheets", () => {
     assert.match(source, /NARROW_QUERY = "\(max-width: 760px\)"/);
     assert.match(source, /\.bn-drag-handle-menu/);
     assert.match(source, /\.note-turn-into-menu/);
-    assert.match(source, /\.bn-drag-handle-menu \.bn-color-picker-dropdown/);
+    assert.match(source, /\.bn-color-picker-dropdown/);
+    assert.match(source, /\.bn-select/);
     assert.match(source, /event\.preventDefault\(\)/);
     assert.equal(/stopPropagation/.test(source), false);
     assert.match(source, /new MouseEvent\("mousedown"/);

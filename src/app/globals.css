@@ -2938,11 +2938,12 @@ code {
     pointer-events: none !important;
     will-change: auto !important;
   }
-  .library-shell .note-editor .bn-suggestion-menu {
+  .library-shell .note-editor .bn-suggestion-menu,
+  .library-shell .note-editor .bn-select {
     position: fixed !important;
     top: auto !important;
     right: auto !important;
-    bottom: calc(100dvh - var(--bn-vv-top, 0px) - var(--bn-vv-height, 100dvh)) !important;
+    bottom: calc(var(--note-keyboard-inset, 0px) + var(--note-formatting-bar, 0px)) !important;
     left: var(--bn-vv-left, 0px) !important;
     transform: none !important;
     width: var(--bn-vv-width, 100%) !important;
@@ -2994,11 +2995,11 @@ code {
   }
   .library-shell .note-editor .bn-drag-handle-menu,
   .library-shell .note-editor .note-turn-into-menu,
-  .library-shell .note-editor .bn-drag-handle-menu .bn-color-picker-dropdown {
+  .library-shell .note-editor .bn-color-picker-dropdown {
     position: fixed !important;
     top: auto !important;
     right: auto !important;
-    bottom: calc(100dvh - var(--bn-vv-top, 0px) - var(--bn-vv-height, 100dvh)) !important;
+    bottom: calc(var(--note-keyboard-inset, 0px) + var(--note-formatting-bar, 0px)) !important;
     left: var(--bn-vv-left, 0px) !important;
     transform: none !important;
     width: var(--bn-vv-width, 100%) !important;
@@ -3016,7 +3017,10 @@ code {
     padding-bottom: max(8px, env(safe-area-inset-bottom));
   }
   .library-shell .note-editor .note-turn-into-menu,
-  .library-shell .note-editor .bn-drag-handle-menu .bn-color-picker-dropdown {
+  .library-shell .note-editor .bn-color-picker-dropdown {
+    bottom: calc(
+      var(--note-keyboard-inset, 0px) + var(--note-formatting-bar, 0px) + var(--note-menu-line, 0px)
+    ) !important;
     z-index: 90 !important;
   }
   .library-shell .note-editor .bn-drag-handle-menu:has(.note-turn-into-menu),
@@ -3045,11 +3049,33 @@ code {
   .note-editor .bn-block[data-note-drop="after"] {
     box-shadow: inset 0 -2px 0 var(--bn-colors-highlights-blue-text, var(--teal));
   }
-  :root:has(.library-shell .note-editor .bn-suggestion-menu) .bn-mobile-formatting-toolbar,
-  :root:has(.library-shell .note-editor .bn-drag-handle-menu) .bn-mobile-formatting-toolbar,
-  :root:has(.library-shell .note-editor .note-turn-into-menu) .bn-mobile-formatting-toolbar {
-    visibility: hidden;
-    pointer-events: none;
+  .note-editor.note-block-dragging {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+  .bn-drag-preview {
+    opacity: 0.001 !important;
+    background: transparent !important;
+    color: inherit !important;
+  }
+  .bn-mobile-formatting-toolbar {
+    top: auto !important;
+    right: auto !important;
+    bottom: var(--note-keyboard-inset, 0px) !important;
+    left: var(--bn-vv-left, 0px) !important;
+    width: var(--bn-vv-width, 100%) !important;
+    transform: none !important;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    z-index: 100 !important;
+  }
+  html[data-note-keyboard] .bn-mobile-formatting-toolbar,
+  html[data-note-keyboard] .library-shell .note-editor .bn-suggestion-menu,
+  html[data-note-keyboard] .library-shell .note-editor .bn-select,
+  html[data-note-keyboard] .library-shell .note-editor .bn-drag-handle-menu,
+  html[data-note-keyboard] .library-shell .note-editor .note-turn-into-menu,
+  html[data-note-keyboard] .library-shell .note-editor .bn-color-picker-dropdown {
+    padding-bottom: 0 !important;
   }
 }
 .library-shell .library-crumb {

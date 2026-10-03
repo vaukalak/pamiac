@@ -14,6 +14,8 @@ import {
   consumeResumeEditing,
   focusAfterMenuClose,
   inputModeWhileMenu,
+  keyboardCoversViewport,
+  keyboardInset,
 } from "./note-menu-keyboard.ts";
 import { NARROW_NOTE_QUERY } from "./note-narrow.ts";
 
@@ -44,6 +46,14 @@ describe("mobile note chrome", () => {
     assert.equal(inputModeWhileMenu(false, true), null);
     assert.equal(focusAfterMenuClose(true), "focus");
     assert.equal(focusAfterMenuClose(false), "blur");
+    assert.equal(keyboardInset(800, null), 0);
+    assert.equal(keyboardInset(800, { height: 800, offsetTop: 0 }), 0);
+    assert.equal(keyboardInset(800, { height: 500, offsetTop: 0 }), 300);
+    assert.equal(keyboardInset(800, { height: 420, offsetTop: 40 }), 340);
+    assert.equal(keyboardInset(500, { height: 800, offsetTop: 0 }), 0);
+    assert.equal(keyboardCoversViewport(800, 800, 0), false);
+    assert.equal(keyboardCoversViewport(500, 800, 0), true);
+    assert.equal(keyboardCoversViewport(800, 800, 12), true);
 
     cancelResumeEditing();
     assert.equal(consumeResumeEditing(), false);
@@ -98,7 +108,14 @@ describe("mobile note chrome", () => {
     assert.match(source, /LONG_PRESS_MS/);
     assert.match(source, /setAttribute\("inputmode", "none"\)/);
     assert.match(source, /hideSoftwareKeyboard\(\)/);
-    assert.match(source, /sideMenu\.blockDragStart/);
+    assert.match(source, /editor\.removeBlocks\(\[source\]\)/);
+    assert.match(source, /editor\.insertBlocks\(\[source\], refreshed, placement\)/);
+    const removeAt = source.indexOf("editor.removeBlocks([source])");
+    const insertAt = source.indexOf("editor.insertBlocks([source], refreshed, placement)");
+    assert.equal(removeAt >= 0 && removeAt < insertAt, true);
+    assert.equal(/blockDragStart/.test(source), false);
+    assert.equal(/new DragEvent\(/.test(source), false);
+    assert.match(source, /addEventListener\("dragstart", onDragStart\)/);
     assert.match(source, /touchend/);
     assert.match(source, /passive: false/);
     assert.match(source, /event\.preventDefault\(\)/);
@@ -124,6 +141,10 @@ describe("mobile note chrome", () => {
     assert.match(surface, /<NoteFormattingToolbarController \/>/);
     assert.match(surface, /<NoteMenuKeyboard \/>/);
     assert.match(surface, /<NoteBlockDrag editable=\{editable\} \/>/);
+    const controller = read("../components/note/note-formatting-toolbar-controller.tsx");
+    const bar = read("../components/note/note-mobile-formatting-bar.tsx");
+    assert.match(controller, /mobileSheetOpen\(\)/);
+    assert.match(bar, /--note-formatting-bar/);
     assert.match(keyboard, /inputModeWhileMenu/);
     assert.match(keyboard, /focusAfterMenuClose/);
     assert.match(keyboard, /setAttribute\("inputmode", "none"\)/);
