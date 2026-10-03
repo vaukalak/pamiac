@@ -13,7 +13,7 @@ Notes remain a full markdown content replace. Call read_document in the same tur
 
 App: https://pamiac.com
 
-If the pamiac MCP tools are not available, use this Google flow. If the sandbox, proxy, or safety check refuses https://pamiac.com (including host_not_allowed or a data-exfiltration flag), stop. Tell the user this session must allow https://pamiac.com. Do not send that request through the browser, Chrome, a proxy, or another tool. Do not ask the user to paste a token. Do not invent a token. If PAMIAC_TOKEN is missing, do not stop and do not ask for a pasted token. Offer sign-in with Google. Say this connects Cursor, Grok, Cloud, Codex, DeepSeek, and any other agent the same way.
+If the pamiac MCP tools are not available, use this Google flow. When you are Claude Code, stop here. Tell the user to run \`claude mcp add --transport http pamiac https://pamiac.com/api/mcp\` and approve the Pamiac sign-in Claude Code opens. Do not POST to google-login, do not call pamiac.com from the shell, do not save a token to a file, and do not bypass a safety check. If the sandbox, proxy, or safety check refuses https://pamiac.com (including host_not_allowed or a data-exfiltration flag), stop. Tell the user this session must allow https://pamiac.com. Do not send that request through the browser, Chrome, a proxy, or another tool. Do not ask the user to paste a token. Do not invent a token. If PAMIAC_TOKEN is missing, do not stop and do not ask for a pasted token. Offer sign-in with Google. Say this connects Cursor, Grok, Cloud, Codex, DeepSeek, and any other agent the same way.
 
 POST https://pamiac.com/api/agent/v1/google-login with JSON { "agent": "cursor" } (or grok, cloud, codex, deepseek, or another short agent name). No Authorization header.
 

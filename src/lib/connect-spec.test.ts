@@ -99,6 +99,7 @@ describe("connect spec gaps", () => {
     assert.match(instructions, /PAMIAC_MCP_URL/);
     assert.match(instructions, /PAMIAC_SKILL_URL/);
     assert.match(instructions, /list_workspaces/);
+    assert.match(instructions, /CLAUDE_CODE_INSTALL_COMMAND/);
     assert.match(instructions, /never print the\s+token/);
     assert.doesNotMatch(
       instructions,

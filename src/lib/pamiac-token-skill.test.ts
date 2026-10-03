@@ -26,6 +26,9 @@ test("agent skill reads PAMIAC_TOKEN and keeps the diagram contract", () => {
     skill,
     /If `PAMIAC_TOKEN` is missing, do not stop and do not ask for a pasted token/,
   );
+  assert.match(skill, /When you are Claude Code, stop here/);
+  assert.match(skill, /claude mcp add --transport http pamiac https:\/\/pamiac\.com\/api\/mcp/);
+  assert.match(skill, /Do not POST to google-login/);
   assert.match(skill, /Offer sign-in with Google/);
   assert.match(skill, /POST https:\/\/pamiac\.com\/api\/agent\/v1\/google-login/);
   assert.match(skill, /Do not invent a token/);
@@ -97,6 +100,8 @@ test("token page names PAMIAC_TOKEN when the secret is shown and in the agent sk
   assert.doesNotMatch(skill, /Set PAMIAC_TOKEN/);
   assert.match(skill, /Authorization: Bearer <PAMIAC_TOKEN>/);
   assert.match(skill, /Do not ask the user to paste the token/);
+  assert.match(skill, /When you are Claude Code, stop here/);
+  assert.match(skill, /claude mcp add --transport http pamiac https:\/\/pamiac\.com\/api\/mcp/);
   assert.match(skill, /App: https:\/\/pamiac\.com/);
   assert.match(skill, /search_documents/);
   assert.match(skill, /list_workspaces/);

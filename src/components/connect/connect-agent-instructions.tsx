@@ -1,4 +1,8 @@
-import { PAMIAC_MCP_URL, PAMIAC_SKILL_URL } from "@/lib/connect-platforms";
+import {
+  CLAUDE_CODE_INSTALL_COMMAND,
+  PAMIAC_MCP_URL,
+  PAMIAC_SKILL_URL,
+} from "@/lib/connect-platforms";
 import { Paragraph } from "@/ui/Paragraph";
 
 export function ConnectAgentInstructions() {
@@ -11,6 +15,7 @@ export function ConnectAgentInstructions() {
         required, never ask the user to paste a password or OAuth access token, then call
         list_workspaces.
       </Paragraph>
+      <Paragraph>{`Claude Code: run ${CLAUDE_CODE_INSTALL_COMMAND}, then approve the Pamiac sign-in.`}</Paragraph>
       <Paragraph>
         If OAuth is unavailable: use a Pamiac API token stored as PAMIAC_TOKEN and never print the
         token.
