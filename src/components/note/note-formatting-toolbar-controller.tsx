@@ -35,6 +35,12 @@ function formattingToolbarMenuServerSnapshot() {
   return false;
 }
 
+const editMenuFloatingOptions = {
+  elementProps: {
+    className: "note-edit-menu",
+  },
+};
+
 export function NoteFormattingToolbarController() {
   const narrow = useSyncExternalStore(
     subscribeNarrowNote,
@@ -50,12 +56,22 @@ export function NoteFormattingToolbarController() {
   );
 
   if (!narrow) {
-    return <FormattingToolbarController formattingToolbar={NoteFormattingToolbar} />;
+    return (
+      <FormattingToolbarController
+        floatingUIOptions={editMenuFloatingOptions}
+        formattingToolbar={NoteFormattingToolbar}
+      />
+    );
   }
 
   if ((keyboardOpen && focused) || toolbarMenuOpen) {
     return <NoteMobileFormattingToolbar />;
   }
 
-  return <DesktopFormattingToolbarController formattingToolbar={NoteFormattingToolbar} />;
+  return (
+    <DesktopFormattingToolbarController
+      floatingUIOptions={editMenuFloatingOptions}
+      formattingToolbar={NoteFormattingToolbar}
+    />
+  );
 }

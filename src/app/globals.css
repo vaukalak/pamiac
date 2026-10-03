@@ -3051,6 +3051,56 @@ code {
     visibility: hidden;
     pointer-events: none;
   }
+  html:has(.library-shell),
+  body:has(.library-shell) {
+    height: 100%;
+    overflow: hidden;
+  }
+  .library-shell {
+    position: fixed;
+    top: var(--bn-vv-top, 0px);
+    left: var(--bn-vv-left, 0px);
+    width: var(--bn-vv-width, 100%);
+    height: var(--bn-vv-height, 100dvh);
+    min-height: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+    scroll-padding-top: 120px;
+  }
+  .library-shell .library-mobile-header {
+    position: fixed;
+    top: var(--bn-vv-top, 0px);
+    left: var(--bn-vv-left, 0px);
+    right: auto;
+    width: var(--bn-vv-width, 100%);
+    z-index: 8 !important;
+  }
+  .library-shell > .library-sidebar,
+  .library-shell .library-menu-backdrop {
+    top: calc(var(--bn-vv-top, 0px) + 56px);
+  }
+  .library-shell .bn-mobile-formatting-toolbar,
+  .library-shell .note-edit-menu {
+    position: fixed !important;
+    top: calc(var(--bn-vv-top, 0px) + 56px) !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: var(--bn-vv-left, 0px) !important;
+    width: var(--bn-vv-width, 100%) !important;
+    max-width: none !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding-bottom: 0 !important;
+    transform: none !important;
+    transform-origin: top left !important;
+    z-index: 6 !important;
+    background: var(--home-ground);
+    border-bottom: 1px solid var(--home-hair);
+  }
+  .library-shell:has(.bn-mobile-formatting-toolbar) > .library-main,
+  .library-shell:has(.note-edit-menu) > .library-main {
+    padding-top: 120px;
+  }
 }
 .library-shell .library-crumb {
   margin: 0 0 14px;
@@ -4167,6 +4217,27 @@ code {
   .library-shell > .library-status {
     grid-column: 1 / -1;
     grid-row: 2;
+  }
+  .library-mobile-header {
+    transform: translateY(var(--bn-vv-top, 0px));
+    z-index: 8 !important;
+  }
+  .library-shell .note-edit-menu {
+    position: fixed !important;
+    top: calc(var(--bn-vv-top, 0px) + 56px) !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: calc(var(--bn-vv-left, 0px) + 272px) !important;
+    max-width: calc(100vw - 352px);
+    margin: 0 !important;
+    transform: none !important;
+    z-index: 6 !important;
+  }
+  body:has(.library-shell-solo) .note-edit-menu {
+    left: calc(var(--bn-vv-left, 0px) + 32px) !important;
+  }
+  .library-shell:has(.note-edit-menu) > .library-main {
+    padding-top: 116px;
   }
 }
 .library-shell .doc-list {
