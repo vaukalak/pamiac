@@ -17,7 +17,7 @@ export function TokenSecret(props: Properties) {
   return (
     <div className="token-secret">
       <Paragraph>
-        Copy this key now. Set PAMIAC_TOKEN to this value. Pamiac will not show it again.
+        This API key is shown once. Copy it now. Set PAMIAC_TOKEN to this value.
       </Paragraph>
       <TokenSecretRow
         onResult={setMessage}

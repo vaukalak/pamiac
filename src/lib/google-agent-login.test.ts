@@ -271,8 +271,8 @@ describe("google agent login wiring", () => {
     assert.doesNotMatch(skill, /If PAMIAC_TOKEN is missing, say so and stop/);
     assert.doesNotMatch(skill, /pam_[A-Za-z0-9_-]{8,}/);
 
-    assert.match(agent, /PAMIAC_TOKEN has to be configured in the environment\./);
-    assert.match(agent, /Without that token, the skill offers sign-in with Google\./);
+    assert.match(agent, /It does not\s+contain credentials\./);
+    assert.match(agent, /PAMIAC_SKILL_URL/);
     assert.match(
       readme,
       /An agent without `PAMIAC_TOKEN` follows the skill and offers Google sign-in\./,

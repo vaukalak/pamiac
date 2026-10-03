@@ -145,12 +145,16 @@ test("connection dialog copies and downloads the skill without minting a key", (
     "utf8",
   );
 
-  assert.match(actions, />\s*Copy skill\s*</);
+  assert.match(actions, /label="Copy skill"/);
   assert.match(actions, />\s*Download SKILL\.md\s*</);
-  assert.match(actions, /navigator\.clipboard\.writeText\(TOKEN_SKILL_FILE\)/);
+  assert.match(actions, /text=\{TOKEN_SKILL_FILE\}/);
+  assert.match(
+    readFileSync(join(root, "src/components/connect/connect-copy-action.tsx"), "utf8"),
+    /navigator\.clipboard\.writeText\(text\)/,
+  );
   assert.match(actions, /download = "SKILL\.md"/);
-  assert.match(agent, /Give your agent the Pamiac skill/);
-  assert.match(agent, /The skill contains instructions, not credentials\./);
+  assert.match(agent, /Agent skill/);
+  assert.match(agent, /It does not\s+contain credentials\./);
   assert.doesNotMatch(actions + agent + dialog, /Create API key|Grant workspace access|Add key/);
 });
 

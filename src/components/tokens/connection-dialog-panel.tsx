@@ -1,10 +1,7 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
-import { ConnectionDialogHeading } from "@/components/tokens/connection-dialog-heading";
-import { ConnectionPanel } from "@/components/tokens/connection-panel";
-import { ConnectionTabs, type ConnectionTabId } from "@/components/tokens/connection-tabs";
-import { Paragraph } from "@/ui/Paragraph";
+import { useEffect, useId, useRef } from "react";
+import { ConnectChooser } from "@/components/connect/connect-chooser";
 
 interface Properties {
   onClose: () => void;
@@ -13,8 +10,6 @@ interface Properties {
 export function ConnectionDialogPanel(props: Properties) {
   const { onClose } = props;
   const titleId = useId();
-  const hintId = useId();
-  const [tab, setTab] = useState<ConnectionTabId>("agent");
   const panelRef = useRef<HTMLDivElement>(null);
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
@@ -33,7 +28,7 @@ export function ConnectionDialogPanel(props: Properties) {
         return;
       }
       if (event.key !== "Tab") return;
-      const focusable = [...node.querySelectorAll<HTMLElement>("button, input, a")].filter(
+      const focusable = [...node.querySelectorAll<HTMLElement>("button, input, select, a")].filter(
         (item) => !item.hasAttribute("disabled"),
       );
       if (focusable.length === 0) return;
@@ -57,19 +52,15 @@ export function ConnectionDialogPanel(props: Properties) {
 
   return (
     <div
-      aria-describedby={hintId}
       aria-labelledby={titleId}
       aria-modal="true"
-      className="share-dialog token-connect-dialog"
+      className="share-dialog token-connect-dialog token-connect"
       onClick={(event) => event.stopPropagation()}
       ref={panelRef}
       role="dialog"
       tabIndex={-1}
     >
-      <ConnectionDialogHeading onClose={onClose} titleId={titleId} />
-      <Paragraph id={hintId}>Choose how to connect.</Paragraph>
-      <ConnectionTabs onTab={setTab} tab={tab} />
-      <ConnectionPanel tab={tab} />
+      <ConnectChooser onClose={onClose} titleId={titleId} />
     </div>
   );
 }

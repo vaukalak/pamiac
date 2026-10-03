@@ -3,6 +3,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { authClient } from "@/lib/auth-client";
 import { oauthRedirectTarget } from "@/lib/oauth-return";
+import { Button } from "@/ui/Button";
 
 export function ConsentActions() {
   const decision = useMutation({
@@ -22,22 +23,22 @@ export function ConsentActions() {
 
   return (
     <div className="form-stack">
-      <button
-        className="btn"
-        type="button"
+      <Button
+        className="library-lime"
         disabled={decision.isPending}
         onClick={() => decision.mutate(true)}
+        type="button"
       >
         {decision.isPending ? "Working…" : "Allow"}
-      </button>
-      <button
-        className="btn secondary"
-        type="button"
+      </Button>
+      <Button
+        className="secondary"
         disabled={decision.isPending}
         onClick={() => decision.mutate(false)}
+        type="button"
       >
         Deny
-      </button>
+      </Button>
       {decision.isError ? <p className="error">{decision.error.message}</p> : null}
     </div>
   );

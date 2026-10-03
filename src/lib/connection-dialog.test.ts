@@ -6,8 +6,6 @@ import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "../..");
 
-const tokenSentence = "PAMIAC_TOKEN has to be configured in the environment.";
-
 function expect(actual: unknown) {
   const text = String(actual);
   return {
@@ -43,93 +41,72 @@ function slice(source: string, start: string, end?: string) {
 }
 
 describe("new connection dialog", () => {
-  it("states on every tab that PAMIAC_TOKEN has to be configured in the environment", () => {
-    const tabs = [
-      "src/components/tokens/connection-agent.tsx",
-      "src/components/tokens/connection-mcp.tsx",
-      "src/components/tokens/connection-chatgpt.tsx",
-    ];
+  it("keeps credentials out of the agent skill surface", () => {
+    const agent = read("src/components/tokens/connection-agent.tsx");
 
-    for (const path of tabs) {
-      const source = read(path);
-      expect(source).toMatch(new RegExp(`<Paragraph>${tokenSentence}</Paragraph>`));
-      expect(source.split(tokenSentence).length - 1).toBe(1);
-    }
+    expect(agent).toMatch(/It does not\s+contain credentials\./);
+    expect(agent).toMatch(/PAMIAC_SKILL_URL/);
+    expect(agent).not.toMatch(/pam_[A-Za-z0-9]{8,}/);
   });
 
-  it("keeps each tab's own job beside that sentence", () => {
+  it("keeps the skill job and the manual MCP job on their own surfaces", () => {
     const agent = read("src/components/tokens/connection-agent.tsx");
-    const mcp = read("src/components/tokens/connection-mcp.tsx");
-    const chatgpt = read("src/components/tokens/connection-chatgpt.tsx");
+    const mcp = read("src/components/connect/connect-manual-mcp.tsx");
+    const platforms = read("src/lib/connect-platforms.ts");
+    const picker = read("src/components/connect/connect-picker.tsx");
+    const agentSetup = read("src/components/connect/connect-agent-setup.tsx");
 
     expect(agent).toMatch(/<ConnectionSkillActions \/>/);
-    expect(agent).toMatch(/The skill contains instructions, not credentials\./);
-    expect(mcp).toMatch(/Publisher submission, and ChatGPT developer mode/);
+    expect(agent).toMatch(/The Pamiac skill teaches your agent how to work safely/);
+    expect(mcp).toMatch(/does not have a Pamiac setup button/);
     expect(mcp).toMatch(/<ConnectionMcpEndpoint \/>/);
-    expect(chatgpt).toMatch(/<Paragraph>Coming soon\.\.\.<\/Paragraph>/);
-    expect(agent + chatgpt).not.toMatch(/ConnectionMcpEndpoint|Copy link|window\.location/);
+    expect(platforms).toMatch(/Copy setup prompt/);
+    expect(platforms).not.toMatch(/Install in ChatGPT|Coming soon\.\.\./);
+    expect(agent).not.toMatch(/ConnectionMcpEndpoint|Copy link|window\.location/);
+    expect(picker).toMatch(/Connect Pamiac/);
+    expect(picker).toMatch(/<ConnectAgentSetup \/>/);
+    expect(agentSetup).toMatch(/Let your agent configure Pamiac/);
+    expect(picker).not.toMatch(/Mikhail|mikhail@example\.com|Oct 3, 2026/);
   });
 
-  it("keeps the paste cue on MCP and sends ChatGPT developer mode to that tab", () => {
+  it("keeps manual MCP on the public URL and does not invent an install URL", () => {
     const agent = read("src/components/tokens/connection-agent.tsx");
-    const mcp = read("src/components/tokens/connection-mcp.tsx");
-    const chatgpt = read("src/components/tokens/connection-chatgpt.tsx");
+    const mcp = read("src/components/connect/connect-manual-mcp.tsx");
+    const platforms = read("src/lib/connect-platforms.ts");
 
-    expect(mcp).toMatch(/<Paragraph>Paste this endpoint\.<\/Paragraph>/);
-    expect(mcp.split("Paste this endpoint.").length - 1).toBe(1);
-    expect(mcp.indexOf("PAMIAC_TOKEN has to be configured in the environment.")).toBeLessThan(
-      mcp.indexOf("Paste this endpoint."),
+    expect(mcp).toMatch(/Use Pamiac OAuth when your client supports it\./);
+    expect(mcp).toMatch(/Create API token/);
+    expect(mcp).not.toMatch(/const ENDPOINT|\{ENDPOINT\}|window\.location\.origin/);
+    expect(agent).not.toMatch(/Paste this endpoint\./);
+    expect(platforms).not.toMatch(/https:\/\/pamiac\.com\/oauth\/consent/);
+    expect(platforms).not.toMatch(/https:\/\/cursor\.com|https:\/\/chatgpt\.com/);
+    expect(platforms.replace("Connect Pamiac to Cursor in one click.", "")).not.toMatch(
+      /one click/i,
     );
-    expect(mcp.indexOf("<Paragraph>Paste this endpoint.</Paragraph>")).toBeLessThan(
-      mcp.indexOf("<ConnectionMcpEndpoint />"),
-    );
-    expect(mcp).not.toMatch(/const ENDPOINT|\{ENDPOINT\}|\/api\/mcp/);
-    expect(agent + chatgpt).not.toMatch(/Paste this endpoint\./);
-
-    expect(chatgpt).toMatch(/<Paragraph>Developer mode uses the MCP tab\.<\/Paragraph>/);
-    expect(chatgpt.split("Developer mode uses the MCP tab.").length - 1).toBe(1);
-    expect(chatgpt.indexOf("Coming soon...")).toBeLessThan(
-      chatgpt.indexOf("Developer mode uses the MCP tab."),
-    );
-    expect(agent + mcp).not.toMatch(/Developer mode uses the MCP tab\./);
   });
 
-  it("builds the absolute MCP URL after mount and renders nothing until it exists", () => {
+  it("publishes the public MCP URL instead of the page origin", () => {
     const endpoint = read("src/components/tokens/connection-mcp-endpoint.tsx");
-    const effect = slice(endpoint, "useEffect(", "async function copyLink");
 
-    expect(endpoint).toMatch(/^"use client";/);
-    expect(endpoint).toMatch(/const \[url, setUrl\] = useState\(""\);/);
-    expect(effect).toMatch(/setUrl\(`\$\{window\.location\.origin\}\/api\/mcp`\);/);
-    expect(effect).toMatch(/\}, \[\]\);/);
-    expect(endpoint.replace(effect, "")).not.toMatch(/window\.location/);
-    expect(endpoint).toMatch(/if \(!url\) return null;/);
-    expect(endpoint).not.toMatch(/href=""|href="\/api\/mcp"|https?:\/\/|pamiac\.com/);
+    expect(endpoint).toMatch(/PAMIAC_MCP_URL/);
+    expect(endpoint).not.toMatch(/window\.location/);
+    expect(endpoint).not.toMatch(/useState|useEffect/);
+    expect(endpoint).toMatch(/href=\{PAMIAC_MCP_URL\}/);
+    expect(endpoint).toMatch(/Copy MCP URL/);
     expect(endpoint).not.toMatch(/PAMIAC_TOKEN|token=|pam_[A-Za-z0-9_-]{8,}/);
     expect(read("src/app/api/mcp/route.ts")).toMatch(/export async function POST/);
   });
 
-  it("shows that URL as an anchor and copies the same value", () => {
+  it("copies the public MCP URL through the shared copy action", () => {
     const endpoint = read("src/components/tokens/connection-mcp-endpoint.tsx");
-    const copy = slice(endpoint, "async function copyLink", "if (!url)");
+    const copy = read("src/components/connect/connect-copy-action.tsx");
 
-    expect(endpoint).toMatch(/<a className="dev-link" href=\{url\}>\s*\{url\}\s*<\/a>/);
-    expect(endpoint).toMatch(/from "@\/ui\/Button"/);
-    expect(endpoint).toMatch(
-      /<Button className="secondary" onClick=\{\(\) => void copyLink\(\)\} type="button">\s*Copy link\s*<\/Button>/,
-    );
+    expect(endpoint).toMatch(/<a className="dev-link" href=\{PAMIAC_MCP_URL\}>/);
+    expect(endpoint).toMatch(/<ConnectCopyAction label="Copy MCP URL" text=\{PAMIAC_MCP_URL\} \/>/);
     expect(endpoint).not.toMatch(/<button[\s>]/);
-    expect(copy.indexOf('setMessage("")')).toBeLessThan(copy.indexOf("writeText(url)"));
-    expect(copy).toMatch(/navigator\.clipboard\.writeText\(url\)/);
-    expect(copy).toMatch(/setMessage\("Link copied\."\)/);
-    expect(copy).toMatch(/setMessage\("Could not copy the link\."\)/);
+    expect(copy).toMatch(/navigator\.clipboard\.writeText\(text\)/);
+    expect(copy).toMatch(/copied \? "Copied" : label/);
     expect(copy).not.toMatch(/TOKEN_SKILL|Skill copied|Could not copy the skill/);
-    expect(endpoint).toMatch(
-      /\{message === "Could not copy the link\." \? <Alert>\{message\}<\/Alert> : null\}/,
-    );
-    expect(endpoint).toMatch(
-      /\{message === "Link copied\." \? \(\s*<p className="text-pretty" role="status">\s*\{message\}\s*<\/p>\s*\) : null\}/,
-    );
   });
 
   it("keeps a long MCP link wrapping and keyboard-visible inside the library dialog", () => {
@@ -164,8 +141,8 @@ describe("new connection dialog", () => {
       ".library-shell .token-connect-dialog .btn.ghost {",
     );
 
-    expect(hover).toMatch(/background:\s*var\(--home-lime\);/);
-    expect(hover).toMatch(/\n\s*color:\s*var\(--home-on-lime\);/);
+    expect(hover).toMatch(/background:\s*transparent;/);
+    expect(hover).toMatch(/\n\s*color:\s*var\(--home-lime\);/);
     expect(hover).toMatch(
       /\.library-shell \.token-connect-dialog \.btn\.secondary:not\(\[aria-pressed="true"\]\) \{\s*background: transparent;\s*border-color: var\(--home-hair-strong\);\s*color: var\(--home-text\);\s*\}/,
     );
@@ -174,17 +151,16 @@ describe("new connection dialog", () => {
     );
   });
 
-  it("shows a failed skill copy as an alert and a successful copy as status text", () => {
+  it("shows a failed skill copy as an alert and a successful copy as Copied", () => {
     const actions = read("src/components/tokens/connection-skill-actions.tsx");
+    const copy = read("src/components/connect/connect-copy-action.tsx");
 
-    expect(actions).toMatch(/setMessage\("Could not copy the skill\."\)/);
-    expect(actions).toMatch(/setMessage\("Skill copied\."\)/);
-    expect(actions).toMatch(
-      /\{message === "Could not copy the skill\." \? <Alert>\{message\}<\/Alert> : null\}/,
-    );
-    expect(actions).toMatch(
-      /\{message === "Skill copied\." \? \(\s*<p className="text-pretty" role="status">\s*\{message\}\s*<\/p>\s*\) : null\}/,
-    );
+    expect(actions).toMatch(/label="Copy skill"/);
+    expect(actions).toMatch(/text=\{TOKEN_SKILL_FILE\}/);
+    expect(copy).toMatch(/Couldn't copy automatically\. Select and copy the value manually\./);
+    expect(copy).toMatch(/<Alert>\{COPY_FAILURE\}<\/Alert>/);
+    expect(copy).toMatch(/role="status"/);
+    expect(copy).toMatch(/copied \? "Copied" : label/);
     expect(actions).not.toMatch(/<Paragraph/);
   });
 });
