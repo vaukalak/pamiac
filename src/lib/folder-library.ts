@@ -17,6 +17,14 @@ export function folderName(input: string) {
   return name;
 }
 
+export function folderInAgentScope(
+  scope: { allScopes: boolean; workspaceIds: readonly string[] },
+  workspaceId: string | null,
+) {
+  if (scope.allScopes) return true;
+  return scope.workspaceIds.includes(workspaceId ?? PERSONAL_SPACE_ID);
+}
+
 export function libraryWorkspaceId(workspaceId: string) {
   if (!workspaceId || workspaceId === PERSONAL_SPACE_ID) return null;
   return workspaceId;

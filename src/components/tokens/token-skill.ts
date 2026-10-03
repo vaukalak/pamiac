@@ -1,11 +1,13 @@
 export const TOKEN_SKILL = `Read PAMIAC_TOKEN from the agent environment. The pamiac MCP server sends Authorization: Bearer <PAMIAC_TOKEN> when that variable is set. Do not print the token. Do not ask the user to paste the token. Do not invent a token.
 
-Use the pamiac MCP tools for search, list, read, create, and update. Do not curl the document API. Call list_workspaces, search_documents, list_documents, read_document, create_note, create_diagram, update_note, and update_diagram.
+Use the pamiac MCP tools for search, list, read, create, and update. Do not curl the document API. Call list_workspaces, search_documents, list_documents, read_document, create_note, create_diagram, update_note, update_diagram, list_folders, create_folder, move_document_to_folder, and move_folder.
 
 search_documents
 { "query": "checkout payment classes", "limit": 8 }
 
 list_workspaces lists the workspaces this connection can reach. Call it when the user does not name a workspace. When more than one workspace is returned, list those workspaces and ask the user which one to use before searching, reading, or writing. Do not guess. One workspace needs no question.
+
+list_folders, create_folder, move_document_to_folder, and move_folder place notes and diagrams in folders. list_folders returns folders with id, name, parentId, and workspaceId. workspaceId is null for the personal library. create_folder takes name, optional parentId, and optional workspaceId. When workspaceId is omitted, the folder is created in the same library as a new note. move_document_to_folder takes documentId and folderId. folderId null moves the document to the library root. move_folder takes folderId and parentId. parentId null moves the folder to the library root. A folder cannot move into itself. list_documents and read_document include folderId.
 
 All scopes reach personal documents and every workspace the user belongs to. A selected scope reaches only the chosen spaces. Diagram relations can refer to an element by id or by name.
 
@@ -31,6 +33,9 @@ If POST returns that Google sign-in is not configured, say so and stop. Do not i
 
 Once a token exists (PAMIAC_TOKEN in the environment, or status ready from Google login), call the document HTTP API with Authorization: Bearer and that token. Do not print the token. This HTTP API is only for a session where the pamiac MCP tools are not available.
 GET https://pamiac.com/api/agent/v1/workspaces returns { workspaces }. Same rule as list_workspaces: more than one workspace means list them and ask; one workspace needs no question.
+GET https://pamiac.com/api/agent/v1/folders returns { folders } with id, name, parentId, and workspaceId. workspaceId is null for the personal library.
+POST https://pamiac.com/api/agent/v1/folders with JSON { "name": "Notes", "workspaceId" optional, "parentId" optional }. When workspaceId is omitted, the folder is created in the same library as a new note.
+POST https://pamiac.com/api/agent/v1/folders/move with JSON { "kind": "document", "documentId": "...", "folderId": null } or { "kind": "folder", "folderId": "...", "parentId": null }. folderId null moves a document to the library root. parentId null moves a folder to the library root.
 POST https://pamiac.com/api/agent/v1/search with JSON { "query": "checkout payment classes", "limit": 8 }. Results include id, type, title, url, score, excerpt.
 GET https://pamiac.com/api/agent/v1/documents with optional query type=note or type=diagram.
 GET https://pamiac.com/api/agent/v1/documents/<id>

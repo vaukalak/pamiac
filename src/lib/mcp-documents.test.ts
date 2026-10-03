@@ -46,6 +46,7 @@ test("list rows keep id, type, title, url, and updatedAt", () => {
     title: "Orders",
     url: "https://pamiac.example/d/doc-2",
     updatedAt: "2026-03-01T00:00:00.000Z",
+    folderId: null,
   });
 });
 
