@@ -80,9 +80,11 @@ describe("new connection dialog", () => {
     expect(agent).not.toMatch(/Paste this endpoint\./);
     expect(platforms).not.toMatch(/https:\/\/pamiac\.com\/oauth\/consent/);
     expect(platforms).not.toMatch(/https:\/\/cursor\.com|https:\/\/chatgpt\.com/);
-    expect(platforms.replace("Connect Pamiac to Cursor in one click.", "")).not.toMatch(
-      /one click/i,
-    );
+    expect(
+      platforms
+        .replace("Connect Pamiac to Cursor in one click.", "")
+        .replace('blurb: "One click"', ""),
+    ).not.toMatch(/one click/i);
   });
 
   it("publishes the public MCP URL instead of the page origin", () => {

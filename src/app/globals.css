@@ -4541,6 +4541,10 @@ code {
   border-color: var(--home-lime);
   color: var(--home-lime);
 }
+.library-shell .library-main > .token-connect {
+  margin-bottom: 22px;
+}
+.library-shell .token-connect h3,
 .library-shell .token-connect-dialog h3 {
   margin: 16px 0 8px;
   color: var(--home-text);
@@ -4566,18 +4570,22 @@ code {
   background: transparent;
   color: var(--home-lime);
 }
+.library-shell .token-connect .btn.secondary:not([aria-pressed="true"]),
 .library-shell .token-connect-dialog .btn.secondary:not([aria-pressed="true"]) {
   background: transparent;
   border-color: var(--home-hair-strong);
   color: var(--home-text);
 }
+.library-shell .token-connect .btn.secondary:hover:not([aria-pressed="true"]),
 .library-shell .token-connect-dialog .btn.secondary:hover:not([aria-pressed="true"]) {
   border-color: var(--home-lime);
   color: var(--home-lime);
 }
+.library-shell .token-connect .btn.ghost,
 .library-shell .token-connect-dialog .btn.ghost {
   color: var(--home-soft);
 }
+.library-shell .token-connect .error,
 .library-shell .token-connect-dialog .error {
   color: #ffb4ab;
 }
@@ -4710,8 +4718,7 @@ code {
 .token-connect-mark-claude {
   color: #e08a62;
 }
-.token-connect-mark-gemini,
-.token-connect-mark-deepseek {
+.token-connect-mark-gemini {
   color: #8eb0ff;
 }
 .token-connect-mark-chatgpt circle {

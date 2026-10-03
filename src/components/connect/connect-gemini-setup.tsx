@@ -13,11 +13,13 @@ export function ConnectGeminiSetup(props: Properties) {
   return (
     <div className="token-connect-setup">
       <Paragraph className="token-connect-lead">
-        Add Pamiac as a custom MCP app in Gemini.
+        Add Pamiac as a custom MCP app in Gemini Spark.
       </Paragraph>
       <ConnectMcpCopy />
-      <Paragraph>In Gemini, add a custom connected app and paste the Pamiac MCP URL.</Paragraph>
-      <Paragraph>Custom MCP apps may not be available on every Gemini account yet.</Paragraph>
+      <Paragraph>
+        In Gemini Spark, add a custom connected app and paste the Pamiac MCP URL.
+      </Paragraph>
+      <Paragraph>Custom MCP apps may not be available on every Gemini Spark account yet.</Paragraph>
       <ConnectSetupPrompt />
       <ConnectAdvancedEntry onOpen={onAdvanced} />
     </div>

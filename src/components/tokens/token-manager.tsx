@@ -1,3 +1,4 @@
+import { ConnectChooser } from "@/components/connect/connect-chooser";
 import { TokenHeading } from "@/components/tokens/token-heading";
 import { TokenKeys } from "@/components/tokens/token-keys";
 
@@ -11,6 +12,9 @@ export function TokenManager(props: Properties) {
   return (
     <>
       <TokenHeading spaceName={spaceName} />
+      <div className="token-connect">
+        <ConnectChooser />
+      </div>
       <TokenKeys />
     </>
   );
