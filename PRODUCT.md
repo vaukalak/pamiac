@@ -26,7 +26,7 @@ The app runs in the browser, signed in with a magic link. The library is at `/wo
 
 The signed-in account menu has a Plan entry. It opens `/profile`, three columns:
 
-- Free, $0, 30 documents. This is the current plan. The action is enabled and labeled Current plan. Creating a document past 30 is refused.
+- Free, $0, 100 documents. This is the current plan. The action is enabled and labeled Current plan. Creating a document past 100 is refused.
 - $5 per month, 200 documents. Disabled. The action says Coming soon.
 - $20 per month, 1,500 documents. Disabled. The action says Coming soon.
 

@@ -23,13 +23,17 @@ describe("workspace billing", () => {
     );
     assert.deepEqual(
       workspacePlans.map((plan) => plan.documents),
-      [30, 200, 1500],
+      [100, 200, 1500],
     );
     assert.deepEqual(workspacePlans.map(documentLabel), [
-      "30 documents",
+      "100 documents",
       "200 documents",
       "1,500 documents",
     ]);
+    assert.deepEqual(
+      workspacePlans.map((plan) => plan.documents),
+      plans.map((plan) => plan.documents),
+    );
   });
 
   it("limits people to 3, 10, and 50 and keeps paid columns closed", () => {
@@ -58,12 +62,12 @@ describe("workspace billing", () => {
     );
     const plan = currentWorkspacePlan();
     assert.equal(plan.name, "Free");
-    assert.equal(plan.documents, 30);
+    assert.equal(plan.documents, 100);
     assert.equal(plan.members, 3);
     assert.equal(memberRoom(plan.members - 1, plan), null);
     assert.equal(memberRoom(plan.members, plan), "The Free plan holds 3 people.");
     assert.equal(documentRoom(plan.documents - 1, plan), null);
-    assert.equal(documentRoom(plan.documents, plan), "The Free plan holds 30 documents.");
+    assert.equal(documentRoom(plan.documents, plan), "The Free plan holds 100 documents.");
   });
 
   it("shows the workspace paywall only for an open created workspace", () => {
