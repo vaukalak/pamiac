@@ -1,12 +1,14 @@
 import { createElement } from "react";
-import { Section, Text } from "@react-email/components";
+import { Text } from "@react-email/components";
 import {
+  blockPadding,
   cardBlockStyle,
   copyStyle,
   emailTheme,
   eyebrowStyle,
   truncateExcerpt,
 } from "../email-theme.ts";
+import { EmailInset } from "./EmailInset.ts";
 
 interface Properties {
   title: string;
@@ -19,8 +21,8 @@ export function EmailDocumentCard(props: Properties) {
   const shortExcerpt = excerpt ? truncateExcerpt(excerpt) : "";
 
   return createElement(
-    Section,
-    { style: cardBlockStyle },
+    EmailInset,
+    { padding: blockPadding, tableStyle: cardBlockStyle },
     createElement(Text, { style: { ...eyebrowStyle, margin: "0 0 8px" } }, "Note"),
     createElement(
       Text,

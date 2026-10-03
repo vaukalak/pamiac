@@ -39,11 +39,13 @@ export const bodyStyle = {
   padding: "32px 12px",
 };
 
+export const cardPadding = "32px";
+
 export const cardStyle = {
   backgroundColor: emailTheme.surface,
   border: `1px solid ${emailTheme.border}`,
   borderRadius: "18px",
-  padding: "32px",
+  boxSizing: "border-box" as const,
 };
 
 export const eyebrowStyle = {
@@ -97,20 +99,22 @@ export const secondaryButtonStyle = {
   color: emailTheme.text,
 };
 
+export const blockPadding = "16px";
+
 export const infoStyle = {
   backgroundColor: emailTheme.surfaceRaised,
   border: `1px solid ${emailTheme.border}`,
   borderRadius: "12px",
+  boxSizing: "border-box" as const,
   margin: "16px 0",
-  padding: "16px",
 };
 
 export const cardBlockStyle = {
   backgroundColor: emailTheme.surfaceRaised,
   border: `1px solid ${emailTheme.border}`,
   borderRadius: "12px",
+  boxSizing: "border-box" as const,
   margin: "16px 0",
-  padding: "16px",
 };
 
 export const linkStyle = {

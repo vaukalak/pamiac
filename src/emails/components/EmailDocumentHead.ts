@@ -7,7 +7,7 @@ interface Properties {
 
 const mobileCss = [
   "@media only screen and (max-width: 600px) {",
-  ".email-card { padding: 24px !important; }",
+  ".email-card-padding { padding: 24px !important; }",
   ".email-title { font-size: 28px !important; line-height: 32px !important; }",
   "}",
 ].join(" ");
