@@ -52,15 +52,28 @@ describe("email and password sign-in", () => {
     expect(sentCard).not.toMatch(/Back|LoginGoogle|Send Magic Link/);
   });
 
-  it("signs in with email and password and does not register", () => {
+  it("signs in with email and password and can create an account", () => {
     const fields = read("src/components/login/login-password-form.tsx");
+    const createFields = read("src/components/login/login-password-create-fields.tsx");
+    const signIn = slice(
+      fields,
+      "async function signInWithPassword",
+      "async function registerWithPassword",
+    );
+    const register = slice(
+      fields,
+      "async function registerWithPassword",
+      "async function submitPassword",
+    );
 
     expect(fields).toMatch(/"Enter an email address\."/);
     expect(fields).toMatch(/"That address needs an @\."/);
     expect(fields).toMatch(/"Enter a password\."/);
-    expect(fields).toMatch(/authClient\.signIn\.email\(\{/);
-    expect(fields).toMatch(/callbackURL: nextPath/);
     expect(fields).toMatch(/"That email or password did not match\."/);
+    expect(signIn).toMatch(/authClient\.signIn\.email\(\{/);
+    expect(signIn).toMatch(/callbackURL: nextPath/);
+    expect(signIn).toMatch(/SIGN_IN_FAILURE/);
+    expect(signIn).not.toMatch(/signUp|CREATE_FAILURE/);
     expect(fields).toMatch(/loginSendFailureSentence\(/);
     expect(fields).not.toMatch(/We could not send the link|magic link/i);
     expect(fields).toMatch(
@@ -70,10 +83,28 @@ describe("email and password sign-in", () => {
       /<Form\.Input[^>]*autoComplete="current-password"[^>]*label="Password"[^>]*type="password"/s,
     );
     expect(fields).toMatch(/disabled=\{mutation\.isPending\}/);
-    expect(fields).toMatch(/>\s*Sign in\s*</);
+    expect(fields).toMatch(/\{mode === "create" \? "Create account" : "Sign in"\}/);
     expect(fields).toMatch(/>\s*Back\s*</);
     expect(fields).toMatch(/<LoginSendFailure happened=\{message\} \/>/);
-    expect(fields).not.toMatch(/useState|<input|<select|signUp/);
+    expect(fields).not.toMatch(/<input|<select|<button/);
+    expect(fields).toMatch(/"The account could not be created\."/);
+    expect(register).toMatch(/authClient\.signUp\.email\(\{/);
+    expect(register).toMatch(/name: accountName\(email\)/);
+    expect(register).toMatch(/callbackURL: nextPath/);
+    expect(register).toMatch(/CREATE_FAILURE/);
+    expect(register).not.toMatch(/SIGN_IN_FAILURE|signIn\.email/);
+    expect(fields).toMatch(/"Use at least 8 characters\."/);
+    expect(fields).toMatch(/"Use at most 128 characters\."/);
+    expect(fields).toMatch(/"Confirm your password\."/);
+    expect(fields).toMatch(/"Those passwords do not match\."/);
+    expect(fields).toMatch(/\{mode === "create" \? "Sign in" : "Create account"\}/);
+    expect(fields).toMatch(/mode === "create" \? "sign-in" : "create"/);
+    expect(createFields).toMatch(/autoComplete="new-password"/);
+    expect(createFields).toMatch(/label="Password"/);
+    expect(createFields).toMatch(/label="Confirm password"/);
+    expect(createFields).toMatch(/name="confirmPassword"/);
+    expect(createFields).not.toMatch(/<input|<select|<button|useState/);
+    expect(fields).not.toMatch(/window\.location\.assign/);
   });
 
   it("switches Google connect to the password form and back, without a magic link", () => {
@@ -88,13 +119,13 @@ describe("email and password sign-in", () => {
     expect(signIn).not.toMatch(/magicLink|LoginForm|Send Magic Link|<input|signUp/);
   });
 
-  it("enables password sign-in without a public sign-up", () => {
+  it("enables password sign-in and email sign-up", () => {
     const auth = read("src/lib/auth.ts");
     const client = read("src/lib/auth-client.ts");
     const copy = read("src/components/login/login-sign-in-copy.tsx");
 
     expect(auth).toMatch(
-      /emailAndPassword:\s*\{\s*enabled:\s*true,\s*disableSignUp:\s*true,\s*\}/s,
+      /emailAndPassword:\s*\{\s*enabled:\s*true,\s*disableSignUp:\s*false,\s*\}/s,
     );
     expect(client).not.toMatch(/signUp\.email/);
     expect(copy).toMatch(/title="Sign in or register"/);
@@ -152,7 +183,8 @@ describe("email and password sign-in", () => {
     expect(idle).toMatch(/Or continue with email \/ password/);
     expect(idle).toMatch(/setShowPassword\(true\)/);
     expect(idle).not.toMatch(/LoginPasswordForm|Send Magic Link|magicLink/);
-    expect(fields).not.toMatch(/Use at least 8 characters|signUp|window\.location\.assign/);
+    expect(fields).toMatch(/authClient\.signUp\.email\(\{/);
+    expect(fields).not.toMatch(/window\.location\.assign/);
     expect(fields).toMatch(/className="ghost"[^>]*type="button"/);
   });
 });
