@@ -6,22 +6,16 @@ import { Paragraph } from "@/ui/Paragraph";
 export function ConnectAgentSetup() {
   return (
     <div className="token-connect-agent">
+      <Paragraph className="token-connect-or">OR LET YOUR AGENT DO IT</Paragraph>
       <h3>Let your agent configure Pamiac</h3>
       <Paragraph>Paste this into your AI agent and ask it to connect itself.</Paragraph>
       <ConnectPromptText text={AGENT_CONNECT_URL} />
       <ConnectCopyAction
         className="library-lime"
-        failure="Could not copy the prompt."
         label="Copy setup prompt"
-        success="Prompt copied."
         text={AGENT_SETUP_PROMPT}
       />
-      <ConnectCopyAction
-        failure="Could not copy the link."
-        label="Copy link"
-        success="Link copied."
-        text={AGENT_CONNECT_URL}
-      />
+      <ConnectCopyAction label="Copy link" text={AGENT_CONNECT_URL} />
     </div>
   );
 }

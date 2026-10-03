@@ -11,12 +11,13 @@ interface Properties {
   onAdvanced: () => void;
   onBack: () => void;
   onClose?: () => void;
+  onManual: () => void;
   platform: ConnectPlatform;
   titleId?: string;
 }
 
 export function ConnectPlatformFrame(props: Properties) {
-  const { onAdvanced, onBack, onClose, platform, titleId } = props;
+  const { onAdvanced, onBack, onClose, onManual, platform, titleId } = props;
   const account = useQuery(connectConsentsQueryOptions());
   const connected =
     account.data?.connections.some((item) => item.platform === platform.id) ?? false;
@@ -35,7 +36,7 @@ export function ConnectPlatformFrame(props: Properties) {
       {connected ? (
         <ConnectPlatformConnected onClose={onClose} platform={platform} />
       ) : (
-        <ConnectPlatformSetup onAdvanced={onAdvanced} platform={platform} />
+        <ConnectPlatformSetup onAdvanced={onAdvanced} onManual={onManual} platform={platform} />
       )}
     </div>
   );

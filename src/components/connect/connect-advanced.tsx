@@ -7,6 +7,7 @@ import { ConnectionTabs, type ConnectionTabId } from "@/components/tokens/connec
 import type { ConnectPlatformId } from "@/lib/connect-platforms";
 
 interface Properties {
+  initialTab?: ConnectionTabId;
   onBack: () => void;
   onClose?: () => void;
   onGuides: () => void;
@@ -15,8 +16,8 @@ interface Properties {
 }
 
 export function ConnectAdvanced(props: Properties) {
-  const { onBack, onClose, onGuides, platformId, titleId } = props;
-  const [tab, setTab] = useState<ConnectionTabId>("token");
+  const { initialTab = "token", onBack, onClose, onGuides, platformId, titleId } = props;
+  const [tab, setTab] = useState<ConnectionTabId>(initialTab);
 
   return (
     <div className="token-connect-advanced">
@@ -27,7 +28,12 @@ export function ConnectAdvanced(props: Properties) {
         titleId={titleId}
       />
       <ConnectionTabs onTab={setTab} tab={tab} />
-      <ConnectionPanel onGuides={onGuides} platformId={platformId} tab={tab} />
+      <ConnectionPanel
+        onGuides={onGuides}
+        onToken={() => setTab("token")}
+        platformId={platformId}
+        tab={tab}
+      />
     </div>
   );
 }

@@ -6,16 +6,17 @@ import { Form } from "@/ui/Form";
 
 interface Properties {
   idPrefix: string;
+  namePlaceholder?: string;
   scopeLabel?: string;
   scopeOptions?: readonly { value: ScopeChoice; label: string }[];
 }
 
 export function TokenScopeFields(props: Properties) {
-  const { idPrefix, scopeLabel = "Scope", scopeOptions = SCOPE_OPTIONS } = props;
+  const { idPrefix, namePlaceholder, scopeLabel = "Scope", scopeOptions = SCOPE_OPTIONS } = props;
 
   return (
     <>
-      <Form.Input id={`${idPrefix}-name`} label="Name" name="name" />
+      <Form.Input id={`${idPrefix}-name`} label="Name" name="name" placeholder={namePlaceholder} />
       <Form.Select
         id={`${idPrefix}-scope`}
         label={scopeLabel}

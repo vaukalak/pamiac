@@ -22,7 +22,7 @@ export function ConnectPlatformConnected(props: Properties) {
 
   return (
     <div className="token-connect-connected">
-      <ConnectConnectedBanner platformName={platform.name} />
+      <ConnectConnectedBanner />
       <ConnectAccountRow
         connectedAt={match.connectedAt}
         email={account.data.email}

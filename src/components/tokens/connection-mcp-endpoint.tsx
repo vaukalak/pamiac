@@ -1,43 +1,15 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { Alert } from "@/ui/Alert";
-import { Button } from "@/ui/Button";
+import { ConnectCopyAction } from "@/components/connect/connect-copy-action";
+import { PAMIAC_MCP_URL } from "@/lib/connect-platforms";
+import { Paragraph } from "@/ui/Paragraph";
 
 export function ConnectionMcpEndpoint() {
-  const [url, setUrl] = useState("");
-  const [message, setMessage] = useState("");
-
-  useEffect(() => {
-    setUrl(`${window.location.origin}/api/mcp`);
-  }, []);
-
-  async function copyLink() {
-    setMessage("");
-    try {
-      await navigator.clipboard.writeText(url);
-      setMessage("Link copied.");
-    } catch {
-      setMessage("Could not copy the link.");
-    }
-  }
-
-  if (!url) return null;
-
   return (
     <div className="token-connect-endpoint">
-      <a className="dev-link" href={url}>
-        {url}
+      <Paragraph>MCP URL</Paragraph>
+      <a className="dev-link" href={PAMIAC_MCP_URL}>
+        {PAMIAC_MCP_URL}
       </a>
-      <Button className="secondary" onClick={() => void copyLink()} type="button">
-        Copy link
-      </Button>
-      {message === "Could not copy the link." ? <Alert>{message}</Alert> : null}
-      {message === "Link copied." ? (
-        <p className="text-pretty" role="status">
-          {message}
-        </p>
-      ) : null}
+      <ConnectCopyAction label="Copy MCP URL" text={PAMIAC_MCP_URL} />
     </div>
   );
 }

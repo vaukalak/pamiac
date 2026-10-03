@@ -1,10 +1,24 @@
+export const PAMIAC_MCP_URL = "https://pamiac.com/api/mcp";
+
+export const CURSOR_MCP_URL = PAMIAC_MCP_URL;
+
 export const AGENT_CONNECT_URL = "https://pamiac.com/connect/agent";
+
+export const PAMIAC_AGENT_ONBOARDING_URL = AGENT_CONNECT_URL;
 
 export const AGENT_CONNECT_LABEL = "pamiac.com/connect/agent";
 
+export const PAMIAC_SKILL_URL = "https://pamiac.com/skill.md";
+
 export const AGENT_SETUP_PROMPT = `Connect yourself to Pamiac using these instructions: ${AGENT_CONNECT_URL}`;
 
-export const CURSOR_MCP_URL = "https://pamiac.com/api/mcp";
+export const PAMIAC_AGENT_SETUP_PROMPT = AGENT_SETUP_PROMPT;
+
+export const CLAUDE_CODE_INSTALL_COMMAND = `claude mcp add --transport http pamiac ${PAMIAC_MCP_URL}`;
+
+export const CHATGPT_DIRECTORY_STATUS = "pending" as "pending" | "published";
+
+export const COPY_SETUP_PROMPT_LABEL = "Copy setup prompt";
 
 export const CONNECT_PLATFORMS = [
   {
@@ -36,10 +50,9 @@ export const CONNECT_PLATFORMS = [
     lead: "",
     subtitle: "Works with Claude Web, Desktop and Claude Code.",
     checklist: [
-      "No API key required",
-      "Add Pamiac as a custom connector",
       "Secure sign-in with your Pamiac account",
       "Access your notes and diagrams",
+      "No API key required",
     ],
     primaryLabel: "Copy setup prompt",
     showOr: false,
@@ -49,7 +62,7 @@ export const CONNECT_PLATFORMS = [
   {
     id: "chatgpt",
     name: "ChatGPT",
-    blurb: "Plugin & MCP",
+    blurb: "ChatGPT connection",
     layout: "columns",
     recommended: false,
     lead: "",
@@ -103,7 +116,7 @@ export const CONNECT_PLATFORMS = [
   {
     id: "deepseek",
     name: "DeepSeek",
-    blurb: "Harness & more",
+    blurb: "Agents & MCP clients",
     layout: "stack",
     recommended: false,
     lead: "",
@@ -157,12 +170,22 @@ export function connectPlatform(id: ConnectPlatformId): ConnectPlatform {
   return platform;
 }
 
+const CONNECT_TOKEN_NAMES: Record<ConnectPlatformId, string> = {
+  cursor: "Cursor on this computer",
+  claude: "Claude on work laptop",
+  chatgpt: "ChatGPT on this computer",
+  gemini: "Gemini on this computer",
+  grok: "Grok on this computer",
+  deepseek: "DeepSeek on this computer",
+  other: "Custom coding agent",
+};
+
 export function connectTokenName(id: ConnectPlatformId) {
-  return `${connectPlatform(id).name} on this computer`;
+  return CONNECT_TOKEN_NAMES[id];
 }
 
 export function cursorInstallUrl() {
-  const config = btoa(JSON.stringify({ url: CURSOR_MCP_URL }));
+  const config = btoa(JSON.stringify({ url: PAMIAC_MCP_URL }));
   return `cursor://anysphere.cursor-deeplink/mcp/install?name=Pamiac&config=${config}`;
 }
 

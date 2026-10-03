@@ -24,7 +24,7 @@ export function ConnectClaudeSetup(props: Properties) {
       {mode === "web" ? (
         <ConnectClaudeWeb onAdvanced={onAdvanced} platform={platform} />
       ) : (
-        <ConnectClaudeCode onAdvanced={onAdvanced} platform={platform} />
+        <ConnectClaudeCode onAdvanced={onAdvanced} />
       )}
     </div>
   );

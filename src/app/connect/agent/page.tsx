@@ -1,3 +1,4 @@
+import { ConnectAgentInstructions } from "@/components/connect/connect-agent-instructions";
 import { ConnectAgentSignIn } from "@/components/connect/connect-agent-sign-in";
 import { ConnectAgentSignedIn } from "@/components/connect/connect-agent-signed-in";
 import { CircuitBoard } from "@/components/home/circuit-board";
@@ -23,6 +24,7 @@ export default async function ConnectAgentPage() {
         <Section className="token-connect connect-agent-panel">
           {result.session ? <ConnectAgentSignedIn /> : <ConnectAgentSignIn />}
         </Section>
+        <ConnectAgentInstructions />
       </Page>
     </div>
   );

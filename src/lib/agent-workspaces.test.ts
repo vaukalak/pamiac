@@ -93,9 +93,9 @@ describe("agent workspaces for a token", () => {
     expect(platforms).toMatch(/Use Pamiac with ChatGPT\./);
     expect(platforms).not.toMatch(/Install in ChatGPT/);
     expect(platforms).not.toMatch(/Coming soon\.\.\./);
-    expect(mcp).toMatch(/Publisher submission, and ChatGPT developer mode/);
+    expect(mcp).toMatch(/does not have a Pamiac setup button/);
     expect(tabs).toMatch(/\["mcp", "Manual MCP"\]/);
-    expect(panel).toMatch(/<ConnectManualMcp \/>/);
+    expect(panel).toMatch(/<ConnectManualMcp /);
     assert.throws(() => read("src/components/tokens/chatgpt-connect.tsx"));
     assert.throws(() => read("src/components/tokens/connection-chatgpt.tsx"));
   });

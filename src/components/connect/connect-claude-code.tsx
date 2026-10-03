@@ -1,29 +1,36 @@
 import { ConnectAdvancedEntry } from "@/components/connect/connect-advanced-entry";
-import { ConnectChecklist } from "@/components/connect/connect-checklist";
 import { ConnectCopyAction } from "@/components/connect/connect-copy-action";
 import { ConnectPromptText } from "@/components/connect/connect-prompt-text";
-import { AGENT_SETUP_PROMPT, type ConnectPlatform } from "@/lib/connect-platforms";
+import { ConnectSetupPrompt } from "@/components/connect/connect-setup-prompt";
+import { CLAUDE_CODE_INSTALL_COMMAND } from "@/lib/connect-platforms";
 import { Paragraph } from "@/ui/Paragraph";
 
 interface Properties {
   onAdvanced: () => void;
-  platform: ConnectPlatform;
 }
 
 export function ConnectClaudeCode(props: Properties) {
-  const { onAdvanced, platform } = props;
+  const { onAdvanced } = props;
 
   return (
     <div className="token-connect-claude">
-      <ConnectChecklist items={platform.checklist} />
-      <Paragraph>Paste this prompt into Claude.</Paragraph>
-      <ConnectPromptText text={AGENT_SETUP_PROMPT} />
+      <Paragraph className="token-connect-lead">
+        Connect Pamiac to Claude Code using remote MCP.
+      </Paragraph>
+      <ConnectPromptText text={CLAUDE_CODE_INSTALL_COMMAND} />
       <ConnectCopyAction
         className="library-lime"
-        failure="Could not copy the prompt."
-        label="Copy agent setup prompt"
-        success="Prompt copied."
-        text={AGENT_SETUP_PROMPT}
+        copiedStatus="Claude Code command copied"
+        label="Copy install command"
+        text={CLAUDE_CODE_INSTALL_COMMAND}
+      />
+      <Paragraph>
+        Run this command in your terminal. Claude Code will ask you to authenticate with Pamiac when
+        needed.
+      </Paragraph>
+      <ConnectSetupPrompt
+        detail="Paste this prompt into Claude Code."
+        title="Let Claude Code configure itself"
       />
       <ConnectAdvancedEntry onOpen={onAdvanced} />
     </div>

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { ConnectAdvanced } from "@/components/connect/connect-advanced";
 import { ConnectPicker } from "@/components/connect/connect-picker";
 import { ConnectPlatformFrame } from "@/components/connect/connect-platform-frame";
+import type { ConnectionTabId } from "@/components/tokens/connection-tabs";
 import { connectPlatform, type ConnectPlatformId } from "@/lib/connect-platforms";
 
 interface Properties {
@@ -15,7 +16,7 @@ interface Properties {
 type ConnectScreen =
   | { kind: "picker" }
   | { kind: "platform"; platformId: ConnectPlatformId }
-  | { kind: "advanced"; platformId: ConnectPlatformId };
+  | { kind: "advanced"; platformId: ConnectPlatformId; tab: ConnectionTabId };
 
 export function ConnectChooser(props: Properties) {
   const { embedded = false, onClose, titleId } = props;
@@ -30,6 +31,7 @@ export function ConnectChooser(props: Properties) {
   if (screen.kind === "advanced") {
     return (
       <ConnectAdvanced
+        initialTab={screen.tab}
         onBack={() => setScreen({ kind: "platform", platformId: screen.platformId })}
         onClose={onClose}
         onGuides={() => setScreen({ kind: "picker" })}
@@ -42,9 +44,12 @@ export function ConnectChooser(props: Properties) {
   if (screen.kind === "platform") {
     return (
       <ConnectPlatformFrame
-        onAdvanced={() => setScreen({ kind: "advanced", platformId: screen.platformId })}
+        onAdvanced={() =>
+          setScreen({ kind: "advanced", platformId: screen.platformId, tab: "token" })
+        }
         onBack={() => setScreen({ kind: "picker" })}
         onClose={onClose}
+        onManual={() => setScreen({ kind: "advanced", platformId: screen.platformId, tab: "mcp" })}
         platform={connectPlatform(screen.platformId)}
         titleId={titleId}
       />

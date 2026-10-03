@@ -249,7 +249,7 @@ describe("token scope", () => {
     expect(tabs).toMatch(/"mcp", "Manual MCP"/);
     expect(tabs).toMatch(/Agent skill/);
     expect(read("src/components/tokens/connection-tab-button.tsx")).toMatch(/pressed=\{pressed\}/);
-    expect(agentTab).toMatch(/The skill contains instructions, not credentials\./);
+    expect(agentTab).toMatch(/It does not\s+contain credentials\./);
     expect(dialog + agentTab).not.toMatch(/Create API key|Grant workspace access|Add key/);
     expect(page).toMatch(/<TokenShell/);
     expect(page).toMatch(/getSession\(/);

@@ -1,6 +1,10 @@
 import { ConnectCopyAction } from "@/components/connect/connect-copy-action";
 import { ConnectPromptText } from "@/components/connect/connect-prompt-text";
-import { AGENT_SETUP_PROMPT, type ConnectPlatform } from "@/lib/connect-platforms";
+import {
+  AGENT_SETUP_PROMPT,
+  COPY_SETUP_PROMPT_LABEL,
+  type ConnectPlatform,
+} from "@/lib/connect-platforms";
 import { Paragraph } from "@/ui/Paragraph";
 
 interface Properties {
@@ -17,12 +21,7 @@ export function ConnectSelfServe(props: Properties) {
       <h3>{platform.selfServe}</h3>
       <Paragraph>{`Paste this prompt into ${platform.name}.`}</Paragraph>
       <ConnectPromptText text={AGENT_SETUP_PROMPT} />
-      <ConnectCopyAction
-        failure="Could not copy the prompt."
-        label="Copy prompt"
-        success="Prompt copied."
-        text={AGENT_SETUP_PROMPT}
-      />
+      <ConnectCopyAction label={COPY_SETUP_PROMPT_LABEL} text={AGENT_SETUP_PROMPT} />
     </div>
   );
 }

@@ -1,40 +1,49 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Alert } from "@/ui/Alert";
 import { Button } from "@/ui/Button";
 
+const COPY_FAILURE = "Couldn't copy automatically. Select and copy the value manually.";
+
 interface Properties {
   className?: string;
-  failure: string;
+  copiedStatus?: string;
   label: string;
-  success: string;
   text: string;
 }
 
 export function ConnectCopyAction(props: Properties) {
-  const { className = "secondary", failure, label, success, text } = props;
-  const [message, setMessage] = useState("");
+  const { className = "secondary", copiedStatus, label, text } = props;
+  const [copied, setCopied] = useState(false);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    if (!copied) return;
+    const timer = window.setTimeout(() => setCopied(false), 2000);
+    return () => window.clearTimeout(timer);
+  }, [copied]);
 
   async function copyText() {
-    setMessage("");
+    setFailed(false);
     try {
       await navigator.clipboard.writeText(text);
-      setMessage(success);
+      setCopied(true);
     } catch {
-      setMessage(failure);
+      setCopied(false);
+      setFailed(true);
     }
   }
 
   return (
     <div className="token-connect-action">
       <Button className={className} onClick={() => void copyText()} type="button">
-        {label}
+        {copied ? "Copied" : label}
       </Button>
-      {message === failure ? <Alert>{message}</Alert> : null}
-      {message === success ? (
+      {failed ? <Alert>{COPY_FAILURE}</Alert> : null}
+      {copied ? (
         <p className="text-pretty" role="status">
-          {message}
+          {copiedStatus ?? "Copied"}
         </p>
       ) : null}
     </div>

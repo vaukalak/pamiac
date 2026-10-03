@@ -1,33 +1,29 @@
-import { ConnectAdvancedEntry } from "@/components/connect/connect-advanced-entry";
-import { ConnectChecklist } from "@/components/connect/connect-checklist";
+import { ConnectChatGptSetup } from "@/components/connect/connect-chatgpt-setup";
 import { ConnectClaudeSetup } from "@/components/connect/connect-claude-setup";
-import { ConnectPlatformAction } from "@/components/connect/connect-platform-action";
-import { ConnectPlatformColumns } from "@/components/connect/connect-platform-columns";
-import { ConnectSelfServe } from "@/components/connect/connect-self-serve";
+import { ConnectCursorSetup } from "@/components/connect/connect-cursor-setup";
+import { ConnectDeepSeekSetup } from "@/components/connect/connect-deepseek-setup";
+import { ConnectGeminiSetup } from "@/components/connect/connect-gemini-setup";
+import { ConnectGrokSetup } from "@/components/connect/connect-grok-setup";
+import { ConnectOtherSetup } from "@/components/connect/connect-other-setup";
 import type { ConnectPlatform } from "@/lib/connect-platforms";
-import { Paragraph } from "@/ui/Paragraph";
 
 interface Properties {
   onAdvanced: () => void;
+  onManual: () => void;
   platform: ConnectPlatform;
 }
 
 export function ConnectPlatformSetup(props: Properties) {
-  const { onAdvanced, platform } = props;
+  const { onAdvanced, onManual, platform } = props;
   if (platform.id === "claude") {
     return <ConnectClaudeSetup onAdvanced={onAdvanced} platform={platform} />;
   }
-  if (platform.layout === "columns") {
-    return <ConnectPlatformColumns onAdvanced={onAdvanced} platform={platform} />;
+  if (platform.id === "cursor") {
+    return <ConnectCursorSetup onAdvanced={onAdvanced} onManual={onManual} platform={platform} />;
   }
-
-  return (
-    <div className="token-connect-setup">
-      {platform.lead ? <Paragraph className="token-connect-lead">{platform.lead}</Paragraph> : null}
-      <ConnectChecklist items={platform.checklist} />
-      <ConnectPlatformAction platform={platform} />
-      <ConnectSelfServe framed platform={platform} />
-      <ConnectAdvancedEntry onOpen={onAdvanced} />
-    </div>
-  );
+  if (platform.id === "chatgpt") return <ConnectChatGptSetup onAdvanced={onAdvanced} />;
+  if (platform.id === "gemini") return <ConnectGeminiSetup onAdvanced={onAdvanced} />;
+  if (platform.id === "grok") return <ConnectGrokSetup onAdvanced={onAdvanced} />;
+  if (platform.id === "deepseek") return <ConnectDeepSeekSetup onAdvanced={onAdvanced} />;
+  return <ConnectOtherSetup onAdvanced={onAdvanced} />;
 }

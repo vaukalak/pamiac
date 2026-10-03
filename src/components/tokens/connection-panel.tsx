@@ -6,13 +6,14 @@ import type { ConnectPlatformId } from "@/lib/connect-platforms";
 
 interface Properties {
   onGuides: () => void;
+  onToken: () => void;
   platformId: ConnectPlatformId;
   tab: ConnectionTabId;
 }
 
 export function ConnectionPanel(props: Properties) {
-  const { onGuides, platformId, tab } = props;
+  const { onGuides, onToken, platformId, tab } = props;
   if (tab === "token") return <ConnectApiToken onGuides={onGuides} platformId={platformId} />;
-  if (tab === "mcp") return <ConnectManualMcp />;
+  if (tab === "mcp") return <ConnectManualMcp onCreateToken={onToken} />;
   return <ConnectionAgent />;
 }

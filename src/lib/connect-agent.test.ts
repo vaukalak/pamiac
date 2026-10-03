@@ -36,7 +36,6 @@ describe("connect agent platforms", () => {
   it("copies the setup prompt and installs Cursor through the documented deeplink", () => {
     const platforms = read("src/lib/connect-platforms.ts");
     const setup = read("src/components/connect/connect-agent-setup.tsx");
-    const action = read("src/components/connect/connect-platform-action.tsx");
     const install = read("src/components/connect/connect-cursor-install.tsx");
     const url = cursorInstallUrl();
     const config = new URL(url).searchParams.get("config");
@@ -55,12 +54,17 @@ describe("connect agent platforms", () => {
     assert.match(url, /^cursor:\/\/anysphere\.cursor-deeplink\/mcp\/install\?name=Pamiac&config=/);
     assert.equal(payload, JSON.stringify({ url: "https://pamiac.com/api/mcp" }));
     assert.equal(JSON.parse(payload).name, undefined);
-    assert.match(install, /href=\{cursorInstallUrl\(\)\}/);
+    assert.match(install, /cursorInstallUrl\(\)/);
     assert.match(install, /Add Pamiac to Cursor/);
+    assert.match(install, /Opening Cursor…/);
+    assert.match(install, /window\.location\.assign\(cursorInstallUrl\(\)\)/);
     assert.doesNotMatch(install, /writeText|AGENT_CONNECT_URL|AGENT_SETUP_PROMPT/);
-    assert.match(action, /AGENT_SETUP_PROMPT/);
-    assert.match(action, /platform\.id === "cursor"/);
-    assert.doesNotMatch(action, /window\.open|oauth\/consent|writeText\(AGENT_CONNECT_URL\)/);
+    assert.match(read("src/components/connect/connect-mcp-copy.tsx"), /Copy MCP URL/);
+    assert.match(read("src/components/connect/connect-cursor-fallback.tsx"), /Show manual setup/);
+    assert.doesNotMatch(
+      read("src/components/connect/connect-cursor-fallback.tsx"),
+      /\/api\/tokens|Create token/,
+    );
     assert.doesNotMatch(
       platforms.replace("Connect Pamiac to Cursor in one click.", ""),
       /one click/i,
@@ -72,23 +76,26 @@ describe("connect agent platforms", () => {
     );
   });
 
-  it("gives Claude two real copy actions and no invented install command", () => {
+  it("gives Claude a web MCP copy and a Claude Code install command", () => {
     const mode = read("src/components/connect/connect-claude-mode.tsx");
     const web = read("src/components/connect/connect-claude-web.tsx");
     const code = read("src/components/connect/connect-claude-code.tsx");
-    const mcp = read("src/components/connect/connect-claude-mcp-copy.tsx");
+    const mcp = read("src/components/connect/connect-mcp-copy.tsx");
 
     assert.match(mode, /Claude Web \/ Desktop/);
     assert.match(mode, /Claude Code/);
-    assert.match(web, /No API key required/);
-    assert.match(web, /<ConnectClaudeMcpCopy \/>/);
-    assert.match(web, /Copy agent setup prompt/);
-    assert.match(mcp, /\$\{window\.location\.origin\}\/api\/mcp/);
+    assert.match(read("src/lib/connect-platforms.ts"), /No API key required/);
+    assert.match(web, /platform\.checklist/);
+    assert.match(web, /<ConnectMcpCopy \/>/);
+    assert.match(web, /Copy MCP URL|ConnectMcpCopy/);
+    assert.match(web, /Using an agent to configure Claude\?/);
+    assert.match(mcp, /PAMIAC_MCP_URL/);
     assert.match(mcp, /Copy MCP URL/);
-    assert.doesNotMatch(mcp, /pamiac\.com/);
-    assert.match(code, /Copy agent setup prompt/);
-    assert.match(code, /AGENT_SETUP_PROMPT/);
-    assert.doesNotMatch(code, /claude mcp|npx |install command|cursor:\/\//i);
+    assert.doesNotMatch(mcp, /window\.location\.origin/);
+    assert.match(code, /Copy install command/);
+    assert.match(code, /CLAUDE_CODE_INSTALL_COMMAND/);
+    assert.match(code, /Let Claude Code configure itself/);
+    assert.doesNotMatch(code, /Open Claude settings|npx /i);
   });
 
   it("defaults only the connect token form to 90 days and the platform name", () => {
@@ -97,12 +104,12 @@ describe("connect agent platforms", () => {
     const dialog = read("src/components/tokens/token-create-dialog.tsx");
 
     assert.equal(connectTokenName("cursor"), "Cursor on this computer");
-    assert.equal(connectTokenName("claude"), "Claude on this computer");
+    assert.equal(connectTokenName("claude"), "Claude on work laptop");
     assert.equal(connectTokenName("chatgpt"), "ChatGPT on this computer");
     assert.equal(connectTokenName("gemini"), "Gemini on this computer");
     assert.equal(connectTokenName("grok"), "Grok on this computer");
     assert.equal(connectTokenName("deepseek"), "DeepSeek on this computer");
-    assert.equal(connectTokenName("other"), "Other agent on this computer");
+    assert.equal(connectTokenName("other"), "Custom coding agent");
     const fields = read("src/components/connect/connect-api-token-fields.tsx");
     assert.match(connect, /<ConnectApiTokenFields /);
     assert.match(fields, /defaultExpiration="90d"/);
@@ -131,13 +138,14 @@ describe("connect agent platforms", () => {
     assert.doesNotMatch(connected, /Mikhail|mikhail@example\.com|Oct 3, 2026|Just now/);
     assert.match(connected, /if \(!account\.data \|\| !match\) return null;/);
     assert.match(connected, /connectConsentsQueryOptions\(\)/);
-    assert.match(read("src/components/connect/connect-connected-banner.tsx"), /connected/);
-    assert.match(
-      read("src/components/connect/connect-copy-action.tsx"),
-      /<Alert>\{message\}<\/Alert>/,
+    assert.match(read("src/components/connect/connect-connected-banner.tsx"), /Access approved/);
+    assert.doesNotMatch(
+      read("src/components/connect/connect-connected-banner.tsx"),
+      /platformName\} connected|can now access/,
     );
+    assert.match(read("src/components/connect/connect-copy-action.tsx"), /<Alert>/);
     assert.match(read("src/components/connect/connect-copy-action.tsx"), /role="status"/);
-    assert.match(read("src/components/connect/connect-self-serve.tsx"), /Copy prompt/);
+    assert.match(read("src/components/connect/connect-self-serve.tsx"), /COPY_SETUP_PROMPT_LABEL/);
     assert.match(read("src/components/connect/connect-self-serve.tsx"), /AGENT_SETUP_PROMPT/);
     assert.doesNotMatch(
       read("src/components/connect/connect-advanced-entry.tsx"),
