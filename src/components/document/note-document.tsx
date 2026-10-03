@@ -15,8 +15,7 @@ import {
   type SavedDocument,
 } from "@/components/document/document-client";
 import { useDocumentVersion } from "@/components/document/use-document-version";
-import { NoteCopyMarkdown } from "@/components/note/note-copy-markdown";
-import { NoteExport } from "@/components/note/note-export";
+import { NoteShareMarkdown } from "@/components/note/note-share-markdown";
 import { defaultTitle } from "@/lib/content";
 import { remoteNoteMarkdown, remoteNoteTitle } from "@/lib/note-sync";
 
@@ -31,6 +30,7 @@ interface Properties {
   version: number;
   canEdit: boolean;
   crumb: ReactNode;
+  sharing: boolean;
   tools: ReactNode;
   workspaceId: string | null;
 }
@@ -40,7 +40,7 @@ function noteName(title: string) {
 }
 
 export function NoteDocument(props: Properties) {
-  const { id, title, content, version, canEdit, crumb, tools, workspaceId } = props;
+  const { id, title, content, version, canEdit, crumb, sharing, tools, workspaceId } = props;
   const queryClient = useQueryClient();
   const [name, setName] = useState(noteName(title));
   const [remote, setRemote] = useState({ markdown: content, version });
@@ -235,14 +235,14 @@ export function NoteDocument(props: Properties) {
             onChange={commitTitle}
           />
         }
-        tools={
-          <div className="library-heading-actions topbar-tools">
-            <NoteCopyMarkdown readMarkdown={() => latest.current.content} />
-            <NoteExport readMarkdown={() => latest.current.content} title={name.trim() || title} />
-            {tools}
-          </div>
-        }
+        tools={tools}
       />
+      {sharing ? (
+        <NoteShareMarkdown
+          readMarkdown={() => latest.current.content}
+          title={name.trim() || title}
+        />
+      ) : null}
       <div className="note-sheet">
         <NoteEditor
           editable={canEdit}

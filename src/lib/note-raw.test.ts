@@ -44,13 +44,32 @@ describe("raw note view", () => {
 });
 
 describe("copy markdown", () => {
-  it("places Copy Markdown beside Export Markdown and copies the same export text", () => {
+  it("copies the open note from the owner share dialog using the same export text", () => {
     const note = read("../components/document/note-document.tsx");
+    const share = read("../components/note/note-share-markdown.tsx");
     const copy = read("../components/note/note-copy-markdown.tsx");
     const download = read("../components/note/note-export.tsx");
+    const modal = read("../components/share/share-modal.tsx");
+    const screen = read("../components/document-screen.tsx");
+    const heading = note.slice(
+      note.indexOf("<DocumentHeading"),
+      note.indexOf('className="note-sheet"'),
+    );
 
-    assert.ok(note.indexOf("<NoteCopyMarkdown") < note.indexOf("<NoteExport"));
-    assert.match(note, /readMarkdown=\{\(\) => latest\.current\.content\}/);
+    assert.equal(heading.includes("NoteCopyMarkdown"), false);
+    assert.equal(heading.includes("NoteExport"), false);
+    assert.match(
+      note,
+      /<NoteShareMarkdown[\s\S]*readMarkdown=\{\(\) => latest\.current\.content\}/,
+    );
+    assert.ok(share.indexOf("<NoteCopyMarkdown") < share.indexOf("<NoteExport"));
+    assert.match(share, /readMarkdown=\{readMarkdown\}/);
+    assert.match(share, /createPortal/);
+    assert.match(
+      modal,
+      /markdownSlot && !lockWorkspace \? <div id="note-share-markdown" \/> : null/,
+    );
+    assert.match(screen, /markdownSlot=\{type === "note"\}/);
     assert.match(copy, /Copy Markdown/);
     assert.match(download, /Export Markdown/);
     assert.match(copy, /noteExportMarkdown\(readMarkdown\(\)\)/);

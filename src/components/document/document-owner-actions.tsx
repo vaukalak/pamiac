@@ -37,8 +37,30 @@ export function DocumentOwnerActions(props: Properties) {
       <Button className="secondary small" onClick={onShare} type="button">
         Share
       </Button>
-      <Button className="danger small" disabled={remove.isPending} onClick={onDelete} type="button">
-        {remove.isPending ? "Deleting…" : "Delete"}
+      <Button
+        className="danger icon-button"
+        disabled={remove.isPending}
+        onClick={onDelete}
+        type="button"
+      >
+        <svg
+          aria-hidden="true"
+          fill="none"
+          height="16"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="1.75"
+          viewBox="0 0 16 16"
+          width="16"
+        >
+          <path d="M3.5 4.5h9" />
+          <path d="M6.5 4.2V3.4A1 1 0 0 1 7.5 2.4h1a1 1 0 0 1 1 1v.8" />
+          <path d="M4.4 4.5 5 13h6l.6-8.5" />
+          <path d="M7 7v3.5" />
+          <path d="M9 7v3.5" />
+        </svg>
+        <span className="visually-hidden">{remove.isPending ? "Deleting…" : "Delete"}</span>
       </Button>
       {message ? <Alert>{message}</Alert> : null}
     </div>

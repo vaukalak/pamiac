@@ -100,7 +100,7 @@ describe("document library shell", () => {
     const actions = read("../components/document/document-owner-actions.tsx");
 
     assert.match(actions, /<Button className="secondary small"/);
-    assert.match(actions, /<Button className="danger small"/);
+    assert.match(actions, /<Button[\s\S]*className="danger icon-button"/);
     assert.equal(/<button/.test(actions), false);
     assert.match(actions, /useMutation/);
     assert.equal(/useState/.test(actions), false);
