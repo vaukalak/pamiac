@@ -5,6 +5,7 @@ import {
   useExtensionState,
   type BlockTypeSelectItem,
 } from "@blocknote/react";
+import { NARROW_NOTE_QUERY } from "@/lib/note-narrow";
 import { blockMatchesChoice, blocksToTurnInto, type TurnIntoChoice } from "@/lib/turn-into";
 
 interface Properties {
@@ -33,7 +34,7 @@ export function TurnIntoChoice(props: Properties) {
       onClick={() => {
         if (block === undefined) return;
 
-        editor.focus();
+        if (!window.matchMedia(NARROW_NOTE_QUERY).matches) editor.focus();
         const selected = editor.getSelection()?.blocks;
         editor.transact(() => {
           for (const target of blocksToTurnInto(block, selected, choices)) {

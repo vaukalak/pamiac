@@ -128,7 +128,8 @@ describe("mobile block menu sheets", () => {
     assert.match(source, /event\.preventDefault\(\)/);
     assert.equal(/stopPropagation/.test(source), false);
     assert.match(source, /new MouseEvent\("mousedown"/);
-    assert.match(source, /editor\.focus\(\)/);
+    assert.match(source, /editor\.blur\(\)/);
+    assert.equal(/editor\.focus\(\)/.test(source), false);
     assert.match(source, /!menu\.isConnected/);
     assert.match(source, /sideMenu\.unfreezeMenu\(\)/);
     assert.match(source, /className="note-block-menu-backdrop"/);

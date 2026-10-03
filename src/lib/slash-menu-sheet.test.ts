@@ -96,7 +96,8 @@ describe("mobile slash menu sheet", () => {
     assert.match(source, /NARROW_QUERY = "\(max-width: 760px\)"/);
     assert.match(source, /state\?\.show && state\.triggerCharacter === "\/"/);
     assert.match(source, /suggestionMenu\.closeMenu\(\)/);
-    assert.match(source, /editor\.focus\(\)/);
+    assert.match(source, /editor\.blur\(\)/);
+    assert.equal(/editor\.focus\(\)/.test(source), false);
     assert.match(source, /className="note-slash-backdrop"/);
     assert.match(surface, /<NoteSlashMenuSheet \/>/);
     assert.equal(/bn-drag-handle-menu/.test(source), false);
