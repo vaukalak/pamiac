@@ -1,6 +1,6 @@
 # ChatGPT plugin submission
 
-Paste these into the portal after the skill is imported. Scan Tools on the MCP step imports the skill from `https://pamiac.com/api/mcp`. Uploading `skills/pamiac` is the same skill if the scan has not imported it yet.
+Upload `chatgpt/pamiac-plugin.zip`. The archive root is the plugin: `plugin.json`, `mcp.json`, `assets/`, and `skills/pamiac`. That skill is the same text the MCP server serves from `skills/pamiac`. It does not mention a model name or `PAMIAC_TOKEN`.
 
 ## Listing
 
