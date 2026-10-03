@@ -13,7 +13,7 @@ export const plans: readonly Plan[] = [
     id: "free",
     name: "Free",
     price: "$0",
-    documents: 30,
+    documents: 100,
     enabled: true,
     action: "Current plan",
   },

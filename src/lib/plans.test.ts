@@ -34,17 +34,28 @@ test("prices are free, five dollars, and twenty dollars", () => {
   );
 });
 
-test("document allowances are 30, 200, and 1500", () => {
+test("document allowances are 100, 200, and 1500", () => {
   assert.deepEqual(
     plans.map((plan) => plan.documents),
-    [30, 200, 1500],
+    [100, 200, 1500],
   );
-  assert.deepEqual(plans.map(documentLabel), ["30 documents", "200 documents", "1,500 documents"]);
+  assert.deepEqual(plans.map(documentLabel), ["100 documents", "200 documents", "1,500 documents"]);
+});
+
+test("paid plan rooms still name 200 and 1,500 documents", () => {
+  const paid = plans.filter((plan) => !plan.enabled);
+  assert.deepEqual(
+    paid.map((plan) => documentRoom(plan.documents, plan)),
+    ["The $5 plan holds 200 documents.", "The $20 plan holds 1,500 documents."],
+  );
+  for (const plan of paid) {
+    assert.equal(documentRoom(plan.documents - 1, plan), null);
+  }
 });
 
 test("the current plan refuses a library that is already full", () => {
   const plan = currentPlan();
   assert.equal(plan.name, "Free");
   assert.equal(documentRoom(plan.documents - 1, plan), null);
-  assert.equal(documentRoom(plan.documents, plan), "The Free plan holds 30 documents.");
+  assert.equal(documentRoom(plan.documents, plan), "The Free plan holds 100 documents.");
 });
