@@ -31,6 +31,7 @@ function buildAuth() {
   return betterAuth({
     baseURL: appBaseUrl(),
     secret: appSecret(),
+    trustedOrigins: ["https://www.gstatic.com"],
     account: {
       accountLinking: {
         enabled: true,
