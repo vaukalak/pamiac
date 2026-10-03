@@ -1,6 +1,7 @@
 "use client";
 
 import { useCreateBlockNote } from "@blocknote/react";
+import { useMutation } from "@tanstack/react-query";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { bindNoteSelectAll } from "@/components/note/note-select-all";
 import { NoteEditorFrame } from "@/components/note/note-editor-frame";
@@ -26,12 +27,32 @@ import "@blocknote/mantine/style.css";
 import "@blocknote/core/fonts/inter.css";
 
 interface Properties {
+  id: string;
   markdown: string;
   version: number;
   editable: boolean;
   onChange: (markdown: string) => void;
   libraryShell?: boolean;
   workspaceId: string | null;
+}
+
+async function postNoteImage(documentId: string, file: File) {
+  const body = new FormData();
+  body.append("file", file);
+  const response = await fetch(`/api/documents/${documentId}/images`, {
+    method: "POST",
+    body,
+  });
+  let payload: { url?: string; error?: string } | null = null;
+  try {
+    payload = (await response.json()) as { url?: string; error?: string };
+  } catch {
+    payload = null;
+  }
+  if (!response.ok || !payload?.url) {
+    throw new Error(payload?.error || "Image upload failed");
+  }
+  return payload.url;
 }
 
 function subscribeToColorScheme(onStoreChange: () => void) {
@@ -77,8 +98,19 @@ function commentIds(blocks: readonly { id: string; children?: readonly { id: str
 }
 
 export function NoteEditor(props: Properties) {
-  const { markdown, version, editable, onChange, libraryShell = false, workspaceId } = props;
-  const editor = useCreateBlockNote({ schema: noteSchema, setIdAttribute: true });
+  const { id, markdown, version, editable, onChange, libraryShell = false, workspaceId } = props;
+  const idRef = useRef(id);
+  idRef.current = id;
+  const uploadImage = useMutation({
+    mutationFn: (file: File) => postNoteImage(idRef.current, file),
+  });
+  const uploadImageRef = useRef(uploadImage.mutateAsync);
+  uploadImageRef.current = uploadImage.mutateAsync;
+  const editor = useCreateBlockNote({
+    schema: noteSchema,
+    setIdAttribute: true,
+    uploadFile: editable ? (file) => uploadImageRef.current(file) : undefined,
+  });
   const ready = useRef(false);
   const applying = useRef(false);
   const appliedVersion = useRef<number | null>(null);

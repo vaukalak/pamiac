@@ -57,6 +57,13 @@
       "when": 1790810600000,
       "tag": "0007_openai-review-user",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1790810700000,
+      "tag": "0008_image-upload",
+      "breakpoints": true
     }
   ]
 }

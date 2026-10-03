@@ -194,6 +194,24 @@ export const documentPermissionRequests = pgTable(
   ],
 );
 
+export const imageUploads = pgTable(
+  "image_upload",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    documentId: text("document_id").references(() => documents.id, { onDelete: "set null" }),
+    objectKey: text("object_key").notNull(),
+    byteSize: integer("byte_size").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("image_upload_object_key_idx").on(table.objectKey),
+    index("image_upload_user_created_idx").on(table.userId, table.createdAt),
+  ],
+);
+
 export const documentEmbeddings = pgTable(
   "document_embedding",
   {
