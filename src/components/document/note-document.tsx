@@ -246,6 +246,7 @@ export function NoteDocument(props: Properties) {
       <div className="note-sheet">
         <NoteEditor
           editable={canEdit}
+          id={id}
           libraryShell
           markdown={remote.markdown}
           version={remote.version}
