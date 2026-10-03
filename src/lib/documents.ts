@@ -21,7 +21,6 @@ import {
   workspaceMembers,
 } from "@/db/schema";
 import type { Visibility } from "@/lib/access";
-import { normalizeEmails } from "@/lib/access";
 import { defaultTitle, documentText, readDiagram, type DocumentType } from "@/lib/content";
 import type { DiagramPatch } from "@/lib/diagram-patch";
 import { embedText, excerpt } from "@/lib/embeddings";
@@ -40,7 +39,7 @@ import {
   workspaceLibraryId,
 } from "@/lib/library-spaces";
 import { currentPlan, currentWorkspacePlan, documentRoom } from "@/lib/plans";
-import { hashPassword } from "@/lib/passwords";
+import { prepareShareCredentials } from "@/lib/share-update";
 import { agentTokenStatus, createAgentToken, hashAgentToken } from "@/lib/tokens";
 import { listMemberWorkspaces } from "@/lib/workspaces";
 
@@ -456,20 +455,14 @@ export async function updateShare(
 ) {
   const current = await getOwnedDocument(ownerId, id);
   if (!current) throw new HttpError(404, "Document not found");
-  const emails = input.visibility === "emails" ? normalizeEmails(input.emails ?? []) : [];
-  if (input.visibility === "emails" && emails.length === 0) {
-    throw new HttpError(400, "Add at least one email address");
-  }
-  let passwordHash = current.passwordHash;
-  if (input.visibility === "password") {
-    if (input.password) {
-      if (input.password.length < 4)
-        throw new HttpError(400, "Password must be at least 4 characters");
-      passwordHash = hashPassword(input.password);
-    } else if (!passwordHash) {
-      throw new HttpError(400, "Set a password for this link");
-    }
-  }
+  const prepared = prepareShareCredentials({
+    visibility: input.visibility,
+    password: input.password,
+    emails: input.emails,
+    currentPasswordHash: current.passwordHash,
+  });
+  const emails = prepared.emails;
+  const passwordHash = prepared.passwordHash;
 
   const workspaceId =
     input.workspaceId === undefined

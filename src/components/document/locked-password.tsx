@@ -12,30 +12,40 @@ import { Section } from "@/ui/Section";
 
 interface Properties {
   id: string;
+  description?: string;
+  unlockPath?: string;
 }
 
 interface UnlockValues {
   password: string;
 }
 
-async function unlockDocument(id: string, password: string) {
+async function unlockWithPassword(path: string, password: string) {
   if (!password.trim()) throw new Error("Enter the password.");
-  const response = await fetch(`/api/documents/${id}/unlock`, {
+  const response = await fetch(path, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ password }),
   });
-  if (!response.ok) throw new Error("That password does not open this document.");
+  if (!response.ok) {
+    const folder = path.includes("/api/folders/");
+    throw new Error(
+      folder
+        ? "That password does not open this folder."
+        : "That password does not open this document.",
+    );
+  }
 }
 
 export function LockedPassword(props: Properties) {
-  const { id } = props;
+  const { id, description, unlockPath } = props;
   const router = useRouter();
+  const path = unlockPath ?? `/api/documents/${id}/unlock`;
   const form = useForm<UnlockValues>({
     defaultValues: { password: "" },
   });
   const unlock = useMutation({
-    mutationFn: (password: string) => unlockDocument(id, password),
+    mutationFn: (password: string) => unlockWithPassword(path, password),
     onSuccess: () => {
       router.refresh();
     },
@@ -50,7 +60,9 @@ export function LockedPassword(props: Properties) {
   return (
     <Section className="document-gate">
       <PageTitle title="Password required" />
-      <Paragraph>The owner protected this note or diagram with a password.</Paragraph>
+      <Paragraph>
+        {description ?? "The owner protected this note or diagram with a password."}
+      </Paragraph>
       <Form.Context className="form-stack" form={form} onSubmit={submit}>
         <Form.Input
           autoComplete="current-password"

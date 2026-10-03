@@ -39,7 +39,8 @@ Relation `type` is `association`, `inheritance`, `composition`, `aggregation`, `
 
 `list_folders`, `create_folder`, `move_document_to_folder`, and `move_folder` place notes and diagrams in folders.
 
-- `list_folders` returns `{ folders }` with `id`, `name`, `parentId`, and `workspaceId`. `workspaceId` is null for the personal library.
+- `list_folders` returns `{ folders }` with `id`, `name`, `parentId`, `workspaceId`, `visibility`, and `url`. `workspaceId` is null for the personal library. `url` is `/f/<id>`.
+- `share_folder` shares a folder and everything inside it, including nested folders and documents. Send `id`, `visibility`, and `password` or `emails` when that mode needs them. The link is the folder `url`. A folder share grants view, not edit, and does not change each document's own share.
 - `create_folder` takes `name`, optional `parentId`, and optional `workspaceId`. When `workspaceId` is omitted, the folder is created in the same library `create_note` would use. The parent must be in that library.
 - `move_document_to_folder` takes `documentId` and `folderId`. `folderId` null moves the document to the library root.
 - `move_folder` takes `folderId` and `parentId`. `parentId` null moves the folder to the library root. A folder cannot move into itself.

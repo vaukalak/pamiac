@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRef, useState, type DragEvent } from "react";
 import type { BoardDocument, LibraryView } from "@/components/library/board-document";
 import { FolderCardBody } from "@/components/library/folder-card-body";
+import { FolderShare } from "@/components/library/folder-share";
 import { readLibraryDrag, useLibraryLocation } from "@/components/library/library-location";
 import { folderMovesIntoItself, type FolderRecord } from "@/lib/folder-library";
 import { libraryFoldersQueryKey } from "@/lib/library-folders";
@@ -101,6 +102,10 @@ export function FolderCard(props: Properties) {
         setOver(true);
       }}
       onDragStart={(event) => {
+        if ((event.target as HTMLElement).closest(".doc-menu")) {
+          event.preventDefault();
+          return;
+        }
         moved.current = true;
         event.dataTransfer.setData("text/plain", folder.id);
         event.dataTransfer.effectAllowed = "move";
@@ -119,6 +124,7 @@ export function FolderCard(props: Properties) {
           openFolder(folder.id);
         }}
       />
+      <FolderShare folder={folder} />
       {message ? <Alert>{message}</Alert> : null}
     </article>
   );

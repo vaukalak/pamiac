@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { getDb } from "@/db";
 import { user } from "@/db/schema";
+import { VISIBILITIES } from "@/lib/access";
 import { MAX_CONTENT_LENGTH } from "@/lib/config";
 import {
   agentCreateWorkspace,
@@ -16,14 +17,16 @@ import {
   updateDocumentContent,
   type AgentScope,
 } from "@/lib/documents";
-import { UML_KINDS, UML_RELATIONS } from "@/lib/diagram";
-import { diagramPatchSchema } from "@/lib/diagram-patch";
+import { presentListedFolder } from "@/lib/folder-library";
 import {
   createAgentFolder,
   listAgentFolders,
   moveAgentDocumentToFolder,
   moveAgentFolder,
+  updateFolderShare,
 } from "@/lib/folders";
+import { UML_KINDS, UML_RELATIONS } from "@/lib/diagram";
+import { diagramPatchSchema } from "@/lib/diagram-patch";
 import { HttpError } from "@/lib/http";
 import { MCP_INSTRUCTIONS, UPDATE_DIAGRAM_DESCRIPTION } from "@/lib/mcp-instructions";
 import {
@@ -72,6 +75,13 @@ const folderSummary = z
     name: z.string(),
     parentId: z.string().nullable(),
     workspaceId: z.string().nullable(),
+  })
+  .strict();
+
+const listedFolder = folderSummary
+  .extend({
+    visibility: z.enum(VISIBILITIES),
+    url: z.string(),
   })
   .strict();
 
@@ -308,13 +318,14 @@ export function createPamiacMcpServer(
       description:
         "List folders this connection can reach. workspaceId is null for the personal library.",
       inputSchema: z.object({}).strict(),
-      outputSchema: z.object({ folders: z.array(folderSummary) }).strict(),
+      outputSchema: z.object({ folders: z.array(listedFolder) }).strict(),
       annotations: readAnnotations,
     },
     async () => {
       if (!userId) return errorResult("Sign-in required");
       try {
-        const folders = await listAgentFolders(userId, scope);
+        const rows = await listAgentFolders(userId, scope);
+        const folders = rows.map((row) => presentListedFolder(row, origin));
         return textResult({ folders });
       } catch (error) {
         return errorResult(failureMessage(error));
@@ -518,6 +529,37 @@ export function createPamiacMcpServer(
       try {
         const folder = await moveAgentFolder(userId, scope, folderId, parentId);
         return textResult(folder);
+      } catch (error) {
+        return errorResult(failureMessage(error));
+      }
+    },
+  );
+
+  server.registerTool(
+    "share_folder",
+    {
+      description:
+        "Share a whole folder. The folder url covers nested folders and the documents inside. View only.",
+      inputSchema: z
+        .object({
+          id: documentId,
+          visibility: z.enum(VISIBILITIES),
+          password: z.string().max(200).optional(),
+          emails: z.array(z.string()).max(50).optional(),
+        })
+        .strict(),
+      annotations: createAnnotations,
+    },
+    async ({ id, visibility, password, emails }) => {
+      if (!userId) return errorResult("Sign-in required");
+      try {
+        const share = await updateFolderShare(
+          userId,
+          id,
+          { visibility, password, emails },
+          { scope, origin },
+        );
+        return textResult(share);
       } catch (error) {
         return errorResult(failureMessage(error));
       }

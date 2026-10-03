@@ -3,6 +3,7 @@ import { Resend } from "resend";
 import { ConfirmEmail, confirmEmailText } from "../emails/ConfirmEmail.ts";
 import { MagicLinkEmail, magicLinkText } from "../emails/MagicLinkEmail.ts";
 import { NoteAccessRequestEmail, noteAccessRequestText } from "../emails/NoteAccessRequestEmail.ts";
+import { FolderSharedEmail, folderSharedText } from "../emails/FolderSharedEmail.ts";
 import { NoteSharedEmail, noteSharedText } from "../emails/NoteSharedEmail.ts";
 import { ResetPasswordEmail, resetPasswordText } from "../emails/ResetPasswordEmail.ts";
 import {
@@ -292,5 +293,43 @@ export async function sendNoteShared({
     missingKey: "RESEND_API_KEY is required to send note shares",
     log: `Note shared with ${email}`,
     failure: "Could not send the note email",
+  });
+}
+
+export async function sendFolderShared({
+  email,
+  url,
+  senderName,
+  folderName,
+  accountRequired,
+}: {
+  email: string;
+  url: string;
+  senderName: string;
+  folderName: string;
+  accountRequired: boolean;
+}) {
+  const sender = oneLine(senderName) || "Someone";
+  const title = oneLine(folderName) || "a folder";
+  await deliverEmail({
+    email,
+    url,
+    template: "folder-shared",
+    subject: `${sender} shared a folder with you`,
+    react: createElement(FolderSharedEmail, {
+      senderName: sender,
+      folderName: title,
+      folderUrl: url,
+      accountRequired,
+    }),
+    text: folderSharedText({
+      senderName: sender,
+      folderName: title,
+      folderUrl: url,
+      accountRequired,
+    }),
+    missingKey: "RESEND_API_KEY is required to send folder shares",
+    log: `Folder shared with ${email}`,
+    failure: "Could not send the folder email",
   });
 }
