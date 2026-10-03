@@ -1,15 +1,16 @@
+import { ConnectApiToken } from "@/components/connect/connect-api-token";
+import { ConnectManualMcp } from "@/components/connect/connect-manual-mcp";
 import { ConnectionAgent } from "@/components/tokens/connection-agent";
-import { ConnectionChatGpt } from "@/components/tokens/connection-chatgpt";
-import { ConnectionMcp } from "@/components/tokens/connection-mcp";
 import type { ConnectionTabId } from "@/components/tokens/connection-tabs";
 
 interface Properties {
+  onGuides: () => void;
   tab: ConnectionTabId;
 }
 
 export function ConnectionPanel(props: Properties) {
-  const { tab } = props;
-  if (tab === "agent") return <ConnectionAgent />;
-  if (tab === "mcp") return <ConnectionMcp />;
-  return <ConnectionChatGpt />;
+  const { onGuides, tab } = props;
+  if (tab === "token") return <ConnectApiToken onGuides={onGuides} />;
+  if (tab === "mcp") return <ConnectManualMcp />;
+  return <ConnectionAgent />;
 }

@@ -83,18 +83,18 @@ describe("agent workspaces for a token", () => {
     expect(skill).not.toMatch(/fast: true/);
   });
 
-  it("keeps the ChatGPT tab as a coming-soon line and leaves the MCP tab", () => {
-    const chatgpt = read("src/components/tokens/connection-chatgpt.tsx");
-    const mcp = read("src/components/tokens/connection-mcp.tsx");
+  it("shows ChatGPT as a platform guide and leaves manual MCP beside it", () => {
+    const platforms = read("src/lib/connect-platforms.ts");
+    const mcp = read("src/components/connect/connect-manual-mcp.tsx");
     const tabs = read("src/components/tokens/connection-tabs.tsx");
     const panel = read("src/components/tokens/connection-panel.tsx");
 
-    expect(chatgpt).toMatch(/<Paragraph>Coming soon\.\.\.<\/Paragraph>/);
-    expect(chatgpt).not.toMatch(/plugin directory|Publisher submission|developer mode/);
-    expect(chatgpt).not.toMatch(/<p[\s>]/);
+    expect(platforms).toMatch(/Install Pamiac from the ChatGPT Plugin directory/);
+    expect(platforms).not.toMatch(/Coming soon\.\.\./);
     expect(mcp).toMatch(/Publisher submission, and ChatGPT developer mode/);
-    expect(tabs).toMatch(/\["chatgpt", "ChatGPT"\]/);
-    expect(panel).toMatch(/<ConnectionChatGpt \/>/);
+    expect(tabs).toMatch(/\["mcp", "Manual MCP"\]/);
+    expect(panel).toMatch(/<ConnectManualMcp \/>/);
     assert.throws(() => read("src/components/tokens/chatgpt-connect.tsx"));
+    assert.throws(() => read("src/components/tokens/connection-chatgpt.tsx"));
   });
 });

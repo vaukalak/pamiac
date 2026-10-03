@@ -1,7 +1,7 @@
 import { ConnectionMcpEndpoint } from "@/components/tokens/connection-mcp-endpoint";
 import { Paragraph } from "@/ui/Paragraph";
 
-export function ConnectionMcp() {
+export function ConnectManualMcp() {
   return (
     <div className="token-connect-mcp">
       <Paragraph>

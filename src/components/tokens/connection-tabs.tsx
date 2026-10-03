@@ -3,9 +3,9 @@
 import { ConnectionTabButton } from "@/components/tokens/connection-tab-button";
 
 export const CONNECTION_TABS = [
-  ["agent", "Agent skills"],
-  ["mcp", "MCP"],
-  ["chatgpt", "ChatGPT"],
+  ["token", "API token"],
+  ["mcp", "Manual MCP"],
+  ["skill", "Agent skill"],
 ] as const;
 
 export type ConnectionTabId = (typeof CONNECTION_TABS)[number][0];
@@ -19,7 +19,7 @@ export function ConnectionTabs(props: Properties) {
   const { tab, onTab } = props;
 
   return (
-    <div className="token-connect-tabs" role="group" aria-label="Connection kind">
+    <div aria-label="Advanced options" className="token-connect-tabs" role="group">
       {CONNECTION_TABS.map(([value, label]) => (
         <ConnectionTabButton
           key={value}

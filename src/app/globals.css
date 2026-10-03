@@ -4450,7 +4450,7 @@ code {
   padding: 4px 0 8px;
 }
 .library-shell .token-connect-dialog {
-  width: min(520px, 100%);
+  width: min(640px, 100%);
 }
 .library-shell .token-connect-endpoint {
   display: grid;
@@ -4519,6 +4519,216 @@ code {
 }
 .library-shell .token-connect-dialog .error {
   color: #ffb4ab;
+}
+.library-shell .token-connect,
+.home .token-connect {
+  color: var(--home-text);
+}
+.home .connect-agent-page {
+  display: grid;
+  justify-items: center;
+  padding: 32px 16px 72px;
+}
+.home .connect-agent-panel {
+  width: min(640px, 100%);
+  padding: 22px;
+  border: 1px solid var(--home-hair);
+  border-radius: 18px;
+  background: var(--home-panel);
+  box-shadow: var(--home-shadow);
+}
+.token-connect h2,
+.home .connect-agent-panel h1,
+.home .token-connect-sign-in h1 {
+  margin: 0;
+  color: var(--home-text);
+  font-family: var(--sans);
+  font-size: 28px;
+  font-weight: 650;
+  letter-spacing: -0.03em;
+}
+.token-connect .text-pretty {
+  color: var(--home-soft);
+}
+.token-connect-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+.token-connect-badge {
+  border: 1px solid var(--home-lime);
+  border-radius: 999px;
+  color: var(--home-lime);
+  font-size: 12px;
+  padding: 2px 8px;
+}
+.token-connect-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 16px;
+}
+.token-connect-card {
+  grid-column: span 2;
+  width: 100%;
+  min-height: 92px;
+  align-items: stretch;
+  justify-content: flex-start;
+  text-align: left;
+  border-radius: 14px;
+  padding: 12px;
+}
+.token-connect-card-cursor {
+  grid-column: span 6;
+}
+.token-connect-card-claude,
+.token-connect-card-chatgpt {
+  grid-column: span 3;
+}
+.library-shell .token-connect-dialog .token-connect-card-primary,
+.home .token-connect .token-connect-card-primary {
+  border-color: var(--home-lime);
+  color: var(--home-text);
+}
+.token-connect-card-copy {
+  display: grid;
+  gap: 2px;
+  justify-items: start;
+}
+.token-connect-mark {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--home-lime) 16%, transparent);
+  color: var(--home-lime);
+  font-size: 12px;
+}
+.token-connect-card-name {
+  color: var(--home-text);
+  font-weight: 650;
+}
+.token-connect-card-blurb {
+  color: var(--home-soft);
+  font-size: 13px;
+}
+.token-connect-or {
+  margin: 16px 0 8px;
+  color: var(--home-soft);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+}
+.token-connect-link {
+  display: grid;
+  gap: 8px;
+}
+.token-connect-link-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.token-connect-link-value {
+  flex: 1;
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--home-line);
+  border-radius: 12px;
+  background: #101410;
+  color: var(--home-text);
+}
+.token-connect-checks {
+  display: grid;
+  gap: 8px;
+  margin: 16px 0;
+  padding: 0;
+  list-style: none;
+}
+.token-connect-check {
+  color: var(--home-text);
+}
+.token-connect-check::before {
+  content: "✓ ";
+  color: var(--home-lime);
+}
+.token-connect .btn.library-lime {
+  width: 100%;
+  background: var(--home-lime);
+  border-color: var(--home-lime);
+  color: var(--home-on-lime);
+}
+.token-connect .btn.library-lime:hover:not(:disabled) {
+  background: var(--home-lime-deep);
+}
+.token-connect-action,
+.token-connect-self,
+.token-connect-advanced-entry,
+.token-connect-token,
+.token-connect-connected {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+.token-connect-connected-banner,
+.token-connect-account,
+.token-connect-access {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid var(--home-hair);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--home-lime) 8%, transparent);
+}
+.token-connect-account {
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+}
+.token-connect-account-copy {
+  display: grid;
+}
+.token-connect-avatar {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  background: var(--home-lime);
+  color: var(--home-on-lime);
+  font-weight: 650;
+}
+.token-connect-when {
+  color: var(--home-soft);
+  font-size: 13px;
+}
+.token-connect-next ol {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding-left: 20px;
+}
+.token-connect-sign-in {
+  display: grid;
+  gap: 12px;
+}
+.token-connect .error {
+  color: #ffb4ab;
+}
+@media (max-width: 640px) {
+  .token-connect-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .token-connect-card,
+  .token-connect-card-cursor,
+  .token-connect-card-claude,
+  .token-connect-card-chatgpt {
+    grid-column: span 1;
+  }
+  .token-connect-card-cursor,
+  .token-connect-card-primary {
+    grid-column: 1 / -1;
+  }
 }
 .library-shell .token-secret .secret {
   margin-top: 8px;

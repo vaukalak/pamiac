@@ -149,7 +149,7 @@ test("connection dialog copies and downloads the skill without minting a key", (
   assert.match(actions, />\s*Download SKILL\.md\s*</);
   assert.match(actions, /navigator\.clipboard\.writeText\(TOKEN_SKILL_FILE\)/);
   assert.match(actions, /download = "SKILL\.md"/);
-  assert.match(agent, /Give your agent the Pamiac skill/);
+  assert.match(agent, /Download the Pamiac skill/);
   assert.match(agent, /The skill contains instructions, not credentials\./);
   assert.doesNotMatch(actions + agent + dialog, /Create API key|Grant workspace access|Add key/);
 });

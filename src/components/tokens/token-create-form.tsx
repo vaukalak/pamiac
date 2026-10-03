@@ -9,6 +9,7 @@ import {
   EXPIRATIONS,
   scopePayload,
   selectedSpaceIds,
+  type ScopeChoice,
   type TokenValues,
 } from "@/components/tokens/token-values";
 import { Alert } from "@/ui/Alert";
@@ -37,7 +38,22 @@ async function createToken(values: TokenValues) {
   return body.token;
 }
 
-export function TokenCreateForm() {
+interface Properties {
+  expirationLabel?: string;
+  idPrefix?: string;
+  scopeLabel?: string;
+  scopeOptions?: readonly { value: ScopeChoice; label: string }[];
+  submitLabel?: string;
+}
+
+export function TokenCreateForm(props: Properties) {
+  const {
+    expirationLabel = "Expiration",
+    idPrefix = "token-create",
+    scopeLabel = "Scope",
+    scopeOptions,
+    submitLabel = "Create API key",
+  } = props;
   const queryClient = useQueryClient();
   const form = useForm<TokenValues>({
     defaultValues: {
@@ -73,20 +89,20 @@ export function TokenCreateForm() {
 
   return (
     <Form.Context className="form-stack token-form" form={form} onSubmit={submit}>
-      <TokenScopeFields idPrefix="token-create" />
+      <TokenScopeFields idPrefix={idPrefix} scopeLabel={scopeLabel} scopeOptions={scopeOptions} />
       <Form.Select
-        id="token-create-expiration"
-        label="Expiration"
+        id={`${idPrefix}-expiration`}
+        label={expirationLabel}
         name="expiration"
         options={EXPIRATIONS}
       />
       {expiration === "date" ? (
-        <Form.Input id="token-create-date" label="Expiration date" name="date" type="date" />
+        <Form.Input id={`${idPrefix}-date`} label="Expiration date" name="date" type="date" />
       ) : null}
       {mutation.data ? <TokenSecret secret={mutation.data} /> : null}
       {createError ? <Alert>{createError}</Alert> : null}
       <Button disabled={mutation.isPending} type="submit">
-        {mutation.isPending ? "Creating…" : "Create API key"}
+        {mutation.isPending ? "Creating…" : submitLabel}
       </Button>
     </Form.Context>
   );

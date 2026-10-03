@@ -43,37 +43,36 @@ function slice(source: string, start: string, end?: string) {
 }
 
 describe("new connection dialog", () => {
-  it("states on every tab that PAMIAC_TOKEN has to be configured in the environment", () => {
-    const tabs = [
-      "src/components/tokens/connection-agent.tsx",
-      "src/components/tokens/connection-mcp.tsx",
-      "src/components/tokens/connection-chatgpt.tsx",
-    ];
+  it("keeps the token sentence on the agent skill surface", () => {
+    const agent = read("src/components/tokens/connection-agent.tsx");
 
-    for (const path of tabs) {
-      const source = read(path);
-      expect(source).toMatch(new RegExp(`<Paragraph>${tokenSentence}</Paragraph>`));
-      expect(source.split(tokenSentence).length - 1).toBe(1);
-    }
+    expect(agent).toMatch(new RegExp(`<Paragraph>${tokenSentence}</Paragraph>`));
+    expect(agent.split(tokenSentence).length - 1).toBe(1);
+    expect(agent).toMatch(/Without that token, the skill offers sign-in with Google\./);
   });
 
-  it("keeps each tab's own job beside that sentence", () => {
+  it("keeps the skill job and the manual MCP job on their own surfaces", () => {
     const agent = read("src/components/tokens/connection-agent.tsx");
-    const mcp = read("src/components/tokens/connection-mcp.tsx");
-    const chatgpt = read("src/components/tokens/connection-chatgpt.tsx");
+    const mcp = read("src/components/connect/connect-manual-mcp.tsx");
+    const platforms = read("src/lib/connect-platforms.ts");
+    const picker = read("src/components/connect/connect-picker.tsx");
 
     expect(agent).toMatch(/<ConnectionSkillActions \/>/);
     expect(agent).toMatch(/The skill contains instructions, not credentials\./);
     expect(mcp).toMatch(/Publisher submission, and ChatGPT developer mode/);
     expect(mcp).toMatch(/<ConnectionMcpEndpoint \/>/);
-    expect(chatgpt).toMatch(/<Paragraph>Coming soon\.\.\.<\/Paragraph>/);
-    expect(agent + chatgpt).not.toMatch(/ConnectionMcpEndpoint|Copy link|window\.location/);
+    expect(platforms).toMatch(/Install in ChatGPT/);
+    expect(platforms).not.toMatch(/Coming soon\.\.\./);
+    expect(agent).not.toMatch(/ConnectionMcpEndpoint|Copy link|window\.location/);
+    expect(picker).toMatch(/Connect Pamiac/);
+    expect(picker).toMatch(/Give your AI this link/);
+    expect(picker).not.toMatch(/Mikhail|mikhail@example\.com|Oct 3, 2026/);
   });
 
-  it("keeps the paste cue on MCP and sends ChatGPT developer mode to that tab", () => {
+  it("keeps the paste cue on manual MCP and does not invent an install URL", () => {
     const agent = read("src/components/tokens/connection-agent.tsx");
-    const mcp = read("src/components/tokens/connection-mcp.tsx");
-    const chatgpt = read("src/components/tokens/connection-chatgpt.tsx");
+    const mcp = read("src/components/connect/connect-manual-mcp.tsx");
+    const platforms = read("src/lib/connect-platforms.ts");
 
     expect(mcp).toMatch(/<Paragraph>Paste this endpoint\.<\/Paragraph>/);
     expect(mcp.split("Paste this endpoint.").length - 1).toBe(1);
@@ -84,14 +83,9 @@ describe("new connection dialog", () => {
       mcp.indexOf("<ConnectionMcpEndpoint />"),
     );
     expect(mcp).not.toMatch(/const ENDPOINT|\{ENDPOINT\}|\/api\/mcp/);
-    expect(agent + chatgpt).not.toMatch(/Paste this endpoint\./);
-
-    expect(chatgpt).toMatch(/<Paragraph>Developer mode uses the MCP tab\.<\/Paragraph>/);
-    expect(chatgpt.split("Developer mode uses the MCP tab.").length - 1).toBe(1);
-    expect(chatgpt.indexOf("Coming soon...")).toBeLessThan(
-      chatgpt.indexOf("Developer mode uses the MCP tab."),
-    );
-    expect(agent + mcp).not.toMatch(/Developer mode uses the MCP tab\./);
+    expect(agent).not.toMatch(/Paste this endpoint\./);
+    expect(platforms).not.toMatch(/https:\/\/pamiac\.com\/oauth\/consent/);
+    expect(platforms).not.toMatch(/https:\/\/cursor\.com|https:\/\/chatgpt\.com|one click/i);
   });
 
   it("builds the absolute MCP URL after mount and renders nothing until it exists", () => {
