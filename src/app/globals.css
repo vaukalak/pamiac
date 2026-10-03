@@ -2762,6 +2762,14 @@ code {
   outline: 2px solid var(--home-lime);
   outline-offset: 2px;
 }
+.library-shell .note-sheet:focus,
+.library-shell .note-sheet:focus-visible,
+.library-shell .note-editor .bn-editor:focus,
+.library-shell .note-editor .bn-editor:focus-visible,
+.library-shell .note-sheet [contenteditable="true"]:focus,
+.library-shell .note-sheet [contenteditable="true"]:focus-visible {
+  outline: none;
+}
 .library-shell .brand {
   color: var(--home-text);
   font-family: var(--sans);
