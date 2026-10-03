@@ -32,28 +32,28 @@ function slice(source: string, startMark: string, endMark: string) {
 }
 
 describe("email and password sign-in", () => {
-  it("keeps the password control on the idle login form and off the sent state", () => {
+  it("opens the magic-link and password forms from the chooser without sending mail", () => {
     const form = read("src/components/login-form.tsx");
-    const sentBranch = slice(form, "sent ? (", ") : (");
-    const idleStart = form.indexOf(") : (");
-    const password = form.indexOf("<LoginPassword nextPath={nextPath} />");
+    const chooser = read("src/components/login/login-chooser.tsx");
+    const magic = read("src/components/login/login-magic-link-form.tsx");
+    const sentCard = slice(magic, "{sent ? (", ") : (");
 
-    expect(sentBranch).toMatch(/<LoginLinkSent/);
-    expect(sentBranch).not.toMatch(/LoginPassword/);
-    expect(form).toMatch(/\{sent \? null : <LoginPassword nextPath=\{nextPath\} \/>\}/);
-    assert.ok(password > idleStart);
+    expect(chooser).toMatch(/Send Magic Link/);
+    expect(chooser).toMatch(/onClick=\{onMagicLink\}/);
+    expect(chooser).toMatch(/Or continue with email \/ password/);
+    expect(chooser).toMatch(/onClick=\{onPassword\}/);
+    expect(chooser).not.toMatch(/authClient\.signIn\.magicLink|authClient\.signIn\.email/);
+    expect(form).toMatch(/setStep\("chooser"\)/);
+    expect(form).toMatch(/setStep\("magic"\)/);
+    expect(form).toMatch(/setStep\("password"\)/);
+    expect(magic).toMatch(/authClient\.signIn\.magicLink\(/);
+    expect(magic).toMatch(/>\s*Back\s*</);
+    expect(sentCard).toMatch(/<LoginLinkSent/);
+    expect(sentCard).not.toMatch(/Back|LoginGoogle|Send Magic Link/);
   });
 
-  it("reveals a validated password form that signs in through better-auth", () => {
-    const toggle = read("src/components/login/login-password.tsx");
+  it("signs in with email and password and does not register", () => {
     const fields = read("src/components/login/login-password-form.tsx");
-
-    expect(toggle).toMatch(/className="ghost"/);
-    expect(toggle).toMatch(/type="button"/);
-    expect(toggle).toMatch(/expanded=\{open\}/);
-    expect(toggle).toMatch(/Or continue with email and password/);
-    expect(toggle).toMatch(/\{open \? <LoginPasswordForm nextPath=\{nextPath\} \/> : null\}/);
-    expect(toggle).not.toMatch(/<input|<select|signIn\.email|useMutation/);
 
     expect(fields).toMatch(/"Enter an email address\."/);
     expect(fields).toMatch(/"That address needs an @\."/);
@@ -70,19 +70,22 @@ describe("email and password sign-in", () => {
       /<Form\.Input[^>]*autoComplete="current-password"[^>]*label="Password"[^>]*type="password"/s,
     );
     expect(fields).toMatch(/disabled=\{mutation\.isPending\}/);
-    expect(fields).toMatch(/>\s*Submit\s*</);
+    expect(fields).toMatch(/>\s*Sign in\s*</);
+    expect(fields).toMatch(/>\s*Back\s*</);
     expect(fields).toMatch(/<LoginSendFailure happened=\{message\} \/>/);
     expect(fields).not.toMatch(/useState|<input|<select|signUp/);
   });
 
-  it("adds the same password option under Google connect, including when Google is absent", () => {
+  it("switches Google connect to the password form and back, without a magic link", () => {
     const signIn = read("src/components/connect/google-connect-sign-in.tsx");
 
     expect(signIn).toMatch(/Google sign-in is not set up\./);
     expect(signIn).toMatch(/<LoginGoogle agentConnect nextPath=\{nextPath\} \/>/);
-    expect(signIn).toMatch(/<LoginPassword nextPath=\{nextPath\} \/>/);
+    expect(signIn).toMatch(/Or continue with email \/ password/);
+    expect(signIn).toMatch(/<LoginPasswordForm/);
+    expect(signIn).toMatch(/setShowPassword\(false\)/);
     expect(signIn).toMatch(/const nextPath = googleConnectPath\(userCode\)/);
-    expect(signIn).not.toMatch(/magicLink|LoginForm|<input|signUp/);
+    expect(signIn).not.toMatch(/magicLink|LoginForm|Send Magic Link|<input|signUp/);
   });
 
   it("enables password sign-in without a public sign-up", () => {
@@ -119,5 +122,37 @@ describe("email and password sign-in", () => {
     expect(journal).toMatch(/"idx": 7/);
     expect(journal).toMatch(/"tag": "0007_openai-review-user"/);
     expect(journal).toMatch(/"when": 1790810600000/);
+  });
+
+  it("opens the sent magic-link card when an address is already remembered", () => {
+    const form = read("src/components/login-form.tsx");
+    const restore = slice(form, "useLayoutEffect", 'if (step === "magic")');
+    const passwordStep = slice(form, 'if (step === "password")', "<LoginChooser");
+
+    expect(restore).toMatch(/readSentLoginAddress\(\)/);
+    expect(restore).toMatch(/setStep\("magic"\)/);
+    expect(passwordStep).toMatch(/<LoginPasswordForm/);
+    expect(passwordStep).toMatch(/setStep\("chooser"\)/);
+    expect(passwordStep).not.toMatch(/LoginChooser|LoginMagicLinkForm|LoginGoogle|Send Magic Link/);
+  });
+
+  it("keeps Google connect's password screen to the password form", () => {
+    const signIn = read("src/components/connect/google-connect-sign-in.tsx");
+    const passwordScreen = slice(signIn, "if (showPassword)", "<>");
+    const idle = signIn.slice(signIn.lastIndexOf("return ("));
+    const fields = read("src/components/login/login-password-form.tsx");
+
+    expect(passwordScreen).toMatch(/<LoginPasswordForm/);
+    expect(passwordScreen).toMatch(/setShowPassword\(false\)/);
+    expect(passwordScreen).not.toMatch(
+      /LoginGoogle|Send Magic Link|Or continue with email|magicLink/,
+    );
+    expect(idle).toMatch(/<LoginGoogle agentConnect nextPath=\{nextPath\} \/>/);
+    expect(idle).toMatch(/Google sign-in is not set up\./);
+    expect(idle).toMatch(/Or continue with email \/ password/);
+    expect(idle).toMatch(/setShowPassword\(true\)/);
+    expect(idle).not.toMatch(/LoginPasswordForm|Send Magic Link|magicLink/);
+    expect(fields).not.toMatch(/Use at least 8 characters|signUp|window\.location\.assign/);
+    expect(fields).toMatch(/className="ghost"[^>]*type="button"/);
   });
 });

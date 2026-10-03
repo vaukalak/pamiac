@@ -5,7 +5,10 @@ import { devMagicLinkVisible } from "./dev-magic-link.ts";
 
 const route = readFileSync(new URL("../app/api/dev/magic-link/route.ts", import.meta.url), "utf8");
 const page = readFileSync(new URL("../app/login/page.tsx", import.meta.url), "utf8");
-const form = readFileSync(new URL("../components/login-form.tsx", import.meta.url), "utf8");
+const form = readFileSync(
+  new URL("../components/login/login-magic-link-form.tsx", import.meta.url),
+  "utf8",
+);
 
 const originalNodeEnv = process.env.NODE_ENV;
 const originalVercelEnv = process.env.VERCEL_ENV;

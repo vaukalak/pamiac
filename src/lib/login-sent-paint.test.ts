@@ -10,7 +10,10 @@ import {
 const memory = readFileSync(new URL("./login-sent-memory.ts", import.meta.url), "utf8");
 const page = readFileSync(new URL("../app/login/page.tsx", import.meta.url), "utf8");
 const layout = readFileSync(new URL("../app/layout.tsx", import.meta.url), "utf8");
-const form = readFileSync(new URL("../components/login-form.tsx", import.meta.url), "utf8");
+const form = readFileSync(
+  new URL("../components/login/login-magic-link-form.tsx", import.meta.url),
+  "utf8",
+);
 const copy = readFileSync(
   new URL("../components/login/login-sign-in-copy.tsx", import.meta.url),
   "utf8",

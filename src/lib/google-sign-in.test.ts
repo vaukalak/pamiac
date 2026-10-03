@@ -74,17 +74,23 @@ describe("google sign-in configuration", () => {
   it("passes the server flag into the login form and keeps the magic-link callback", () => {
     const page = readFileSync(join(root, "src/app/login/page.tsx"), "utf8");
     const form = readFileSync(join(root, "src/components/login-form.tsx"), "utf8");
+    const chooser = readFileSync(join(root, "src/components/login/login-chooser.tsx"), "utf8");
+    const magic = readFileSync(
+      join(root, "src/components/login/login-magic-link-form.tsx"),
+      "utf8",
+    );
 
     assert.match(page, /googleSignInEnabled\(\)/);
     assert.match(page, /agentConnect=\{isOAuthLoginQuery\(query\)\}/);
     assert.match(page, /googleEnabled=\{googleSignInEnabled\(\)\}/);
     assert.match(page, /nextPath=\{formNext\}/);
-    assert.match(form, /authClient\.signIn\.magicLink\(\{/);
-    assert.match(form, /callbackURL: nextPath/);
+    assert.match(magic, /authClient\.signIn\.magicLink\(\{/);
+    assert.match(magic, /callbackURL: nextPath/);
     assert.match(
-      form,
-      /sent \|\| !googleEnabled \? null : \(\s*<LoginGoogle agentConnect=\{agentConnect\} nextPath=\{nextPath\} \/>/,
+      chooser,
+      /googleEnabled \? <LoginGoogle agentConnect=\{agentConnect\} nextPath=\{nextPath\} \/>/,
     );
+    assert.doesNotMatch(magic, /LoginGoogle|<button/);
     assert.doesNotMatch(form, /GOOGLE_CLIENT|useState\(false\)|<button/);
   });
 

@@ -354,6 +354,9 @@ html[data-login-sent] .login-google,
 html[data-login-sent] .home-sign-in-panel form.form-stack {
   display: none;
 }
+html[data-login-sent] .login-chooser {
+  display: none;
+}
 .hint {
   color: var(--ink-soft);
   font-size: 14px;
@@ -4281,6 +4284,14 @@ code {
   border-color: transparent;
   background: transparent;
   color: var(--home-soft);
+}
+.home .home-sign-in-panel .btn.ghost.login-link-option,
+.home .home-sign-in-panel .btn.ghost.login-link-option:hover {
+  width: 100%;
+  justify-self: stretch;
+  padding-inline: 0;
+  font-size: 13px;
+  line-height: 1.3;
 }
 .home .home-sign-in-panel .dev-link {
   border: 1px solid var(--home-line);

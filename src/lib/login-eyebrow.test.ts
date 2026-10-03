@@ -7,7 +7,14 @@ const copy = readFileSync(
   new URL("../components/login/login-sign-in-copy.tsx", import.meta.url),
   "utf8",
 );
-const form = readFileSync(new URL("../components/login-form.tsx", import.meta.url), "utf8");
+const chooser = readFileSync(
+  new URL("../components/login/login-chooser.tsx", import.meta.url),
+  "utf8",
+);
+const magic = readFileSync(
+  new URL("../components/login/login-magic-link-form.tsx", import.meta.url),
+  "utf8",
+);
 const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8");
 
 function expect(actual: string) {
@@ -31,7 +38,9 @@ describe("login eyebrow", () => {
     expect(copy).toMatch(
       /We email you a link\. If the address is new, opening the link\s+creates\s+the account\./,
     );
-    expect(form).toMatch(/sent \? null : <LoginSignInCopy \/>/);
+    expect(copy).not.toMatch(/There is no password/);
+    expect(chooser).toMatch(/<LoginSignInCopy \/>/);
+    expect(magic).not.toMatch(/LoginSignInCopy/);
     expect(login).toMatch(
       /<LoginForm\s+agentConnect=\{isOAuthLoginQuery\(query\)\}\s+googleEnabled=\{googleSignInEnabled\(\)\}\s+nextPath=\{formNext\}\s+showDevLink=\{showDevLink\}\s*\/>/,
     );

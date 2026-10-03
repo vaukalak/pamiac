@@ -3,7 +3,10 @@ import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import { loginSendFailureSentence } from "./login-send-failure.ts";
 
-const form = readFileSync(new URL("../components/login-form.tsx", import.meta.url), "utf8");
+const form = readFileSync(
+  new URL("../components/login/login-magic-link-form.tsx", import.meta.url),
+  "utf8",
+);
 const failure = readFileSync(
   new URL("../components/login/login-send-failure.tsx", import.meta.url),
   "utf8",

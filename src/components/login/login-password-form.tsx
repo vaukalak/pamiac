@@ -10,6 +10,7 @@ import { Form } from "@/ui/Form";
 
 interface Properties {
   nextPath: string;
+  onBack: () => void;
 }
 
 interface PasswordValues {
@@ -63,7 +64,7 @@ async function signInWithPassword(input: { email: string; password: string; next
 }
 
 export function LoginPasswordForm(props: Properties) {
-  const { nextPath } = props;
+  const { nextPath, onBack } = props;
   const form = useForm<PasswordValues>({
     defaultValues: { email: "", password: "" },
     mode: "onSubmit",
@@ -83,6 +84,9 @@ export function LoginPasswordForm(props: Properties) {
         mutation.mutate(values);
       }}
     >
+      <Button className="ghost" onClick={onBack} type="button">
+        Back
+      </Button>
       <Form.Input
         autoComplete="email"
         id="login-password-email"
@@ -98,7 +102,7 @@ export function LoginPasswordForm(props: Properties) {
         type="password"
       />
       <Button disabled={mutation.isPending} type="submit">
-        Submit
+        Sign in
       </Button>
       {mutation.isError ? <LoginSendFailure happened={message} /> : null}
     </Form.Context>
