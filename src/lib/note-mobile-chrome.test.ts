@@ -92,6 +92,22 @@ describe("mobile note chrome", () => {
     assert.match(sheet, /pointer-events:\s*none\s*!important/);
   });
 
+  it("drops the side-menu left gutter on a narrow viewport and keeps the desktop inset", () => {
+    const css = read("../app/globals.css");
+    const sheet = block(
+      css.slice(css.lastIndexOf("@media (max-width: 760px)")),
+      "@media (max-width: 760px) {",
+    );
+    const narrow = block(sheet, ".library-shell .note-editor .bn-editor {");
+
+    assert.match(narrow, /padding-left:\s*8px\s*!important/);
+    assert.doesNotMatch(narrow, /padding-inline:\s*36px/);
+    assert.match(
+      css,
+      /\.library-shell \.note-editor \.bn-editor \{\s*max-width: 72ch;\s*padding-inline: 36px 8px;/,
+    );
+  });
+
   it("drags from a long press without focusing the editor or opening the keyboard", () => {
     const source = read("../components/note/note-block-drag.tsx");
 

@@ -3039,6 +3039,9 @@ code {
     display: none !important;
     pointer-events: none !important;
   }
+  .library-shell .note-editor .bn-editor {
+    padding-left: 8px !important;
+  }
   .note-editor .bn-block[data-note-drop="before"] {
     box-shadow: inset 0 2px 0 var(--bn-colors-highlights-blue-text, var(--teal));
   }
