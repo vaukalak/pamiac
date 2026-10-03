@@ -1,8 +1,8 @@
 import { ConnectAdvancedEntry } from "@/components/connect/connect-advanced-entry";
-import { ConnectChecklist } from "@/components/connect/connect-checklist";
 import { ConnectPlatformAction } from "@/components/connect/connect-platform-action";
-import { ConnectSelfServe } from "@/components/connect/connect-self-serve";
+import { ConnectPlatformColumnBody } from "@/components/connect/connect-platform-column-body";
 import type { ConnectPlatform } from "@/lib/connect-platforms";
+import { Paragraph } from "@/ui/Paragraph";
 
 interface Properties {
   onAdvanced: () => void;
@@ -14,12 +14,10 @@ export function ConnectPlatformColumns(props: Properties) {
 
   return (
     <div className="token-connect-setup">
-      <div className="token-connect-columns">
-        <ConnectChecklist items={platform.checklist} />
-        <ConnectSelfServe framed platform={platform} />
-      </div>
-      <ConnectPlatformAction label={platform.primaryLabel} />
-      <ConnectAdvancedEntry detail={platform.advancedHint} onOpen={onAdvanced} />
+      {platform.lead ? <Paragraph className="token-connect-lead">{platform.lead}</Paragraph> : null}
+      <ConnectPlatformColumnBody platform={platform} />
+      <ConnectPlatformAction platform={platform} />
+      <ConnectAdvancedEntry onOpen={onAdvanced} />
     </div>
   );
 }

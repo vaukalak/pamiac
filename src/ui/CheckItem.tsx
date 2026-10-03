@@ -2,7 +2,7 @@ interface Properties {
   label: string;
 }
 
-export function ConnectCheckItem(props: Properties) {
+export function CheckItem(props: Properties) {
   const { label } = props;
 
   return (

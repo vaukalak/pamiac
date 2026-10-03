@@ -33,6 +33,7 @@ export function ConnectChooser(props: Properties) {
         onBack={() => setScreen({ kind: "platform", platformId: screen.platformId })}
         onClose={onClose}
         onGuides={() => setScreen({ kind: "picker" })}
+        platformId={screen.platformId}
         titleId={titleId}
       />
     );

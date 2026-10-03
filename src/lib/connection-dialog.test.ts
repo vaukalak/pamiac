@@ -56,16 +56,18 @@ describe("new connection dialog", () => {
     const mcp = read("src/components/connect/connect-manual-mcp.tsx");
     const platforms = read("src/lib/connect-platforms.ts");
     const picker = read("src/components/connect/connect-picker.tsx");
+    const agentSetup = read("src/components/connect/connect-agent-setup.tsx");
 
     expect(agent).toMatch(/<ConnectionSkillActions \/>/);
     expect(agent).toMatch(/The skill contains instructions, not credentials\./);
     expect(mcp).toMatch(/Publisher submission, and ChatGPT developer mode/);
     expect(mcp).toMatch(/<ConnectionMcpEndpoint \/>/);
-    expect(platforms).toMatch(/Install in ChatGPT/);
-    expect(platforms).not.toMatch(/Coming soon\.\.\./);
+    expect(platforms).toMatch(/Copy setup prompt/);
+    expect(platforms).not.toMatch(/Install in ChatGPT|Coming soon\.\.\./);
     expect(agent).not.toMatch(/ConnectionMcpEndpoint|Copy link|window\.location/);
     expect(picker).toMatch(/Connect Pamiac/);
-    expect(picker).toMatch(/Give your AI this link/);
+    expect(picker).toMatch(/<ConnectAgentSetup \/>/);
+    expect(agentSetup).toMatch(/Let your agent configure Pamiac/);
     expect(picker).not.toMatch(/Mikhail|mikhail@example\.com|Oct 3, 2026/);
   });
 
@@ -85,7 +87,10 @@ describe("new connection dialog", () => {
     expect(mcp).not.toMatch(/const ENDPOINT|\{ENDPOINT\}|\/api\/mcp/);
     expect(agent).not.toMatch(/Paste this endpoint\./);
     expect(platforms).not.toMatch(/https:\/\/pamiac\.com\/oauth\/consent/);
-    expect(platforms).not.toMatch(/https:\/\/cursor\.com|https:\/\/chatgpt\.com|one click/i);
+    expect(platforms).not.toMatch(/https:\/\/cursor\.com|https:\/\/chatgpt\.com/);
+    expect(platforms.replace("Connect Pamiac to Cursor in one click.", "")).not.toMatch(
+      /one click/i,
+    );
   });
 
   it("builds the absolute MCP URL after mount and renders nothing until it exists", () => {

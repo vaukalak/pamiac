@@ -9,6 +9,7 @@ import {
   EXPIRATIONS,
   scopePayload,
   selectedSpaceIds,
+  type Expiration,
   type ScopeChoice,
   type TokenValues,
 } from "@/components/tokens/token-values";
@@ -39,6 +40,8 @@ async function createToken(values: TokenValues) {
 }
 
 interface Properties {
+  defaultExpiration?: Expiration;
+  defaultName?: string;
   expirationLabel?: string;
   idPrefix?: string;
   scopeLabel?: string;
@@ -48,6 +51,8 @@ interface Properties {
 
 export function TokenCreateForm(props: Properties) {
   const {
+    defaultExpiration,
+    defaultName,
     expirationLabel = "Expiration",
     idPrefix = "token-create",
     scopeLabel = "Scope",
@@ -57,10 +62,10 @@ export function TokenCreateForm(props: Properties) {
   const queryClient = useQueryClient();
   const form = useForm<TokenValues>({
     defaultValues: {
-      name: "Cloud agent",
+      name: defaultName ?? "Cloud agent",
       scope: "all",
       spaces: {},
-      expiration: "never",
+      expiration: defaultExpiration ?? "never",
       date: "",
     },
   });

@@ -33,7 +33,7 @@ export function ConnectPlatformFrame(props: Properties) {
         titleId={titleId}
       />
       {connected ? (
-        <ConnectPlatformConnected platform={platform} />
+        <ConnectPlatformConnected onClose={onClose} platform={platform} />
       ) : (
         <ConnectPlatformSetup onAdvanced={onAdvanced} platform={platform} />
       )}

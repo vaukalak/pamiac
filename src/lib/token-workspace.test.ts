@@ -209,15 +209,16 @@ describe("token scope", () => {
     const skill = read("src/components/tokens/token-skill.ts");
     const dialog = read("src/components/tokens/connection-dialog-panel.tsx");
     const picker = read("src/components/connect/connect-picker.tsx");
+    const agentSetup = read("src/components/connect/connect-agent-setup.tsx");
     const tabs = read("src/components/tokens/connection-tabs.tsx");
     const agentTab = read("src/components/tokens/connection-agent.tsx");
     const page = read("src/app/workspace/tokens/page.tsx");
 
     expect(form).not.toMatch(/useState/);
     expect(form).toMatch(/useForm<TokenValues>/);
-    expect(form).toMatch(/name: "Cloud agent"/);
+    expect(form).toMatch(/name: defaultName \?\? "Cloud agent"/);
     expect(form).toMatch(/scope: "all"/);
-    expect(form).toMatch(/expiration: "never"/);
+    expect(form).toMatch(/expiration: defaultExpiration \?\? "never"/);
     expect(form).toMatch(/<Form\.Context/);
     expect(form).toMatch(/<TokenScopeFields/);
     expect(form).toMatch(/expirationLabel = "Expiration"/);
@@ -240,7 +241,8 @@ describe("token scope", () => {
     expect(skill).toMatch(/Do not ask the user to paste the token/);
     expect(skill).not.toMatch(/pam_[A-Za-z0-9_-]{8,}/);
     expect(picker).toMatch(/Connect Pamiac/);
-    expect(picker).toMatch(/Give your AI this link/);
+    expect(picker).toMatch(/<ConnectAgentSetup \/>/);
+    expect(agentSetup).toMatch(/Let your agent configure Pamiac/);
     expect(dialog).toMatch(/role="dialog"/);
     expect(dialog).toMatch(/aria-modal="true"/);
     expect(tabs).toMatch(/API token/);

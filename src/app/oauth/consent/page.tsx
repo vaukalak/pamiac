@@ -4,6 +4,7 @@ import { ConsentSignIn } from "@/components/oauth/consent-sign-in";
 import { SetupScreen } from "@/components/setup-screen";
 import { getSession } from "@/lib/session";
 import { consentLoginHref, oauthClientLabel, toSearchParams } from "@/lib/oauth-return";
+import { Page } from "@/ui/Page";
 
 export const dynamic = "force-dynamic";
 
@@ -21,13 +22,13 @@ export default async function ConsentPage({
   return (
     <>
       <AppHeader email={result.session?.user.email} />
-      <main className="auth-wrap">
+      <Page className="auth-wrap">
         {result.session ? (
           <ConsentCard clientLabel={oauthClientLabel(query.get("client_id") ?? "")} />
         ) : (
           <ConsentSignIn href={consentLoginHref(query)} />
         )}
-      </main>
+      </Page>
     </>
   );
 }

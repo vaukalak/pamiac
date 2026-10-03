@@ -1,8 +1,7 @@
-import { ConnectAgentLink } from "@/components/connect/connect-agent-link";
+import { ConnectAgentSetup } from "@/components/connect/connect-agent-setup";
 import { ConnectHeading } from "@/components/connect/connect-heading";
 import { ConnectPlatformGrid } from "@/components/connect/connect-platform-grid";
 import type { ConnectPlatformId } from "@/lib/connect-platforms";
-import { Paragraph } from "@/ui/Paragraph";
 
 interface Properties {
   onClose?: () => void;
@@ -26,11 +25,7 @@ export function ConnectPicker(props: Properties) {
         />
       ) : null}
       <ConnectPlatformGrid onPlatform={onPlatform} />
-      <Paragraph className="token-connect-or">OR LET YOUR AGENT DO IT</Paragraph>
-      <ConnectAgentLink
-        hint="The agent will choose the best setup method."
-        label="Give your AI this link"
-      />
+      <ConnectAgentSetup />
     </div>
   );
 }

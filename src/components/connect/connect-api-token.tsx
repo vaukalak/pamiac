@@ -1,39 +1,22 @@
-import { ConnectApiTokenGuide } from "@/components/connect/connect-api-token-guide";
-import { TokenCreateForm } from "@/components/tokens/token-create-form";
+import { ConnectApiTokenFields } from "@/components/connect/connect-api-token-fields";
+import type { ConnectPlatformId } from "@/lib/connect-platforms";
 import { Paragraph } from "@/ui/Paragraph";
-
-const CONNECT_SCOPE_OPTIONS = [
-  { value: "all" as const, label: "All my spaces" },
-  { value: "selected" as const, label: "Selected workspaces" },
-];
 
 interface Properties {
   onGuides: () => void;
+  platformId: ConnectPlatformId;
 }
 
 export function ConnectApiToken(props: Properties) {
-  const { onGuides } = props;
+  const { onGuides, platformId } = props;
 
   return (
     <div className="token-connect-token">
+      <Paragraph>Use an API token when an agent cannot authenticate with Pamiac OAuth.</Paragraph>
       <Paragraph>
-        An API token is for an app that does not support OAuth. Grant the smallest access that still
-        does the job.
+        The value shown after creation is an API key, not an OAuth access token.
       </Paragraph>
-      <Paragraph>
-        After you create a token, the new key is shown once. That value is an API key, not an OAuth
-        access token.
-      </Paragraph>
-      <div className="token-connect-token-grid">
-        <TokenCreateForm
-          expirationLabel="Expires"
-          idPrefix="connect-token"
-          scopeLabel="Access"
-          scopeOptions={CONNECT_SCOPE_OPTIONS}
-          submitLabel="Create token"
-        />
-        <ConnectApiTokenGuide onGuides={onGuides} />
-      </div>
+      <ConnectApiTokenFields onGuides={onGuides} platformId={platformId} />
     </div>
   );
 }

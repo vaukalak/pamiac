@@ -4451,7 +4451,7 @@ code {
   padding: 4px 0 8px;
 }
 .library-shell .token-connect-dialog {
-  width: min(720px, 100%);
+  width: min(660px, 100%);
 }
 .library-shell .token-connect-endpoint {
   display: grid;
@@ -4537,7 +4537,7 @@ code {
 }
 .home .connect-agent-panel,
 .library-shell .token-connect-dialog.token-connect {
-  width: min(720px, 100%);
+  width: min(660px, 100%);
   padding: 22px 22px 18px;
   border: 1px solid rgba(185, 245, 66, 0.32);
   border-radius: 22px;
@@ -4557,7 +4557,8 @@ code {
   letter-spacing: -0.03em;
 }
 .token-connect .text-pretty {
-  color: var(--home-soft);
+  color: color-mix(in srgb, var(--home-text) 74%, var(--home-soft));
+  font-size: 15px;
 }
 .token-connect-title,
 .token-connect-page-head {
@@ -4588,6 +4589,7 @@ code {
   grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 10px;
   margin-top: 18px;
+  margin-bottom: 8px;
 }
 .token-connect-card {
   grid-column: span 2;
@@ -4659,17 +4661,58 @@ code {
 }
 .token-connect-card-name {
   color: var(--home-text);
+  font-size: 16px;
   font-weight: 650;
 }
 .token-connect-card-blurb {
-  color: var(--home-soft);
-  font-size: 13px;
+  color: color-mix(in srgb, var(--home-text) 74%, var(--home-soft));
+  font-size: 14px;
 }
 .token-connect-or {
   margin: 16px 0 8px;
-  color: var(--home-soft);
-  font-size: 12px;
+  color: color-mix(in srgb, var(--home-text) 74%, var(--home-soft));
+  font-size: 13px;
   letter-spacing: 0.08em;
+}
+.token-connect-agent {
+  display: grid;
+  gap: 12px;
+  margin-top: 36px;
+}
+.token-connect h3 {
+  margin: 0;
+  color: var(--home-text);
+  font-family: var(--sans);
+  font-size: 18px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+.token-connect .token-connect-lead,
+.token-connect .token-connect-emphasis,
+.token-connect .token-connect-link-value {
+  color: var(--home-text);
+}
+.token-connect .token-connect-lead,
+.token-connect .token-connect-emphasis {
+  font-size: 16px;
+  font-weight: 650;
+}
+.token-connect-claude-mcp {
+  display: grid;
+  gap: 10px;
+}
+.token-connect-segment {
+  display: flex;
+  gap: 8px;
+}
+.token-connect-segment .btn {
+  flex: 1;
+  min-height: 44px;
+}
+.token-connect-claude {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
 }
 .token-connect-link {
   display: grid;
@@ -4688,6 +4731,8 @@ code {
   border-radius: 12px;
   background: #101410;
   color: var(--home-text);
+  font-size: 15px;
+  overflow-wrap: anywhere;
 }
 .token-connect-checks {
   display: grid;
@@ -4701,6 +4746,7 @@ code {
   align-items: flex-start;
   gap: 8px;
   color: var(--home-text);
+  font-size: 15px;
 }
 .token-connect-check svg {
   width: 16px;
@@ -4791,6 +4837,7 @@ code {
 }
 .token-connect .btn.library-lime {
   width: 100%;
+  min-height: 48px;
   background: var(--home-lime);
   border-color: var(--home-lime);
   color: var(--home-on-lime);
@@ -4835,8 +4882,40 @@ code {
   font-weight: 650;
 }
 .token-connect-when {
-  color: var(--home-soft);
-  font-size: 13px;
+  color: color-mix(in srgb, var(--home-text) 74%, var(--home-soft));
+  font-size: 14px;
+}
+.auth-card.connect-consent {
+  --home-lime: #b9f542;
+  --home-lime-deep: #8ed42a;
+  --home-on-lime: #0a0f07;
+  --home-text: #eef3e8;
+  --home-soft: #9fab9c;
+  --home-hair: rgba(185, 245, 66, 0.22);
+  --home-line: rgba(238, 243, 232, 0.12);
+  border: 1px solid rgba(185, 245, 66, 0.32);
+  border-radius: 22px;
+  background: rgba(8, 14, 11, 0.94);
+  color: var(--home-text);
+  box-shadow:
+    0 28px 70px rgba(0, 0, 0, 0.55),
+    0 0 48px rgba(185, 245, 66, 0.08);
+}
+.auth-card.connect-consent h1 {
+  color: var(--home-text);
+  font-family: var(--sans);
+  font-size: 28px;
+  font-weight: 650;
+  letter-spacing: -0.03em;
+}
+.auth-card.connect-consent .text-pretty,
+.auth-card.connect-consent .hint {
+  color: color-mix(in srgb, var(--home-text) 74%, var(--home-soft));
+  font-size: 15px;
+}
+.auth-card.connect-consent .token-connect-checks {
+  color: var(--home-text);
+  font-size: 15px;
 }
 .token-connect-next ol {
   display: grid;

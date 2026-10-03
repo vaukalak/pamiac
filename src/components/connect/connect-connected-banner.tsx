@@ -9,8 +9,8 @@ export function ConnectConnectedBanner(props: Properties) {
 
   return (
     <div className="token-connect-connected-banner">
-      <Paragraph>Connected</Paragraph>
-      <Paragraph>{platformName} can now access your Pamiac library.</Paragraph>
+      <Paragraph>{`${platformName} connected`}</Paragraph>
+      <Paragraph>{`${platformName} can now access your Pamiac library.`}</Paragraph>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { ConnectCheckItem } from "@/components/connect/connect-check-item";
+import { CheckItem } from "@/ui/CheckItem";
 
 interface Properties {
   items: readonly string[];
@@ -10,7 +10,7 @@ export function ConnectChecklist(props: Properties) {
   return (
     <ul className="token-connect-checks">
       {items.map((item) => (
-        <ConnectCheckItem key={item} label={item} />
+        <CheckItem key={item} label={item} />
       ))}
     </ul>
   );

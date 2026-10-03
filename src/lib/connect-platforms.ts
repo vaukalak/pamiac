@@ -2,6 +2,10 @@ export const AGENT_CONNECT_URL = "https://pamiac.com/connect/agent";
 
 export const AGENT_CONNECT_LABEL = "pamiac.com/connect/agent";
 
+export const AGENT_SETUP_PROMPT = `Connect yourself to Pamiac using these instructions: ${AGENT_CONNECT_URL}`;
+
+export const CURSOR_MCP_URL = "https://pamiac.com/api/mcp";
+
 export const CONNECT_PLATFORMS = [
   {
     id: "cursor",
@@ -9,19 +13,19 @@ export const CONNECT_PLATFORMS = [
     blurb: "Recommended",
     layout: "stack",
     recommended: true,
-    subtitle: "Give Cursor the connect link. It works in Cursor and Cursor Cloud.",
+    lead: "Connect Pamiac to Cursor in one click.",
+    subtitle:
+      "Cursor will add Pamiac as an MCP connection and ask you to sign in with your Pamiac account.",
     checklist: [
       "Secure sign-in with your Pamiac account",
-      "Give Cursor the connect link",
-      "Access your notes and diagrams",
+      "Access your Pamiac notes and diagrams",
+      "No API key required",
       "Works with Cursor and Cursor Cloud",
     ],
     primaryLabel: "Add Pamiac to Cursor",
     showOr: true,
     linkPlacement: "after-action",
     selfServe: "Let Cursor configure itself",
-    selfServeHint: "Give this link to Cursor and ask it to connect.",
-    advancedHint: "API token · Manual MCP configuration · Download skill",
   },
   {
     id: "claude",
@@ -29,19 +33,18 @@ export const CONNECT_PLATFORMS = [
     blurb: "Web, Desktop, Code",
     layout: "columns",
     recommended: false,
+    lead: "",
     subtitle: "Works with Claude Web, Desktop and Claude Code.",
     checklist: [
+      "No API key required",
       "Add Pamiac as a custom connector",
       "Secure sign-in with your Pamiac account",
       "Access your notes and diagrams",
-      "No API key required",
     ],
-    primaryLabel: "Connect Claude",
+    primaryLabel: "Copy setup prompt",
     showOr: false,
     linkPlacement: "before-action",
-    selfServe: "Using Claude Code?",
-    selfServeHint: "Give Claude this link and ask it to connect itself.",
-    advancedHint: "API token · Manual MCP configuration · Download skill",
+    selfServe: "Let Claude configure itself",
   },
   {
     id: "chatgpt",
@@ -49,19 +52,17 @@ export const CONNECT_PLATFORMS = [
     blurb: "Plugin & MCP",
     layout: "columns",
     recommended: false,
-    subtitle: "Install Pamiac from the ChatGPT Plugin directory.",
+    lead: "",
+    subtitle: "Use Pamiac with ChatGPT.",
     checklist: [
       "Create, search and edit your notes and diagrams",
       "Secure sign-in with your Pamiac account",
       "Works in ChatGPT, Codex and GPTs",
-      "Public plugin. ChatGPT starts consent when it connects.",
     ],
-    primaryLabel: "Install in ChatGPT",
+    primaryLabel: "Copy setup prompt",
     showOr: true,
     linkPlacement: "after-action",
     selfServe: "Let ChatGPT configure itself",
-    selfServeHint: "Give this link to ChatGPT and ask it to set everything up.",
-    advancedHint: "API token · Manual MCP configuration · Download skill",
   },
   {
     id: "gemini",
@@ -69,19 +70,17 @@ export const CONNECT_PLATFORMS = [
     blurb: "Connected app",
     layout: "stack",
     recommended: false,
+    lead: "",
     subtitle: "Add Pamiac as a Gemini connected app.",
     checklist: [
-      "Add Pamiac as a connected app",
       "Secure sign-in with your Pamiac account",
       "Access your notes and diagrams",
       "No API key required for the connected app",
     ],
-    primaryLabel: "Connect Gemini",
+    primaryLabel: "Copy setup prompt",
     showOr: true,
     linkPlacement: "after-action",
     selfServe: "Let Gemini configure itself",
-    selfServeHint: "Give this link to Gemini and ask it to connect.",
-    advancedHint: "API token · Manual MCP configuration · Download skill",
   },
   {
     id: "grok",
@@ -89,19 +88,17 @@ export const CONNECT_PLATFORMS = [
     blurb: "Custom connector",
     layout: "stack",
     recommended: false,
+    lead: "",
     subtitle: "Add Pamiac as a custom connector.",
     checklist: [
-      "Add Pamiac as a custom connector",
       "Secure sign-in with your Pamiac account",
       "Access your notes and diagrams",
       "Use an API token when OAuth is not available",
     ],
-    primaryLabel: "Connect Grok",
+    primaryLabel: "Copy setup prompt",
     showOr: true,
     linkPlacement: "after-action",
     selfServe: "Let Grok configure itself",
-    selfServeHint: "Give this link to Grok and ask it to connect.",
-    advancedHint: "API token · Manual MCP configuration · Download skill",
   },
   {
     id: "deepseek",
@@ -109,19 +106,13 @@ export const CONNECT_PLATFORMS = [
     blurb: "Harness & more",
     layout: "stack",
     recommended: false,
+    lead: "",
     subtitle: "Add Pamiac in the DeepSeek harness.",
-    checklist: [
-      "Add Pamiac in the DeepSeek harness",
-      "Secure sign-in with your Pamiac account",
-      "Access your notes and diagrams",
-      "Manual MCP configuration is in Advanced options",
-    ],
-    primaryLabel: "Connect DeepSeek",
+    checklist: ["Secure sign-in with your Pamiac account", "Access your notes and diagrams"],
+    primaryLabel: "Copy setup prompt",
     showOr: true,
     linkPlacement: "after-action",
     selfServe: "Let DeepSeek configure itself",
-    selfServeHint: "Give this link to DeepSeek and ask it to connect.",
-    advancedHint: "API token · Manual MCP configuration · Download skill",
   },
   {
     id: "other",
@@ -129,19 +120,17 @@ export const CONNECT_PLATFORMS = [
     blurb: "Any MCP client",
     layout: "stack",
     recommended: false,
+    lead: "",
     subtitle: "Use Pamiac from any MCP client.",
     checklist: [
-      "Use the MCP endpoint in Advanced options",
       "Secure sign-in with your Pamiac account",
       "Access your notes and diagrams",
       "Works with any MCP client",
     ],
-    primaryLabel: "Connect this agent",
+    primaryLabel: "Copy setup prompt",
     showOr: true,
     linkPlacement: "after-action",
     selfServe: "Let this agent configure itself",
-    selfServeHint: "Give this link to the agent and ask it to connect.",
-    advancedHint: "API token · Manual MCP configuration · Download skill",
   },
 ] as const;
 
@@ -166,6 +155,15 @@ export function connectPlatform(id: ConnectPlatformId): ConnectPlatform {
   const platform = CONNECT_PLATFORMS.find((item) => item.id === id);
   if (!platform) return CONNECT_PLATFORMS[0];
   return platform;
+}
+
+export function connectTokenName(id: ConnectPlatformId) {
+  return `${connectPlatform(id).name} on this computer`;
+}
+
+export function cursorInstallUrl() {
+  const config = btoa(JSON.stringify({ url: CURSOR_MCP_URL }));
+  return `cursor://anysphere.cursor-deeplink/mcp/install?name=Pamiac&config=${config}`;
 }
 
 export function platformFromClientId(clientId: string): Exclude<ConnectPlatformId, "other"> | null {
