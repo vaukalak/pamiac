@@ -1,11 +1,33 @@
 import { and, asc, eq, inArray, isNull, or } from "drizzle-orm";
 import { getDb } from "@/db";
 import { documents, folders } from "@/db/schema";
-import { folderMovesIntoItself, folderName, libraryWorkspaceId } from "@/lib/folder-library";
-import { getEditableDocument } from "@/lib/documents";
+import {
+  folderInAgentScope,
+  folderMovesIntoItself,
+  folderName,
+  libraryWorkspaceId,
+} from "@/lib/folder-library";
+import {
+  agentCreateWorkspace,
+  getAgentDocument,
+  getEditableDocument,
+  type AgentScope,
+} from "@/lib/documents";
 import { HttpError } from "@/lib/http";
 import { PERSONAL_SPACE_ID } from "@/lib/library-spaces";
 import { listMemberWorkspaces } from "@/lib/workspaces";
+
+export async function listAgentFolders(userId: string, scope: AgentScope) {
+  const rows = await listLibraryFolders(userId);
+  return rows
+    .filter((row) => folderInAgentScope(scope, row.workspaceId))
+    .map((row) => ({
+      id: row.id,
+      name: row.name,
+      parentId: row.parentId,
+      workspaceId: row.workspaceId,
+    }));
+}
 
 export async function listLibraryFolders(userId: string) {
   const memberships = await listMemberWorkspaces(userId);
@@ -61,6 +83,27 @@ function namedFolder(input: string) {
   }
 }
 
+export async function createAgentFolder(
+  userId: string,
+  scope: AgentScope,
+  name: string,
+  workspaceId: string | undefined,
+  parentId: string | null,
+) {
+  const resolved = workspaceId ?? (await agentCreateWorkspace(userId, scope));
+  const libraryId = libraryWorkspaceId(resolved);
+  if (!folderInAgentScope(scope, libraryId)) {
+    throw new HttpError(404, "Workspace not found");
+  }
+  if (parentId) {
+    const parent = await visibleFolder(userId, parentId);
+    if (!folderInAgentScope(scope, parent.workspaceId)) {
+      throw new HttpError(404, "Folder not found");
+    }
+  }
+  return createFolder(userId, name, resolved, parentId);
+}
+
 export async function createFolder(
   userId: string,
   name: string,
@@ -108,6 +151,26 @@ export async function createFolder(
   return created;
 }
 
+export async function moveAgentDocumentToFolder(
+  userId: string,
+  scope: AgentScope,
+  documentId: string,
+  folderId: string | null,
+) {
+  const document = await getAgentDocument(userId, documentId, scope);
+  if (!document) throw new HttpError(404, "Document not found");
+  if (folderId) {
+    const folder = await visibleFolder(userId, folderId);
+    if (!folderInAgentScope(scope, folder.workspaceId)) {
+      throw new HttpError(404, "Folder not found");
+    }
+    if ((folder.workspaceId ?? null) !== (document.workspaceId ?? null)) {
+      throw new HttpError(400, "That folder is in another library");
+    }
+  }
+  return moveDocumentToFolder(userId, documentId, folderId);
+}
+
 export async function moveDocumentToFolder(
   userId: string,
   documentId: string,
@@ -128,6 +191,28 @@ export async function moveDocumentToFolder(
     .returning({ id: documents.id, folderId: documents.folderId });
   if (!updated) throw new HttpError(404, "Document not found");
   return updated;
+}
+
+export async function moveAgentFolder(
+  userId: string,
+  scope: AgentScope,
+  folderId: string,
+  parentId: string | null,
+) {
+  const folder = await visibleFolder(userId, folderId);
+  if (!folderInAgentScope(scope, folder.workspaceId)) {
+    throw new HttpError(404, "Folder not found");
+  }
+  if (parentId) {
+    const parent = await visibleFolder(userId, parentId);
+    if (!folderInAgentScope(scope, parent.workspaceId)) {
+      throw new HttpError(404, "Folder not found");
+    }
+    if ((parent.workspaceId ?? null) !== (folder.workspaceId ?? null)) {
+      throw new HttpError(400, "That folder is in another library");
+    }
+  }
+  return moveFolder(userId, folderId, parentId);
 }
 
 export async function moveFolder(userId: string, folderId: string, parentId: string | null) {

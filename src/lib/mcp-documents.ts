@@ -9,7 +9,13 @@ export function requestOrigin(request: {
 }
 
 export function presentListedDocument(
-  document: { id: string; type: string; title: string; updatedAt: Date },
+  document: {
+    id: string;
+    type: string;
+    title: string;
+    updatedAt: Date;
+    folderId?: string | null;
+  },
   origin: string,
 ) {
   return {
@@ -18,6 +24,7 @@ export function presentListedDocument(
     title: document.title,
     url: `${origin}/d/${document.id}`,
     updatedAt: document.updatedAt.toISOString(),
+    folderId: document.folderId ?? null,
   };
 }
 
