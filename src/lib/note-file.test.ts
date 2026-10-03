@@ -119,6 +119,10 @@ describe("note file controls", () => {
       new URL("../components/document/note-document.tsx", import.meta.url),
       "utf8",
     );
+    const shareMarkdown = readFileSync(
+      new URL("../components/note/note-share-markdown.tsx", import.meta.url),
+      "utf8",
+    );
     const editor = readFileSync(new URL("../components/note-editor.tsx", import.meta.url), "utf8");
     const drag = readFileSync(
       new URL("../components/note/note-drag-handle-menu.tsx", import.meta.url),
@@ -130,7 +134,8 @@ describe("note file controls", () => {
     assert.match(drop, /\/api\/documents/);
     assert.match(drop, /method: "PATCH"/);
     assert.match(drop, /router\.push\(`\/d\/\$\{id\}`\)/);
-    assert.match(note, /<NoteExport/);
+    assert.match(note, /<NoteShareMarkdown/);
+    assert.match(shareMarkdown, /<NoteExport/);
     assert.match(editor, /linkifyWikiBlocks/);
     assert.match(editor, /withNoteComments/);
     assert.match(editor, /return packNoteContent\(marked, editor\.document\)/);

@@ -70,6 +70,7 @@ export function DocumentScreen(props: Properties) {
           crumb={crumb}
           id={id}
           title={title}
+          sharing={sharing}
           tools={tools}
           version={version}
           workspaceId={workspaceId}
@@ -94,6 +95,7 @@ export function DocumentScreen(props: Properties) {
           emails={shareState.emails}
           hasPassword={shareState.hasPassword}
           id={id}
+          markdownSlot={type === "note"}
           onClose={() => {
             setSharing(false);
             router.refresh();

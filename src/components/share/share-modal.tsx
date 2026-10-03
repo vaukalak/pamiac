@@ -19,6 +19,7 @@ interface Properties {
   hasPassword: boolean;
   id: string;
   lockWorkspace?: boolean;
+  markdownSlot?: boolean;
   visibility: Visibility;
   workspaceId: string | null;
   onClose: () => void;
@@ -31,6 +32,7 @@ export function ShareModal(props: Properties) {
     hasPassword,
     id,
     lockWorkspace = false,
+    markdownSlot = false,
     visibility,
     workspaceId,
     onClose,
@@ -160,6 +162,7 @@ export function ShareModal(props: Properties) {
           <ShareWorkspaceChoice onSelect={setWorkspaceChoice} selectedId={workspaceChoice} />
         )}
         <ShareLink id={id} key={mode} mode={mode} />
+        {markdownSlot && !lockWorkspace ? <div id="note-share-markdown" /> : null}
         <ShareActions
           error={saveShare.error instanceof Error ? saveShare.error.message : ""}
           message={saveShare.isSuccess ? "Sharing updated" : ""}
