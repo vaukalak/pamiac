@@ -9,17 +9,14 @@ import { mcpResourceUrl } from "@/lib/mcp-resource";
 import { createPamiacMcpServer } from "@/lib/mcp-server";
 import { accessTokenUserId, mcpRequestScope, mcpRequestUserId } from "@/lib/mcp-user";
 
-const mcpHandler = createMcpHandler(
-  (ctx) => {
-    const origin = ctx.requestInfo ? requestOrigin(ctx.requestInfo) : appBaseUrl();
-    return createPamiacMcpServer(
-      mcpRequestUserId(ctx.authInfo),
-      origin,
-      mcpRequestScope(ctx.authInfo),
-    );
-  },
-  { legacy: "reject" },
-);
+const mcpHandler = createMcpHandler((ctx) => {
+  const origin = ctx.requestInfo ? requestOrigin(ctx.requestInfo) : appBaseUrl();
+  return createPamiacMcpServer(
+    mcpRequestUserId(ctx.authInfo),
+    origin,
+    mcpRequestScope(ctx.authInfo),
+  );
+});
 
 async function handleMcp(request: Request, claims: { sub?: unknown; scope?: unknown }) {
   const userId = accessTokenUserId(claims);
