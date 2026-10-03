@@ -1,7 +1,6 @@
 import { ConnectAdvancedEntry } from "@/components/connect/connect-advanced-entry";
 import { ConnectChecklist } from "@/components/connect/connect-checklist";
 import { ConnectPlatformAction } from "@/components/connect/connect-platform-action";
-import { ConnectPlatformColumns } from "@/components/connect/connect-platform-columns";
 import { ConnectSelfServe } from "@/components/connect/connect-self-serve";
 import type { ConnectPlatform } from "@/lib/connect-platforms";
 
@@ -10,17 +9,16 @@ interface Properties {
   platform: ConnectPlatform;
 }
 
-export function ConnectPlatformSetup(props: Properties) {
+export function ConnectPlatformColumns(props: Properties) {
   const { onAdvanced, platform } = props;
-  if (platform.layout === "columns") {
-    return <ConnectPlatformColumns onAdvanced={onAdvanced} platform={platform} />;
-  }
 
   return (
     <div className="token-connect-setup">
-      <ConnectChecklist items={platform.checklist} />
+      <div className="token-connect-columns">
+        <ConnectChecklist items={platform.checklist} />
+        <ConnectSelfServe framed platform={platform} />
+      </div>
       <ConnectPlatformAction label={platform.primaryLabel} />
-      <ConnectSelfServe framed platform={platform} />
       <ConnectAdvancedEntry detail={platform.advancedHint} onOpen={onAdvanced} />
     </div>
   );

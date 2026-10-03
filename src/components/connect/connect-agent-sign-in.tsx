@@ -1,14 +1,11 @@
 import Link from "next/link";
-import { PageTitle } from "@/ui/PageTitle";
+import { ConnectPageMark } from "@/components/connect/connect-page-mark";
 import { Paragraph } from "@/ui/Paragraph";
 
 export function ConnectAgentSignIn() {
   return (
     <div className="token-connect-sign-in">
-      <PageTitle
-        subtitle="Use your Pamiac notes and diagrams from your favorite AI."
-        title="Connect Pamiac"
-      />
+      <ConnectPageMark subtitle="Use your Pamiac notes and diagrams from your favorite AI." />
       <Paragraph>Sign in to choose Cursor, Claude, ChatGPT, or another agent.</Paragraph>
       <Link className="btn library-lime" href="/login?next=/connect/agent">
         Sign in

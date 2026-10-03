@@ -27,6 +27,7 @@ export function ConnectPlatformFrame(props: Properties) {
         badge={platform.recommended && !connected ? "Recommended" : undefined}
         onBack={onBack}
         onClose={onClose}
+        mark={platform.id}
         subtitle={connected ? undefined : platform.subtitle}
         title={platform.name}
         titleId={titleId}

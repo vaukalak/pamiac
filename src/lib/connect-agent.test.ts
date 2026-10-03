@@ -65,6 +65,6 @@ describe("connect agent platforms", () => {
     assert.match(page, /ConnectAgentSignedIn/);
     assert.match(page, /ConnectAgentSignIn/);
     assert.match(page, /getSession\(/);
-    assert.doesNotMatch(page, /CircuitBoard/);
+    assert.match(page, /<CircuitBoard \/>/);
   });
 });

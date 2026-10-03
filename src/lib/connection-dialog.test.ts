@@ -158,8 +158,8 @@ describe("new connection dialog", () => {
       ".library-shell .token-connect-dialog .btn.ghost {",
     );
 
-    expect(hover).toMatch(/background:\s*var\(--home-lime\);/);
-    expect(hover).toMatch(/\n\s*color:\s*var\(--home-on-lime\);/);
+    expect(hover).toMatch(/background:\s*transparent;/);
+    expect(hover).toMatch(/\n\s*color:\s*var\(--home-lime\);/);
     expect(hover).toMatch(
       /\.library-shell \.token-connect-dialog \.btn\.secondary:not\(\[aria-pressed="true"\]\) \{\s*background: transparent;\s*border-color: var\(--home-hair-strong\);\s*color: var\(--home-text\);\s*\}/,
     );

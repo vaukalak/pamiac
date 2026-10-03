@@ -7,7 +7,7 @@ export const CONNECT_PLATFORMS = [
     id: "cursor",
     name: "Cursor",
     blurb: "Recommended",
-    mark: "Cu",
+    layout: "stack",
     recommended: true,
     subtitle: "Give Cursor the connect link. It works in Cursor and Cursor Cloud.",
     checklist: [
@@ -27,7 +27,7 @@ export const CONNECT_PLATFORMS = [
     id: "claude",
     name: "Claude",
     blurb: "Web, Desktop, Code",
-    mark: "Cl",
+    layout: "columns",
     recommended: false,
     subtitle: "Works with Claude Web, Desktop and Claude Code.",
     checklist: [
@@ -47,7 +47,7 @@ export const CONNECT_PLATFORMS = [
     id: "chatgpt",
     name: "ChatGPT",
     blurb: "Plugin & MCP",
-    mark: "Ch",
+    layout: "columns",
     recommended: false,
     subtitle: "Install Pamiac from the ChatGPT Plugin directory.",
     checklist: [
@@ -67,7 +67,7 @@ export const CONNECT_PLATFORMS = [
     id: "gemini",
     name: "Gemini",
     blurb: "Connected app",
-    mark: "Ge",
+    layout: "stack",
     recommended: false,
     subtitle: "Add Pamiac as a Gemini connected app.",
     checklist: [
@@ -87,7 +87,7 @@ export const CONNECT_PLATFORMS = [
     id: "grok",
     name: "Grok",
     blurb: "Custom connector",
-    mark: "Gr",
+    layout: "stack",
     recommended: false,
     subtitle: "Add Pamiac as a custom connector.",
     checklist: [
@@ -107,7 +107,7 @@ export const CONNECT_PLATFORMS = [
     id: "deepseek",
     name: "DeepSeek",
     blurb: "Harness & more",
-    mark: "De",
+    layout: "stack",
     recommended: false,
     subtitle: "Add Pamiac in the DeepSeek harness.",
     checklist: [
@@ -127,7 +127,7 @@ export const CONNECT_PLATFORMS = [
     id: "other",
     name: "Other agent",
     blurb: "Any MCP client",
-    mark: "··",
+    layout: "stack",
     recommended: false,
     subtitle: "Use Pamiac from any MCP client.",
     checklist: [

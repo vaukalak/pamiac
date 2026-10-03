@@ -20,6 +20,7 @@ export function ConnectPicker(props: Properties) {
         <ConnectHeading
           onClose={onClose}
           subtitle="Use your Pamiac notes and diagrams from your favorite AI."
+          mark="pamiac"
           title="Connect Pamiac"
           titleId={titleId}
         />

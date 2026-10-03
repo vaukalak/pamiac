@@ -1874,6 +1874,7 @@ code {
 }
 .home > .app-header,
 .home-main,
+.home > .connect-agent-page,
 .home > .home-support,
 .home > .home-sign-in,
 .home-foot {
@@ -4450,7 +4451,7 @@ code {
   padding: 4px 0 8px;
 }
 .library-shell .token-connect-dialog {
-  width: min(640px, 100%);
+  width: min(720px, 100%);
 }
 .library-shell .token-connect-endpoint {
   display: grid;
@@ -4496,14 +4497,15 @@ code {
   margin: 14px 0;
 }
 .library-shell .token-connect-tabs .btn[aria-pressed="true"] {
-  border-color: var(--home-lime);
-  background: var(--home-lime);
-  color: var(--home-on-lime);
+  border-color: transparent;
+  border-bottom-color: var(--home-lime);
+  background: transparent;
+  color: var(--home-lime);
 }
 .library-shell .token-connect-tabs .btn.secondary[aria-pressed="true"]:hover {
-  border-color: var(--home-lime);
-  background: var(--home-lime);
-  color: var(--home-on-lime);
+  border-bottom-color: var(--home-lime);
+  background: transparent;
+  color: var(--home-lime);
 }
 .library-shell .token-connect-dialog .btn.secondary:not([aria-pressed="true"]) {
   background: transparent;
@@ -4525,17 +4527,24 @@ code {
   color: var(--home-text);
 }
 .home .connect-agent-page {
+  position: relative;
+  z-index: 1;
   display: grid;
   justify-items: center;
-  padding: 32px 16px 72px;
+  align-content: start;
+  flex: 1;
+  padding: 28px 16px 72px;
 }
-.home .connect-agent-panel {
-  width: min(640px, 100%);
-  padding: 22px;
-  border: 1px solid var(--home-hair);
-  border-radius: 18px;
-  background: var(--home-panel);
-  box-shadow: var(--home-shadow);
+.home .connect-agent-panel,
+.library-shell .token-connect-dialog.token-connect {
+  width: min(720px, 100%);
+  padding: 22px 22px 18px;
+  border: 1px solid rgba(185, 245, 66, 0.32);
+  border-radius: 22px;
+  background: rgba(8, 14, 11, 0.94);
+  box-shadow:
+    0 28px 70px rgba(0, 0, 0, 0.55),
+    0 0 48px rgba(185, 245, 66, 0.08);
 }
 .token-connect h2,
 .home .connect-agent-panel h1,
@@ -4550,14 +4559,24 @@ code {
 .token-connect .text-pretty {
   color: var(--home-soft);
 }
-.token-connect-title {
-  display: flex;
-  flex-wrap: wrap;
+.token-connect-title,
+.token-connect-page-head {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: 8px;
-  margin-top: 8px;
+  gap: 10px 12px;
+  margin-top: 4px;
+}
+.token-connect-page-head .text-pretty,
+.token-connect-title + .text-pretty {
+  grid-column: 2;
+}
+.token-connect-page-head h1 {
+  grid-column: 2;
+  margin: 0;
 }
 .token-connect-badge {
+  justify-self: end;
   border: 1px solid var(--home-lime);
   border-radius: 999px;
   color: var(--home-lime);
@@ -4567,18 +4586,19 @@ code {
 .token-connect-grid {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 8px;
-  margin-top: 16px;
+  gap: 10px;
+  margin-top: 18px;
 }
 .token-connect-card {
   grid-column: span 2;
   width: 100%;
-  min-height: 92px;
-  align-items: stretch;
+  min-height: 72px;
+  align-items: center;
   justify-content: flex-start;
   text-align: left;
   border-radius: 14px;
-  padding: 12px;
+  padding: 10px 12px;
+  background: rgba(8, 12, 9, 0.72);
 }
 .token-connect-card-cursor {
   grid-column: span 6;
@@ -4591,6 +4611,15 @@ code {
 .home .token-connect .token-connect-card-primary {
   border-color: var(--home-lime);
   color: var(--home-text);
+  box-shadow:
+    0 0 0 1px var(--home-lime),
+    0 0 22px rgba(185, 245, 66, 0.16);
+}
+.token-connect-card-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
 }
 .token-connect-card-copy {
   display: grid;
@@ -4600,12 +4629,33 @@ code {
 .token-connect-mark {
   display: grid;
   place-items: center;
+  width: 36px;
+  height: 36px;
+  flex: none;
+  color: #f4f7f1;
+}
+.token-connect-mark svg {
   width: 28px;
   height: 28px;
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--home-lime) 16%, transparent);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.token-connect-mark-pamiac {
   color: var(--home-lime);
-  font-size: 12px;
+}
+.token-connect-mark-claude {
+  color: #e08a62;
+}
+.token-connect-mark-gemini,
+.token-connect-mark-deepseek {
+  color: #8eb0ff;
+}
+.token-connect-mark-chatgpt circle {
+  fill: currentColor;
+  stroke: none;
 }
 .token-connect-card-name {
   color: var(--home-text);
@@ -4647,11 +4697,97 @@ code {
   list-style: none;
 }
 .token-connect-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
   color: var(--home-text);
 }
-.token-connect-check::before {
-  content: "✓ ";
-  color: var(--home-lime);
+.token-connect-check svg {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  margin-top: 2px;
+  fill: none;
+  stroke: var(--home-lime);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.token-connect-check svg circle {
+  fill: color-mix(in srgb, var(--home-lime) 16%, transparent);
+}
+.token-connect-columns,
+.token-connect-token-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 14px;
+  align-items: start;
+}
+.token-connect-self-framed,
+.token-connect-guide {
+  margin: 0;
+  padding: 12px;
+  border: 1px solid var(--home-hair);
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.28);
+}
+.token-connect .token-form {
+  max-width: none;
+}
+.token-connect input,
+.token-connect select {
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 4px;
+  padding: 8px 10px;
+  border: 1px solid var(--home-line);
+  border-radius: 10px;
+  background: #101610;
+  color: var(--home-text);
+}
+.token-connect-copy,
+.token-connect-close {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+}
+.token-connect-copy svg,
+.token-connect-close svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.token-connect-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.library-shell .token-connect-tabs,
+.token-connect-tabs {
+  display: flex;
+  gap: 18px;
+  margin: 8px 0 14px;
+  border-bottom: 1px solid var(--home-line);
+}
+.token-connect-tabs .btn {
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  padding: 8px 0;
 }
 .token-connect .btn.library-lime {
   width: 100%;
@@ -4716,18 +4852,16 @@ code {
   color: #ffb4ab;
 }
 @media (max-width: 640px) {
-  .token-connect-grid {
-    grid-template-columns: 1fr 1fr;
+  .token-connect-grid,
+  .token-connect-columns,
+  .token-connect-token-grid {
+    grid-template-columns: 1fr;
   }
   .token-connect-card,
   .token-connect-card-cursor,
   .token-connect-card-claude,
   .token-connect-card-chatgpt {
-    grid-column: span 1;
-  }
-  .token-connect-card-cursor,
-  .token-connect-card-primary {
-    grid-column: 1 / -1;
+    grid-column: auto;
   }
 }
 .library-shell .token-secret .secret {
