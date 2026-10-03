@@ -1,11 +1,28 @@
-import { and, asc, eq, inArray, isNull, or } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull, or, type SQL } from "drizzle-orm";
 import { getDb } from "@/db";
-import { documents, folders } from "@/db/schema";
-import { folderMovesIntoItself, folderName, libraryWorkspaceId } from "@/lib/folder-library";
+import { documents, folderShares, folders, user } from "@/db/schema";
+import type { Visibility } from "@/lib/access";
+import { appBaseUrl } from "@/lib/config";
+import type { AgentScope } from "@/lib/documents";
 import { getEditableDocument } from "@/lib/documents";
+import {
+  folderMovesIntoItself,
+  folderName,
+  libraryWorkspaceId,
+  presentSharedFolder,
+} from "@/lib/folder-library";
 import { HttpError } from "@/lib/http";
 import { PERSONAL_SPACE_ID } from "@/lib/library-spaces";
+import { sendFolderShared } from "@/lib/mail";
+import { prepareShareCredentials } from "@/lib/share-update";
 import { listMemberWorkspaces } from "@/lib/workspaces";
+
+export type FolderGrant = {
+  id: string;
+  visibility: Visibility;
+  passwordHash: string | null;
+  allowedEmails: string[];
+};
 
 export async function listLibraryFolders(userId: string) {
   const memberships = await listMemberWorkspaces(userId);
@@ -14,17 +31,32 @@ export async function listLibraryFolders(userId: string) {
     .filter((id) => id !== PERSONAL_SPACE_ID);
   const personal = and(eq(folders.ownerId, userId), isNull(folders.workspaceId));
   const shared = workspaceIds.length > 0 ? inArray(folders.workspaceId, workspaceIds) : null;
-  const rows = await getDb()
-    .select()
-    .from(folders)
-    .where(shared ? or(personal, shared) : personal)
-    .orderBy(asc(folders.sortIndex), asc(folders.createdAt));
+  const rows = await selectFolders(shared ? or(personal, shared) : personal);
+  return presentLibraryFolders(rows);
+}
+
+export async function listAgentFolders(userId: string, scope: AgentScope) {
+  const memberships = await listMemberWorkspaces(userId);
+  const memberIds = memberships
+    .map((workspace) => workspace.id)
+    .filter((id) => id !== PERSONAL_SPACE_ID);
+  const allowedMembers = scope.allScopes
+    ? memberIds
+    : memberIds.filter((id) => scope.workspaceIds.includes(id));
+  const includePersonal = scope.allScopes || scope.workspaceIds.includes(PERSONAL_SPACE_ID);
+  const personal = includePersonal
+    ? and(eq(folders.ownerId, userId), isNull(folders.workspaceId))
+    : null;
+  const shared = allowedMembers.length > 0 ? inArray(folders.workspaceId, allowedMembers) : null;
+  const where = personal && shared ? or(personal, shared) : (personal ?? shared);
+  if (!where) return [];
+  const rows = await selectFolders(where);
   return rows.map((row) => ({
     id: row.id,
     name: row.name,
     parentId: row.parentId,
     workspaceId: row.workspaceId,
-    sortIndex: row.sortIndex,
+    visibility: row.visibility as Visibility,
   }));
 }
 
@@ -162,4 +194,189 @@ export async function moveFolder(userId: string, folderId: string, parentId: str
     });
   if (!updated) throw new HttpError(404, "Folder not found");
   return updated;
+}
+
+export async function getFolderBundle(id: string) {
+  const db = getDb();
+  const [folder] = await db.select().from(folders).where(eq(folders.id, id));
+  if (!folder) return null;
+  const shares = await db.select().from(folderShares).where(eq(folderShares.folderId, id));
+  return { folder, emails: shares.map((share) => share.email) };
+}
+
+export async function folderGrantChain(folderId: string | null): Promise<FolderGrant[]> {
+  const grants: FolderGrant[] = [];
+  const seen = new Set<string>();
+  let current = folderId;
+  while (current && !seen.has(current)) {
+    seen.add(current);
+    const bundle = await getFolderBundle(current);
+    if (!bundle) break;
+    grants.push({
+      id: bundle.folder.id,
+      visibility: bundle.folder.visibility as Visibility,
+      passwordHash: bundle.folder.passwordHash,
+      allowedEmails: bundle.emails,
+    });
+    current = bundle.folder.parentId;
+  }
+  return grants;
+}
+
+export async function listDirectFolderContents(folderId: string) {
+  const db = getDb();
+  const childFolders = await db
+    .select({ id: folders.id, name: folders.name })
+    .from(folders)
+    .where(eq(folders.parentId, folderId))
+    .orderBy(asc(folders.sortIndex), asc(folders.name));
+  const childDocuments = await db
+    .select({ id: documents.id, title: documents.title })
+    .from(documents)
+    .where(eq(documents.folderId, folderId))
+    .orderBy(asc(documents.sortIndex), asc(documents.title));
+  return { folders: childFolders, documents: childDocuments };
+}
+
+export async function updateFolderShare(
+  userId: string,
+  id: string,
+  input: {
+    visibility: Visibility;
+    password?: string;
+    emails?: string[];
+  },
+  options?: { scope?: AgentScope; origin?: string },
+) {
+  const folder = await visibleFolder(userId, id);
+  if (options?.scope && !folderInTokenScope(folder, userId, options.scope)) {
+    throw new HttpError(404, "Folder not found");
+  }
+  const prepared = prepareShareCredentials({
+    visibility: input.visibility,
+    password: input.password,
+    emails: input.emails,
+    currentPasswordHash: folder.passwordHash,
+  });
+  const emails = prepared.emails;
+  const passwordHash = prepared.passwordHash;
+  const db = getDb();
+  const previousShares = await db
+    .select({ email: folderShares.email })
+    .from(folderShares)
+    .where(eq(folderShares.folderId, id));
+  const alreadyShared = new Set(previousShares.map((share) => share.email.toLowerCase()));
+  await db
+    .update(folders)
+    .set({ visibility: input.visibility, passwordHash })
+    .where(eq(folders.id, id));
+  await db.delete(folderShares).where(eq(folderShares.folderId, id));
+  if (emails.length) {
+    await db.insert(folderShares).values(
+      emails.map((email) => ({
+        id: crypto.randomUUID(),
+        folderId: id,
+        email,
+      })),
+    );
+  }
+  const added = emails.filter((email) => !alreadyShared.has(email.toLowerCase()));
+  if (added.length) {
+    const senderName = await folderSenderLabel(userId);
+    const folderUrl = `${appBaseUrl()}/f/${id}`;
+    const delivered: string[] = [];
+    try {
+      for (const email of added) {
+        await sendFolderShared({
+          email,
+          url: folderUrl,
+          senderName,
+          folderName: folder.name,
+          accountRequired: true,
+        });
+        delivered.push(email);
+      }
+    } catch (error) {
+      const pending = added.filter((email) => !delivered.includes(email));
+      if (pending.length) {
+        await db
+          .delete(folderShares)
+          .where(and(eq(folderShares.folderId, id), inArray(folderShares.email, pending)));
+      }
+      console.error(error);
+      throw new HttpError(502, "Could not send the folder email");
+    }
+  }
+  return presentSharedFolder(
+    {
+      id: folder.id,
+      name: folder.name,
+      visibility: input.visibility,
+      emails,
+      hasPassword: Boolean(passwordHash),
+    },
+    options?.origin ?? "",
+  );
+}
+
+async function selectFolders(where: SQL | undefined) {
+  if (!where) return [];
+  return getDb()
+    .select()
+    .from(folders)
+    .where(where)
+    .orderBy(asc(folders.sortIndex), asc(folders.createdAt));
+}
+
+async function presentLibraryFolders(rows: Awaited<ReturnType<typeof selectFolders>>) {
+  const shares = await emailsByFolder(rows.map((row) => row.id));
+  return rows.map((row) => ({
+    id: row.id,
+    name: row.name,
+    parentId: row.parentId,
+    workspaceId: row.workspaceId,
+    sortIndex: row.sortIndex,
+    visibility: row.visibility as Visibility,
+    emails: shares.get(row.id) ?? [],
+    hasPassword: Boolean(row.passwordHash),
+  }));
+}
+
+async function emailsByFolder(ids: string[]) {
+  const grouped = new Map<string, string[]>();
+  if (ids.length === 0) return grouped;
+  const rows = await getDb()
+    .select({ folderId: folderShares.folderId, email: folderShares.email })
+    .from(folderShares)
+    .where(inArray(folderShares.folderId, ids));
+  for (const row of rows) {
+    const list = grouped.get(row.folderId) ?? [];
+    list.push(row.email);
+    grouped.set(row.folderId, list);
+  }
+  return grouped;
+}
+
+function folderInTokenScope(
+  folder: { ownerId: string; workspaceId: string | null },
+  userId: string,
+  scope: AgentScope,
+) {
+  if (!folder.workspaceId) {
+    if (folder.ownerId !== userId) return false;
+    return scope.allScopes || scope.workspaceIds.includes(PERSONAL_SPACE_ID);
+  }
+  if (scope.allScopes) return true;
+  return scope.workspaceIds.includes(folder.workspaceId);
+}
+
+async function folderSenderLabel(ownerId: string) {
+  const [owner] = await getDb()
+    .select({ name: user.name, email: user.email })
+    .from(user)
+    .where(eq(user.id, ownerId));
+  const name = owner?.name.replace(/[\r\n]+/g, " ").trim() ?? "";
+  if (name) return name;
+  const email = owner?.email.replace(/[\r\n]+/g, " ").trim() ?? "";
+  return email || "Someone";
 }

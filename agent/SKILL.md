@@ -21,7 +21,7 @@ To browse the library in a browser, set a cookie on the app origin: name `pamiac
 
 ## Library
 
-Call `search_documents`, `list_workspaces`, `list_documents`, `read_document`, `create_note`, `create_diagram`, `update_note`, and `update_diagram`.
+Call `search_documents`, `list_workspaces`, `list_documents`, `list_folders`, `read_document`, `create_note`, `create_diagram`, `update_note`, `update_diagram`, and `share_folder`.
 
 ### Search
 
@@ -40,6 +40,8 @@ Search reaches the workspace this token was bound to, and a personal binding rea
 ### List, read, create, update
 
 - `list_documents` lists notes and diagrams. Pass `type` as `note` or `diagram` to filter.
+- `list_folders` lists folders this connection can reach. Each folder has `id`, `name`, `parentId` (null at the root), `workspaceId` (null for a personal folder), `visibility`, and `url`.
+- `share_folder` shares a folder and everything inside it, including nested folders and documents. Send `{ "id", "visibility", "password" optional, "emails" optional }`. The link is `/f/<id>` (the folder `url`). A folder share grants view, not edit, and does not change each document's own share.
 - `read_document` loads one document by `id`.
 - `create_note` adds a markdown note.
 - `create_diagram` adds a diagram.
@@ -150,6 +152,8 @@ Once a token exists (`PAMIAC_TOKEN` in the environment, or status `ready` from G
 - `GET https://pamiac.com/api/agent/v1/documents/<id>`
 - `POST https://pamiac.com/api/agent/v1/documents` with JSON `{ "type": "note" | "diagram", "title" optional, "content" optional }`. Note content is markdown. Diagram content is `{ nodes, relations }`.
 - `PATCH https://pamiac.com/api/agent/v1/documents/<id>`
+- `GET https://pamiac.com/api/agent/v1/folders` returns `{ folders }` in the same shape as `list_folders`.
+- `PUT https://pamiac.com/api/agent/v1/folders/<id>/share` with JSON `{ "visibility", "password" optional, "emails" optional }` shares that folder and everything inside it, including nested folders. The link is `/f/<id>`.
 
 Notes stay a full markdown content replace plus `version` from the GET in the same turn:
 

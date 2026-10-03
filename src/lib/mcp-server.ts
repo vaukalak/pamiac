@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { getDb } from "@/db";
 import { user } from "@/db/schema";
+import { VISIBILITIES } from "@/lib/access";
 import { MAX_CONTENT_LENGTH } from "@/lib/config";
 import {
   agentCreateWorkspace,
@@ -16,6 +17,8 @@ import {
   updateDocumentContent,
   type AgentScope,
 } from "@/lib/documents";
+import { presentListedFolder } from "@/lib/folder-library";
+import { listAgentFolders, updateFolderShare } from "@/lib/folders";
 import { UML_KINDS, UML_RELATIONS } from "@/lib/diagram";
 import { diagramPatchSchema } from "@/lib/diagram-patch";
 import { HttpError } from "@/lib/http";
@@ -394,6 +397,68 @@ export function createPamiacMcpServer(
           scope,
         );
         return textResult(presentReadableDocument(presentDocument(document, origin)));
+      } catch (error) {
+        return errorResult(failureMessage(error));
+      }
+    },
+  );
+
+  const listedFolder = z
+    .object({
+      id: z.string(),
+      name: z.string(),
+      parentId: z.string().nullable(),
+      workspaceId: z.string().nullable(),
+      visibility: z.enum(VISIBILITIES),
+      url: z.string(),
+    })
+    .strict();
+
+  server.registerTool(
+    "list_folders",
+    {
+      description: "List folders this connection can reach.",
+      inputSchema: z.object({}).strict(),
+      outputSchema: z.object({ folders: z.array(listedFolder) }).strict(),
+      annotations: readAnnotations,
+    },
+    async () => {
+      if (!userId) return errorResult("Sign-in required");
+      try {
+        const rows = await listAgentFolders(userId, scope);
+        const folders = rows.map((row) => presentListedFolder(row, origin));
+        return textResult({ folders });
+      } catch (error) {
+        return errorResult(failureMessage(error));
+      }
+    },
+  );
+
+  server.registerTool(
+    "share_folder",
+    {
+      description:
+        "Share a whole folder. The folder url covers nested folders and the documents inside. View only.",
+      inputSchema: z
+        .object({
+          id: documentId,
+          visibility: z.enum(VISIBILITIES),
+          password: z.string().max(200).optional(),
+          emails: z.array(z.string()).max(50).optional(),
+        })
+        .strict(),
+      annotations: createAnnotations,
+    },
+    async ({ id, visibility, password, emails }) => {
+      if (!userId) return errorResult("Sign-in required");
+      try {
+        const share = await updateFolderShare(
+          userId,
+          id,
+          { visibility, password, emails },
+          { scope, origin },
+        );
+        return textResult(share);
       } catch (error) {
         return errorResult(failureMessage(error));
       }

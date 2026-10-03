@@ -10,12 +10,18 @@ import {
   type FolderRecord,
 } from "./folder-library.ts";
 
+const share = {
+  visibility: "private" as const,
+  emails: [] as string[],
+  hasPassword: false,
+};
 const notes: FolderRecord = {
   id: "notes",
   name: "Notes",
   parentId: null,
   workspaceId: null,
   sortIndex: 0,
+  ...share,
 };
 const nested: FolderRecord = {
   id: "nested",
@@ -23,6 +29,7 @@ const nested: FolderRecord = {
   parentId: "notes",
   workspaceId: null,
   sortIndex: 1,
+  ...share,
 };
 const team: FolderRecord = {
   id: "team",
@@ -30,6 +37,7 @@ const team: FolderRecord = {
   parentId: null,
   workspaceId: "ws-1",
   sortIndex: 0,
+  ...share,
 };
 
 describe("folder library", () => {

@@ -7,9 +7,10 @@ import { NoteRawView } from "@/components/document/note-raw-view";
 import { PrivateDocument } from "@/components/document/private-document";
 import { LockedDocument } from "@/components/locked-document";
 import { SetupScreen } from "@/components/setup-screen";
-import { resolveAccess, type Visibility } from "@/lib/access";
+import { resolveInheritedAccess, type ShareGrant, type Visibility } from "@/lib/access";
 import { appSecret } from "@/lib/config";
 import { getDocumentBundle, isDocumentWorkspaceMember } from "@/lib/documents";
+import { folderGrantChain } from "@/lib/folders";
 import { documentSpaceLabel, type NamedWorkspace } from "@/lib/library-spaces";
 import { loadSharePreview } from "@/lib/load-share-preview";
 import { noteExportMarkdown } from "@/lib/note-file";
@@ -49,25 +50,54 @@ export default async function DocumentPage(props: Properties) {
   }
   if (!bundle) notFound();
 
+  let ancestors;
+  try {
+    ancestors = await folderGrantChain(bundle.document.folderId);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Could not reach the database";
+    return <SetupScreen detail={message} />;
+  }
+
   const user = result.session?.user;
   const jar = await cookies();
-  const passwordOk = bundle.document.passwordHash
-    ? unlockMatches(
-        jar.get(unlockCookieName(id))?.value,
-        id,
-        bundle.document.passwordHash,
-        appSecret(),
-      )
-    : false;
+  const secret = appSecret();
+  const grants: ShareGrant[] = [
+    {
+      id,
+      kind: "document",
+      visibility: bundle.document.visibility as Visibility,
+      allowedEmails: bundle.emails,
+      passwordOk: bundle.document.passwordHash
+        ? unlockMatches(
+            jar.get(unlockCookieName(id))?.value,
+            id,
+            bundle.document.passwordHash,
+            secret,
+          )
+        : false,
+    },
+    ...ancestors.map((grant) => ({
+      id: grant.id,
+      kind: "folder" as const,
+      visibility: grant.visibility,
+      allowedEmails: grant.allowedEmails,
+      passwordOk: grant.passwordHash
+        ? unlockMatches(
+            jar.get(unlockCookieName(grant.id))?.value,
+            grant.id,
+            grant.passwordHash,
+            secret,
+          )
+        : false,
+    })),
+  ];
   const workspaceMember = user
     ? await isDocumentWorkspaceMember(user.id, bundle.document.workspaceId)
     : false;
-  const access = resolveAccess({
+  const access = resolveInheritedAccess({
     isOwner: user?.id === bundle.document.ownerId,
-    visibility: bundle.document.visibility as Visibility,
     viewerEmail: user?.email ?? null,
-    allowedEmails: bundle.emails,
-    passwordOk,
+    grants,
     workspaceMember,
   });
 
@@ -94,7 +124,12 @@ export default async function DocumentPage(props: Properties) {
     access.level === "none" ? (
       <PrivateDocument id={id} signedIn={Boolean(user)} type={documentType} />
     ) : access.level === "locked" ? (
-      <LockedDocument id={id} reason={access.reason} />
+      <LockedDocument
+        id={id}
+        reason={access.reason}
+        unlockId={access.unlockId}
+        unlockKind={access.unlockKind}
+      />
     ) : (
       <DocumentScreen
         key={bundle.document.visibility}

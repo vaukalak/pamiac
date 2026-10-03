@@ -16,6 +16,8 @@ Call `search_documents` or `list_documents` before `create_note` or `create_diag
 - `search_documents` finds notes and diagrams by meaning. Each result has `id`, `type`, `title`, `url`, `score`, and `excerpt`.
 - `list_documents` lists the library. Pass `type` as `note` or `diagram` to filter. Each document has `id`, `type`, `title`, `url`, and `updatedAt`.
 - `read_document` loads one document by `id`. It returns `id`, `type`, `title`, `url`, `updatedAt`, `version`, `content`, `text`, and `excerpt`. Call it before changing a diagram.
+- `list_folders` lists folders this connection can reach. Each folder has `id`, `name`, `parentId` (null at the root), `workspaceId` (null for a personal folder), `visibility`, and `url`.
+- `share_folder` sets a folder share. Send `id`, `visibility`, and `password` or `emails` when that mode needs them. Sharing a folder shares the folder and everything inside it, including nested folders and documents. The link is `/f/<id>` (the folder `url`). A folder share grants view, not edit, and does not change each document's own share.
 
 ## Notes
 
