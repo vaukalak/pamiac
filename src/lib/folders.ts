@@ -3,9 +3,14 @@ import { getDb } from "@/db";
 import { documents, folderShares, folders, user } from "@/db/schema";
 import type { Visibility } from "@/lib/access";
 import { appBaseUrl } from "@/lib/config";
-import type { AgentScope } from "@/lib/documents";
-import { getEditableDocument } from "@/lib/documents";
 import {
+  agentCreateWorkspace,
+  getAgentDocument,
+  getEditableDocument,
+  type AgentScope,
+} from "@/lib/documents";
+import {
+  folderInAgentScope,
   folderMovesIntoItself,
   folderName,
   libraryWorkspaceId,
@@ -93,6 +98,27 @@ function namedFolder(input: string) {
   }
 }
 
+export async function createAgentFolder(
+  userId: string,
+  scope: AgentScope,
+  name: string,
+  workspaceId: string | undefined,
+  parentId: string | null,
+) {
+  const resolved = workspaceId ?? (await agentCreateWorkspace(userId, scope));
+  const libraryId = libraryWorkspaceId(resolved);
+  if (!folderInAgentScope(scope, libraryId)) {
+    throw new HttpError(404, "Workspace not found");
+  }
+  if (parentId) {
+    const parent = await visibleFolder(userId, parentId);
+    if (!folderInAgentScope(scope, parent.workspaceId)) {
+      throw new HttpError(404, "Folder not found");
+    }
+  }
+  return createFolder(userId, name, resolved, parentId);
+}
+
 export async function createFolder(
   userId: string,
   name: string,
@@ -140,6 +166,26 @@ export async function createFolder(
   return created;
 }
 
+export async function moveAgentDocumentToFolder(
+  userId: string,
+  scope: AgentScope,
+  documentId: string,
+  folderId: string | null,
+) {
+  const document = await getAgentDocument(userId, documentId, scope);
+  if (!document) throw new HttpError(404, "Document not found");
+  if (folderId) {
+    const folder = await visibleFolder(userId, folderId);
+    if (!folderInAgentScope(scope, folder.workspaceId)) {
+      throw new HttpError(404, "Folder not found");
+    }
+    if ((folder.workspaceId ?? null) !== (document.workspaceId ?? null)) {
+      throw new HttpError(400, "That folder is in another library");
+    }
+  }
+  return moveDocumentToFolder(userId, documentId, folderId);
+}
+
 export async function moveDocumentToFolder(
   userId: string,
   documentId: string,
@@ -160,6 +206,28 @@ export async function moveDocumentToFolder(
     .returning({ id: documents.id, folderId: documents.folderId });
   if (!updated) throw new HttpError(404, "Document not found");
   return updated;
+}
+
+export async function moveAgentFolder(
+  userId: string,
+  scope: AgentScope,
+  folderId: string,
+  parentId: string | null,
+) {
+  const folder = await visibleFolder(userId, folderId);
+  if (!folderInAgentScope(scope, folder.workspaceId)) {
+    throw new HttpError(404, "Folder not found");
+  }
+  if (parentId) {
+    const parent = await visibleFolder(userId, parentId);
+    if (!folderInAgentScope(scope, parent.workspaceId)) {
+      throw new HttpError(404, "Folder not found");
+    }
+    if ((parent.workspaceId ?? null) !== (folder.workspaceId ?? null)) {
+      throw new HttpError(400, "That folder is in another library");
+    }
+  }
+  return moveFolder(userId, folderId, parentId);
 }
 
 export async function moveFolder(userId: string, folderId: string, parentId: string | null) {
@@ -249,7 +317,7 @@ export async function updateFolderShare(
   options?: { scope?: AgentScope; origin?: string },
 ) {
   const folder = await visibleFolder(userId, id);
-  if (options?.scope && !folderInTokenScope(folder, userId, options.scope)) {
+  if (options?.scope && !folderInAgentScope(options.scope, folder.workspaceId)) {
     throw new HttpError(404, "Folder not found");
   }
   const prepared = prepareShareCredentials({
@@ -355,19 +423,6 @@ async function emailsByFolder(ids: string[]) {
     grouped.set(row.folderId, list);
   }
   return grouped;
-}
-
-function folderInTokenScope(
-  folder: { ownerId: string; workspaceId: string | null },
-  userId: string,
-  scope: AgentScope,
-) {
-  if (!folder.workspaceId) {
-    if (folder.ownerId !== userId) return false;
-    return scope.allScopes || scope.workspaceIds.includes(PERSONAL_SPACE_ID);
-  }
-  if (scope.allScopes) return true;
-  return scope.workspaceIds.includes(folder.workspaceId);
 }
 
 async function folderSenderLabel(ownerId: string) {

@@ -617,6 +617,7 @@ export function presentDocument(
     content: string;
     version: number;
     updatedAt: Date;
+    folderId?: string | null;
   },
   origin: string,
 ) {
@@ -632,6 +633,7 @@ export function presentDocument(
     content: type === "diagram" ? readDiagram(document.content) : document.content,
     text,
     excerpt: excerpt(text),
+    ...("folderId" in document ? { folderId: document.folderId ?? null } : {}),
   };
 }
 

@@ -18,7 +18,13 @@ import {
   type AgentScope,
 } from "@/lib/documents";
 import { presentListedFolder } from "@/lib/folder-library";
-import { listAgentFolders, updateFolderShare } from "@/lib/folders";
+import {
+  createAgentFolder,
+  listAgentFolders,
+  moveAgentDocumentToFolder,
+  moveAgentFolder,
+  updateFolderShare,
+} from "@/lib/folders";
 import { UML_KINDS, UML_RELATIONS } from "@/lib/diagram";
 import { diagramPatchSchema } from "@/lib/diagram-patch";
 import { HttpError } from "@/lib/http";
@@ -59,6 +65,29 @@ const listedDocument = z
     title: z.string(),
     url: z.string(),
     updatedAt: z.string(),
+    folderId: z.string().nullable(),
+  })
+  .strict();
+
+const folderSummary = z
+  .object({
+    id: z.string(),
+    name: z.string(),
+    parentId: z.string().nullable(),
+    workspaceId: z.string().nullable(),
+  })
+  .strict();
+
+const listedFolder = folderSummary
+  .extend({
+    visibility: z.enum(VISIBILITIES),
+    url: z.string(),
+  })
+  .strict();
+
+const folderRecord = folderSummary
+  .extend({
+    sortIndex: z.number(),
   })
   .strict();
 
@@ -79,6 +108,28 @@ const listInput = z
   .strict();
 
 const readInput = z.object({ id: documentId }).strict();
+
+const createFolderInput = z
+  .object({
+    name: z.string(),
+    parentId: z.string().min(1).nullable().optional(),
+    workspaceId: z.string().min(1).optional(),
+  })
+  .strict();
+
+const moveDocumentToFolderInput = z
+  .object({
+    documentId,
+    folderId: z.string().min(1).nullable(),
+  })
+  .strict();
+
+const moveFolderInput = z
+  .object({
+    folderId: z.string().min(1),
+    parentId: z.string().min(1).nullable(),
+  })
+  .strict();
 
 const workspaceOutput = z
   .object({
@@ -262,6 +313,27 @@ export function createPamiacMcpServer(
   );
 
   server.registerTool(
+    "list_folders",
+    {
+      description:
+        "List folders this connection can reach. workspaceId is null for the personal library.",
+      inputSchema: z.object({}).strict(),
+      outputSchema: z.object({ folders: z.array(listedFolder) }).strict(),
+      annotations: readAnnotations,
+    },
+    async () => {
+      if (!userId) return errorResult("Sign-in required");
+      try {
+        const rows = await listAgentFolders(userId, scope);
+        const folders = rows.map((row) => presentListedFolder(row, origin));
+        return textResult({ folders });
+      } catch (error) {
+        return errorResult(failureMessage(error));
+      }
+    },
+  );
+
+  server.registerTool(
     "list_documents",
     {
       description: "List this account's notes and diagrams.",
@@ -403,31 +475,60 @@ export function createPamiacMcpServer(
     },
   );
 
-  const listedFolder = z
-    .object({
-      id: z.string(),
-      name: z.string(),
-      parentId: z.string().nullable(),
-      workspaceId: z.string().nullable(),
-      visibility: z.enum(VISIBILITIES),
-      url: z.string(),
-    })
-    .strict();
-
   server.registerTool(
-    "list_folders",
+    "create_folder",
     {
-      description: "List folders this connection can reach.",
-      inputSchema: z.object({}).strict(),
-      outputSchema: z.object({ folders: z.array(listedFolder) }).strict(),
-      annotations: readAnnotations,
+      description:
+        "Create a folder. Omit workspaceId to use the same library as create_note. Omit parentId, or pass null, to create it at the library root.",
+      inputSchema: createFolderInput,
+      outputSchema: folderRecord,
+      annotations: createAnnotations,
     },
-    async () => {
+    async ({ name, parentId, workspaceId }) => {
       if (!userId) return errorResult("Sign-in required");
       try {
-        const rows = await listAgentFolders(userId, scope);
-        const folders = rows.map((row) => presentListedFolder(row, origin));
-        return textResult({ folders });
+        const folder = await createAgentFolder(userId, scope, name, workspaceId, parentId ?? null);
+        return textResult(folder);
+      } catch (error) {
+        return errorResult(failureMessage(error));
+      }
+    },
+  );
+
+  server.registerTool(
+    "move_document_to_folder",
+    {
+      description:
+        "Move a note or diagram into a folder in the same library. folderId null moves it to the library root.",
+      inputSchema: moveDocumentToFolderInput,
+      outputSchema: z.object({ id: z.string(), folderId: z.string().nullable() }).strict(),
+      annotations: createAnnotations,
+    },
+    async ({ documentId: id, folderId }) => {
+      if (!userId) return errorResult("Sign-in required");
+      try {
+        const document = await moveAgentDocumentToFolder(userId, scope, id, folderId);
+        return textResult(document);
+      } catch (error) {
+        return errorResult(failureMessage(error));
+      }
+    },
+  );
+
+  server.registerTool(
+    "move_folder",
+    {
+      description:
+        "Move a folder under another folder in the same library. parentId null moves it to the library root. A folder cannot move into itself.",
+      inputSchema: moveFolderInput,
+      outputSchema: folderRecord,
+      annotations: createAnnotations,
+    },
+    async ({ folderId, parentId }) => {
+      if (!userId) return errorResult("Sign-in required");
+      try {
+        const folder = await moveAgentFolder(userId, scope, folderId, parentId);
+        return textResult(folder);
       } catch (error) {
         return errorResult(failureMessage(error));
       }
