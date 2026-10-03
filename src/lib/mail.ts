@@ -77,6 +77,19 @@ export async function sendMagicLink({ email, url }: { email: string; url: string
   });
 }
 
+export async function sendPasswordReset({ email, url }: { email: string; url: string }) {
+  const safeUrl = escapeHtml(url);
+  await deliverEmail({
+    email,
+    url,
+    subject: "Reset your Pamiac password",
+    html: `<p>Use this link to set a new Pamiac password. It expires in 1 hour.</p><p><a href="${safeUrl}">Reset password</a></p>`,
+    missingKey: "RESEND_API_KEY is required to send password reset emails",
+    log: `Password reset for ${email}: ${url}`,
+    failure: "Could not send the password reset email",
+  });
+}
+
 export async function sendWorkspaceInvite({
   email,
   url,

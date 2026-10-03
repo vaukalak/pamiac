@@ -71,6 +71,12 @@ describe("email and password sign-in", () => {
     );
     expect(fields).toMatch(/disabled=\{mutation\.isPending\}/);
     expect(fields).toMatch(/>\s*Sign in\s*</);
+    expect(fields).toMatch(/>\s*reset password\s*</);
+    expect(fields).toMatch(/authClient\.requestPasswordReset\(\{/);
+    expect(fields).toMatch(/redirectTo: "\/reset-password"/);
+    expect(fields).toMatch(
+      /<Button[^>]*className="ghost"[^>]*type="button"[^>]*>\s*reset password\s*<\/Button>/s,
+    );
     expect(fields).toMatch(/>\s*Back\s*</);
     expect(fields).toMatch(/<LoginSendFailure happened=\{message\} \/>/);
     expect(fields).not.toMatch(/useState|<input|<select|signUp/);
@@ -93,9 +99,11 @@ describe("email and password sign-in", () => {
     const client = read("src/lib/auth-client.ts");
     const copy = read("src/components/login/login-sign-in-copy.tsx");
 
-    expect(auth).toMatch(
-      /emailAndPassword:\s*\{\s*enabled:\s*true,\s*disableSignUp:\s*true,\s*\}/s,
-    );
+    expect(auth).toMatch(/enabled:\s*true/);
+    expect(auth).toMatch(/disableSignUp:\s*true/);
+    expect(auth).toMatch(/resetPasswordTokenExpiresIn:\s*60 \* 60/);
+    expect(auth).toMatch(/sendResetPassword:\s*async/);
+    expect(auth).toMatch(/sendPasswordReset\(\{ email: user\.email, url \}\)/);
     expect(client).not.toMatch(/signUp\.email/);
     expect(copy).toMatch(/title="Sign in or register"/);
     expect(copy).toMatch(

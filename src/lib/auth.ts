@@ -24,7 +24,7 @@ import {
 import { appBaseUrl, appSecret } from "@/lib/config";
 import { googleSocialProviders } from "@/lib/google-sign-in";
 import { mcpResourceUrl } from "@/lib/mcp-resource";
-import { sendMagicLink } from "@/lib/mail";
+import { sendMagicLink, sendPasswordReset } from "@/lib/mail";
 
 function buildAuth() {
   return betterAuth({
@@ -39,6 +39,10 @@ function buildAuth() {
     emailAndPassword: {
       enabled: true,
       disableSignUp: true,
+      resetPasswordTokenExpiresIn: 60 * 60,
+      sendResetPassword: async ({ user, url }) => {
+        await sendPasswordReset({ email: user.email, url });
+      },
     },
     socialProviders: googleSocialProviders(),
     database: drizzleAdapter(getDb(), {

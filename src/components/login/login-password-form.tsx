@@ -2,6 +2,7 @@
 
 import { useMutation } from "@tanstack/react-query";
 import { useForm, type FieldErrors, type Resolver } from "react-hook-form";
+import { LoginPasswordResetSent } from "@/components/login/login-password-reset-sent";
 import { LoginSendFailure } from "@/components/login/login-send-failure";
 import { authClient } from "@/lib/auth-client";
 import { loginSendFailureSentence } from "@/lib/login-send-failure";
@@ -19,6 +20,7 @@ interface PasswordValues {
 }
 
 const PASSWORD_FAILURE = "That email or password did not match.";
+const RESET_FAILURE = "We could not send the reset email.";
 
 function passwordEmailMessage(email: string) {
   if (email.includes("@")) return "";
@@ -40,6 +42,23 @@ const passwordResolver: Resolver<PasswordValues> = (values) => {
   if (password) errors.password = { type: "validate", message: password };
   return { values: {}, errors };
 };
+
+async function requestPasswordReset(email: string) {
+  let result: Awaited<ReturnType<typeof authClient.requestPasswordReset>>;
+  try {
+    result = await authClient.requestPasswordReset({
+      email,
+      redirectTo: "/reset-password",
+    });
+  } catch (error) {
+    throw new Error(
+      loginSendFailureSentence(error instanceof Error ? error.message : undefined, RESET_FAILURE),
+    );
+  }
+  if (result.error) {
+    throw new Error(loginSendFailureSentence(result.error.message, RESET_FAILURE));
+  }
+}
 
 async function signInWithPassword(input: { email: string; password: string; nextPath: string }) {
   const { email, password, nextPath } = input;
@@ -74,7 +93,26 @@ export function LoginPasswordForm(props: Properties) {
   const mutation = useMutation({
     mutationFn: (values: PasswordValues) => signInWithPassword({ ...values, nextPath }),
   });
+  const reset = useMutation({
+    mutationFn: requestPasswordReset,
+  });
   const message = mutation.error instanceof Error ? mutation.error.message : "";
+  const resetMessage = reset.error instanceof Error ? reset.error.message : "";
+
+  function sendResetEmail() {
+    const email = form.getValues("email");
+    const emailMessage = passwordEmailMessage(email);
+    if (emailMessage) {
+      form.setError("email", { type: "validate", message: emailMessage });
+      reset.reset();
+      return;
+    }
+    reset.mutate(email);
+  }
+
+  if (reset.isSuccess) {
+    return <LoginPasswordResetSent address={reset.variables ?? ""} onBack={onBack} />;
+  }
 
   return (
     <Form.Context
@@ -101,10 +139,14 @@ export function LoginPasswordForm(props: Properties) {
         name="password"
         type="password"
       />
+      <Button className="ghost" disabled={reset.isPending} onClick={sendResetEmail} type="button">
+        reset password
+      </Button>
       <Button disabled={mutation.isPending} type="submit">
         Sign in
       </Button>
       {mutation.isError ? <LoginSendFailure happened={message} /> : null}
+      {reset.isError ? <LoginSendFailure happened={resetMessage} /> : null}
     </Form.Context>
   );
 }
