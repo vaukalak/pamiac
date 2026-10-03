@@ -1,15 +1,15 @@
 interface Properties {
-  title: string;
   detail: string;
+  title: string;
 }
 
 export function ShareModeCopy(props: Properties) {
-  const { title, detail } = props;
+  const { detail, title } = props;
 
   return (
-    <span>
+    <span className="share-mode-copy">
       <strong>{title}</strong>
-      <span>{detail}</span>
+      <span className="share-mode-detail">{detail}</span>
     </span>
   );
 }

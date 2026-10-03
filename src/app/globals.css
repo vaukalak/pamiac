@@ -5047,3 +5047,218 @@ code {
 .library-shell .token-secret .error {
   color: #ffb4ab;
 }
+
+.library-shell .share-backdrop:has(.share-access-dialog) {
+  padding: 16px;
+  background: rgba(5, 8, 5, 0.78);
+}
+.library-shell .share-access-dialog {
+  width: min(580px, 100%);
+  max-height: calc(100dvh - 32px);
+  padding: 20px;
+  border: 1px solid var(--home-hair-strong);
+  border-radius: 20px;
+  background: #0a0f0a;
+  box-shadow: var(--home-shadow);
+  color: var(--home-text);
+  font-family: var(--sans);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.library-shell .share-access-dialog .share-access-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+.library-shell .share-access-dialog .share-dialog-head {
+  align-items: center;
+  margin: 0;
+}
+.library-shell .share-access-dialog h2 {
+  margin: 0;
+  color: var(--home-text);
+  font-family: var(--sans);
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+.library-shell .share-access-dialog .btn.ghost {
+  min-height: 44px;
+  color: var(--home-soft);
+  font-family: var(--sans);
+  font-weight: 600;
+}
+.library-shell .share-access-dialog .share-dialog-hint {
+  display: grid;
+  gap: 2px;
+}
+.library-shell .share-access-dialog .share-dialog-hint .text-pretty,
+.library-shell .share-access-dialog p {
+  margin: 0;
+}
+.library-shell .share-access-dialog .share-dialog-hint .text-pretty {
+  color: var(--home-soft);
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.45;
+}
+.library-shell .share-access-dialog .share-modes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  min-width: 0;
+}
+.library-shell .share-access-dialog .share-modes legend {
+  margin: 0 0 4px;
+  padding: 0;
+  color: var(--home-text);
+  font-family: var(--sans);
+  font-size: 16px;
+  font-weight: 650;
+}
+.library-shell .share-access-dialog .choice {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) 22px;
+  column-gap: 12px;
+  align-items: center;
+  min-height: 64px;
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid var(--home-hair-strong);
+  border-radius: 14px;
+  background: transparent;
+  color: var(--home-text);
+  font-size: 16px;
+  font-weight: 400;
+  cursor: pointer;
+}
+.library-shell .share-access-dialog .choice:has(input:checked) {
+  border-color: var(--home-lime);
+  background: color-mix(in srgb, var(--home-lime) 14%, #0d130c);
+}
+.library-shell .share-access-dialog .choice:hover:not(:has(input:checked)) {
+  background: color-mix(in srgb, var(--home-lime) 6%, transparent);
+}
+.library-shell .share-access-dialog .choice:focus-within {
+  outline: 2px solid var(--home-lime);
+  outline-offset: 2px;
+}
+.library-shell .share-access-dialog .share-mode-icon {
+  grid-column: 1;
+  grid-row: 1;
+  width: 22px;
+  height: 22px;
+  color: var(--home-text);
+}
+.library-shell .share-access-dialog .share-mode-copy {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
+}
+.library-shell .share-access-dialog .share-mode-copy strong {
+  color: var(--home-text);
+  font-weight: 650;
+  font-size: 16px;
+  line-height: 1.3;
+}
+.library-shell .share-access-dialog .choice .share-mode-detail {
+  display: block;
+  margin-top: 2px;
+  color: var(--home-soft);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.library-shell .share-access-dialog .choice input[type="radio"] {
+  grid-column: 3;
+  grid-row: 1;
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  padding: 0;
+  appearance: none;
+  border: 2px solid var(--home-soft);
+  border-radius: 50%;
+  background: transparent;
+}
+.library-shell .share-access-dialog .choice input[type="radio"]:checked {
+  border-color: var(--home-lime);
+  background: radial-gradient(circle, var(--home-lime) 0 5px, transparent 6px);
+}
+.library-shell .share-access-dialog .choice input[type="radio"]:focus-visible {
+  outline: 2px solid var(--home-lime);
+  outline-offset: 3px;
+}
+.library-shell .share-access-dialog .share-credential label {
+  color: var(--home-text);
+}
+.library-shell .share-access-dialog .share-link,
+.library-shell .share-access-dialog .share-actions {
+  margin: 0;
+}
+.library-shell .share-access-dialog .dev-link {
+  background: #0d130c;
+  border: 1px solid var(--home-hair-strong);
+  color: var(--home-text);
+}
+.library-shell .share-access-dialog .share-access-divider {
+  width: 100%;
+  height: 1px;
+  margin: 0;
+  border: 0;
+  background: #31451c;
+}
+.library-shell .share-access-dialog #note-share-markdown {
+  display: contents;
+}
+.library-shell .share-access-dialog .share-markdown-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 0;
+}
+.library-shell .share-access-dialog .btn {
+  min-height: 44px;
+  font-family: var(--sans);
+}
+.library-shell .share-access-dialog .btn.secondary {
+  border-color: var(--home-hair-strong);
+  background: transparent;
+  color: var(--home-text);
+  font-weight: 650;
+}
+.library-shell .share-access-dialog .btn.secondary:hover {
+  border-color: var(--home-lime);
+  background: transparent;
+  color: var(--home-lime);
+}
+.library-shell .share-access-dialog .share-markdown-actions .btn,
+.library-shell .share-access-dialog .share-actions .btn {
+  width: 100%;
+}
+.library-shell .share-access-dialog .btn:focus-visible {
+  outline: 2px solid var(--home-lime);
+  outline-offset: 2px;
+}
+.library-shell .share-access-dialog .error {
+  color: #ffb4ab;
+}
+@media (min-width: 480px) {
+  .library-shell .share-backdrop:has(.share-access-dialog) {
+    padding: 24px;
+  }
+  .library-shell .share-access-dialog {
+    max-height: calc(100dvh - 48px);
+    padding: 32px;
+  }
+}
+@media (max-width: 420px) {
+  .library-shell .share-access-dialog .share-markdown-actions {
+    grid-template-columns: 1fr;
+  }
+}

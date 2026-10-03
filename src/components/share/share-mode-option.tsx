@@ -1,21 +1,28 @@
+"use client";
+
+import { useFormContext } from "react-hook-form";
 import type { Visibility } from "@/lib/access";
+import type { ShareDraft } from "@/components/share/share-draft";
 import { ShareModeCopy } from "@/components/share/share-mode-copy";
+import { ShareModeIcon } from "@/components/share/share-mode-icon";
 
 interface Properties {
   checked: boolean;
   detail: string;
+  icon: "globe" | "key" | "lock" | "mail";
   title: string;
   value: Visibility;
-  onSelect: () => void;
 }
 
 export function ShareModeOption(props: Properties) {
-  const { checked, detail, title, value, onSelect } = props;
+  const { checked, detail, icon, title, value } = props;
+  const { register } = useFormContext<ShareDraft>();
 
   return (
-    <label className="choice">
-      <input checked={checked} name="share" onChange={onSelect} type="radio" value={value} />
+    <label className={checked ? "choice is-selected" : "choice"}>
+      <ShareModeIcon name={icon} />
       <ShareModeCopy detail={detail} title={title} />
+      <input {...register("visibility")} checked={checked} type="radio" value={value} />
     </label>
   );
 }

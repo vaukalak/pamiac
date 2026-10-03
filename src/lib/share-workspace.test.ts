@@ -32,7 +32,7 @@ describe("share workspace choice", () => {
     assert.deepEqual(shareWorkspaceBody("ws-2", "ws-9", [atlas, notes]), {});
   });
 
-  it("keeps the four open modes and adds a separate workspace choice", () => {
+  it("keeps the four open modes and does not assign a workspace from the popup", () => {
     const modes = readFileSync(
       new URL("../components/share/share-mode-list.tsx", import.meta.url),
       "utf8",
@@ -45,35 +45,25 @@ describe("share workspace choice", () => {
       new URL("../components/share/share-modal.tsx", import.meta.url),
       "utf8",
     );
-    const choice = readFileSync(
-      new URL("../components/share/share-workspace-choice.tsx", import.meta.url),
+    const body = readFileSync(
+      new URL("../components/share/share-access-body.tsx", import.meta.url),
       "utf8",
     );
-    const option = readFileSync(
-      new URL("../components/share/share-workspace-option.tsx", import.meta.url),
-      "utf8",
-    );
+    const saveStart = modal.indexOf("async function save");
+    const save = modal.slice(saveStart, modal.indexOf("onSuccess", saveStart));
+    const payload = save.slice(save.indexOf("JSON.stringify"), save.indexOf(").catch"));
     assert.match(modes, /Only me/);
     assert.match(modes, /By email/);
     assert.match(modes, /By password/);
     assert.match(modes, /Public/);
     assert.equal(/workspace/i.test(modes), false);
-    assert.match(modeOption, /name="share"/);
-    assert.match(option, /name="share-workspace"/);
-    assert.equal(option.includes('name="share"'), false);
-    assert.match(modal, /<ShareModeList/);
-    assert.match(modal, /lockWorkspace \? null :/);
-    assert.match(
-      modal,
-      /<ShareWorkspaceChoice onSelect=\{setWorkspaceChoice\} selectedId=\{workspaceChoice\} \/>/,
-    );
-    assert.match(
-      modal,
-      /lockWorkspace\s*\?\s*\{\}\s*:\s*shareWorkspaceBody\(workspaceId, workspaceChoice/,
-    );
-    assert.match(choice, /adminWorkspaces/);
-    assert.match(choice, /if \(workspaces\.length === 0\) return null/);
-    assert.match(choice, /onSelect\(null\)/);
+    assert.match(modeOption, /register\("visibility"\)/);
+    assert.match(body, /<ShareModeList/);
+    assert.equal(modal.includes("ShareWorkspaceChoice"), false);
+    assert.equal(modal.includes("shareWorkspaceBody"), false);
+    assert.equal(modal.includes("Personal library"), false);
+    assert.equal(payload.includes("workspaceId"), false);
+    assert.match(payload, /visibility: values\.visibility/);
   });
 
   it("places the document for an admin, applies the workspace limit, and clears back to personal", () => {
@@ -329,18 +319,18 @@ describe("share workspace choice", () => {
       resolve,
       /if \(input\.workspaceMember\) return \{ level: "edit", reason: "member" \}/,
     );
-    assert.match(modal, /<ShareModeList mode=\{mode\} onChange=\{setMode\} \/>/);
-    assert.match(modal, /lockWorkspace \? null :/);
-    assert.match(
-      modal,
-      /<ShareWorkspaceChoice onSelect=\{setWorkspaceChoice\} selectedId=\{workspaceChoice\} \/>/,
+    const surface = readFileSync(
+      new URL("../components/share/share-dialog-surface.tsx", import.meta.url),
+      "utf8",
     );
-    assert.match(modal, /lockWorkspace \? "share-dialog workspace-add-dialog" : "share-dialog"/);
-    assert.match(save, /visibility: mode/);
-    assert.match(
-      save,
-      /lockWorkspace\s*\?\s*\{\}\s*:\s*shareWorkspaceBody\(workspaceId, workspaceChoice/,
-    );
+    const payload = save.slice(save.indexOf("JSON.stringify"), save.indexOf(").catch"));
+    assert.match(modal, /<ShareDialogFrame/);
+    assert.equal(modal.includes("ShareWorkspaceChoice"), false);
+    assert.equal(modal.includes("shareWorkspaceBody"), false);
+    assert.match(surface, /share-access-dialog/);
+    assert.match(payload, /visibility: values\.visibility/);
+    assert.equal(payload.includes("workspaceId"), false);
+    assert.equal(payload.includes("shareWorkspaceBody"), false);
     assert.equal(save.includes("workspaceId: null"), false);
     assert.equal(resolveAccess({ ...stranger, visibility: "public" }).level, "view");
     assert.equal(

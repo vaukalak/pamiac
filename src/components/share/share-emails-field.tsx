@@ -1,19 +1,13 @@
-interface Properties {
-  value: string;
-  onChange: (value: string) => void;
-}
+import { Form } from "@/ui/Form";
 
-export function ShareEmailsField(props: Properties) {
-  const { value, onChange } = props;
-
+export function ShareEmailsField() {
   return (
-    <div>
-      <label htmlFor="share-emails">Emails</label>
-      <textarea
-        id="share-emails"
-        onChange={(event) => onChange(event.target.value)}
+    <div className="share-credential">
+      <Form.Textarea
+        label="Emails"
+        name="emails"
         placeholder={"ada@example.com\ngrace@example.com"}
-        value={value}
+        rows={4}
       />
     </div>
   );

@@ -1,23 +1,22 @@
+import { Form } from "@/ui/Form";
+
 interface Properties {
   hasPassword: boolean;
-  value: string;
-  onChange: (value: string) => void;
 }
 
 export function SharePasswordField(props: Properties) {
-  const { hasPassword, value, onChange } = props;
+  const { hasPassword } = props;
 
   return (
-    <div>
-      <label htmlFor="share-password">{hasPassword ? "New password" : "Password"}</label>
-      <input
-        id="share-password"
-        onChange={(event) => onChange(event.target.value)}
+    <div className="share-credential">
+      <Form.Input
+        autoComplete="off"
+        label={hasPassword ? "New password" : "Password"}
+        name="password"
         placeholder={
           hasPassword ? "Leave blank to keep the current password" : "At least 4 characters"
         }
         type="password"
-        value={value}
       />
     </div>
   );
