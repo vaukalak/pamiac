@@ -1,7 +1,8 @@
 import type { BlockNoteEditor } from "@blocknote/core";
 import { BlockNoteView } from "@blocknote/mantine";
-import { SideMenuController } from "@blocknote/react";
+import { FilePanelController, SideMenuController } from "@blocknote/react";
 import { NoteCommentLayer } from "@/components/note/note-comment-layer";
+import { NoteFilePanel } from "@/components/note/note-file-panel";
 import { NoteSideMenu } from "@/components/note/note-side-menu";
 import { NoteBlockMenuSheet } from "@/components/note/note-block-menu-sheet";
 import { NoteSlashMenuSheet } from "@/components/note/note-slash-menu-sheet";
@@ -20,10 +21,12 @@ export function NoteEditorSurface(props: Properties) {
     <BlockNoteView
       editable={editable}
       editor={editor}
+      filePanel={false}
       onChange={onChange}
       sideMenu={false}
       theme={theme}
     >
+      <FilePanelController filePanel={NoteFilePanel} />
       <SideMenuController sideMenu={NoteSideMenu} />
       <NoteCommentLayer />
       <NoteSlashMenuSheet />
