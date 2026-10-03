@@ -4651,15 +4651,27 @@ code {
   font-size: 12px;
   padding: 2px 8px;
 }
+.token-connect-picker {
+  container: token-connect-picker / inline-size;
+}
 .token-connect-grid {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: 10px;
   margin-top: 18px;
   margin-bottom: 8px;
 }
+@container token-connect-picker (min-width: 520px) {
+  .token-connect-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@container token-connect-picker (min-width: 760px) {
+  .token-connect-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
 .token-connect-card {
-  grid-column: span 2;
   width: 100%;
   min-height: 72px;
   align-items: center;
@@ -4668,13 +4680,6 @@ code {
   border-radius: 14px;
   padding: 10px 12px;
   background: rgba(8, 12, 9, 0.72);
-}
-.token-connect-card-cursor {
-  grid-column: span 6;
-}
-.token-connect-card-claude,
-.token-connect-card-chatgpt {
-  grid-column: span 3;
 }
 .library-shell .token-connect-dialog .token-connect-card-primary,
 .home .token-connect .token-connect-card-primary {
@@ -5000,16 +5005,9 @@ code {
   color: #ffb4ab;
 }
 @media (max-width: 640px) {
-  .token-connect-grid,
   .token-connect-columns,
   .token-connect-token-grid {
     grid-template-columns: 1fr;
-  }
-  .token-connect-card,
-  .token-connect-card-cursor,
-  .token-connect-card-claude,
-  .token-connect-card-chatgpt {
-    grid-column: auto;
   }
 }
 .library-shell .token-secret .secret {

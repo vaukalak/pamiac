@@ -30,22 +30,39 @@ describe("connections page chooser", () => {
     assert.equal(platformFromClientId("https://deepseek.com"), null);
   });
 
-  it("shows the chooser on the tokens page and keeps View setup in the dialog", () => {
+  it("shows the picker on the tokens page and opens the selected platform in the dialog", () => {
     const manager = read("src/components/tokens/token-manager.tsx");
+    const opener = read("src/components/tokens/token-connect-opener.tsx");
     const heading = read("src/components/tokens/token-heading.tsx");
     const view = read("src/components/tokens/token-view-setup.tsx");
+    const dialog = read("src/components/tokens/connection-dialog.tsx");
     const panel = read("src/components/tokens/connection-dialog-panel.tsx");
+    const chooser = read("src/components/connect/connect-chooser.tsx");
+    const signedIn = read("src/components/connect/connect-agent-signed-in.tsx");
     const headingAt = manager.indexOf("<TokenHeading");
-    const chooserAt = manager.indexOf("<ConnectChooser />");
+    const openerAt = manager.indexOf("<TokenConnectOpener />");
     const keysAt = manager.indexOf("<TokenKeys />");
 
-    assert.ok(headingAt >= 0 && chooserAt > headingAt && keysAt > chooserAt);
-    assert.match(manager, /className="token-connect"/);
-    assert.doesNotMatch(manager, /onClose|ConnectionDialog|share-backdrop|embedded/);
+    assert.ok(headingAt >= 0 && openerAt > headingAt && keysAt > openerAt);
+    assert.doesNotMatch(manager, /ConnectChooser|ConnectionDialog|useState/);
+    assert.match(opener, /className="token-connect"/);
+    assert.match(opener, /<ConnectPicker onPlatform=\{setPlatformId\} \/>/);
+    assert.match(opener, /<ConnectionDialog initialPlatformId=\{platformId\} onClose=\{/);
+    assert.doesNotMatch(opener, /<button/);
     assert.doesNotMatch(heading, /TokenNewConnection|New connection/);
     assert.match(view, /View setup/);
     assert.match(view, /<ConnectionDialog onClose=\{/);
-    assert.match(panel, /<ConnectChooser onClose=\{onClose\} titleId=\{titleId\} \/>/);
+    assert.doesNotMatch(view, /initialPlatformId/);
+    assert.match(dialog, /initialPlatformId\?: ConnectPlatformId/);
+    assert.match(
+      panel,
+      /<ConnectChooser initialPlatformId=\{initialPlatformId\} onClose=\{onClose\} titleId=\{titleId\} \/>/,
+    );
+    assert.match(
+      chooser,
+      /initialPlatformId \? \{ kind: "platform", platformId: initialPlatformId \}/,
+    );
+    assert.match(signedIn, /<ConnectChooser \/>/);
     assert.throws(() => read("src/components/tokens/token-new-connection.tsx"));
     assert.throws(() => read("src/components/connect/connect-deepseek-setup.tsx"));
   });
@@ -67,7 +84,28 @@ describe("connections page chooser", () => {
     assert.doesNotMatch(setup, /\bGemini(?! Spark)\b/);
     assert.doesNotMatch(branch + mark, /deepseek|DeepSeek/);
     assert.doesNotMatch(css, /token-connect-mark-deepseek/);
-    assert.match(css, /\.token-connect-card-cursor \{\s*grid-column: span 6;/);
+    assert.match(
+      css,
+      /\.token-connect-picker \{\s*container: token-connect-picker \/ inline-size;/,
+    );
+    assert.match(
+      css,
+      /\.token-connect-grid \{\s*display: grid;\s*grid-template-columns: minmax\(0, 1fr\);/,
+    );
+    assert.match(
+      css,
+      /@container token-connect-picker \(min-width: 520px\) \{\s*\.token-connect-grid \{\s*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/,
+    );
+    assert.match(
+      css,
+      /@container token-connect-picker \(min-width: 760px\) \{\s*\.token-connect-grid \{\s*grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);/,
+    );
+    assert.doesNotMatch(css, /token-connect-card[^{]*\{[^}]*grid-column:\s*span/);
+    assert.doesNotMatch(css, /@media \(max-width: 640px\) \{[^}]*\.token-connect-grid/);
+    assert.match(
+      css,
+      /@media \(max-width: 640px\) \{\s*\.token-connect-columns,\s*\.token-connect-token-grid \{\s*grid-template-columns: 1fr;/,
+    );
     assert.match(css, /\.library-shell \.token-connect-dialog \{\s*width: min\(660px, 100%\);/);
     assert.match(pageBlock, /margin-bottom: 22px;/);
     assert.doesNotMatch(pageBlock, /660px/);
