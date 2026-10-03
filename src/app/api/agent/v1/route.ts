@@ -23,6 +23,25 @@ export async function GET(request: Request) {
           body: { query: "string", limit: "1-20, optional" },
         },
         list: { method: "GET", path: "/api/agent/v1/documents?type=note|diagram" },
+        folders: { method: "GET", path: "/api/agent/v1/folders" },
+        createFolder: {
+          method: "POST",
+          path: "/api/agent/v1/folders",
+          body: {
+            name: "string",
+            workspaceId: "optional. Omit it to use the same library as a new note.",
+            parentId: "optional folder id, or null for the library root",
+          },
+        },
+        move: {
+          method: "POST",
+          path: "/api/agent/v1/folders/move",
+          body: {
+            document:
+              '{ "kind": "document", "documentId": "string", "folderId": "string or null" }',
+            folder: '{ "kind": "folder", "folderId": "string", "parentId": "string or null" }',
+          },
+        },
         read: { method: "GET", path: "/api/agent/v1/documents/:id" },
         create: {
           method: "POST",

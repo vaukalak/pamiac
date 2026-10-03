@@ -14,8 +14,8 @@ Call `search_documents` or `list_documents` before `create_note` or `create_diag
 ## Read
 
 - `search_documents` finds notes and diagrams by meaning. Each result has `id`, `type`, `title`, `url`, `score`, and `excerpt`.
-- `list_documents` lists the library. Pass `type` as `note` or `diagram` to filter. Each document has `id`, `type`, `title`, `url`, and `updatedAt`.
-- `read_document` loads one document by `id`. It returns `id`, `type`, `title`, `url`, `updatedAt`, `version`, `content`, `text`, and `excerpt`. Call it before changing a diagram.
+- `list_documents` lists the library. Pass `type` as `note` or `diagram` to filter. Each document has `id`, `type`, `title`, `url`, `updatedAt`, and `folderId`.
+- `read_document` loads one document by `id`. It returns `id`, `type`, `title`, `url`, `updatedAt`, `version`, `content`, `text`, `excerpt`, and `folderId`. Call it before changing a diagram.
 
 ## Notes
 
@@ -34,6 +34,16 @@ Relation `type` is `association`, `inheritance`, `composition`, `aggregation`, `
 
 - `create_diagram` adds the whole diagram. Omit `position` unless the user asked for a layout.
 - `update_diagram` merges a change. In the same turn, call `read_document` and send only the nodes you change, using each `id` from that read. Send `version` from `read_document`. Pass `nodes`, `deleteNodes`, `relations`, and `deleteRelations` as arguments of `update_diagram`. Do not wrap them in `patch`. Omit other nodes. Omit `position` to keep the layout. A node object sets only the fields it contains. Those fields are `kind`, `name`, `stereotype`, `attributes`, `methods`, `body`, and `position`. When `attributes` or `methods` is present, it replaces that whole list. Use `deleteNodes` and `deleteRelations` only for elements the user asked to remove. On conflict, the tool returns the current `version`, `title`, and `content`. Re-apply onto that content, rebuild the change against that document, and update with that `version`. Do not resend a stale full replace that drops the other writer's work.
+
+## Folders
+
+`list_folders`, `create_folder`, `move_document_to_folder`, and `move_folder` place notes and diagrams in folders.
+
+- `list_folders` returns `{ folders }` with `id`, `name`, `parentId`, `workspaceId`, `visibility`, and `url`. `workspaceId` is null for the personal library. `url` is `/f/<id>`.
+- `share_folder` shares a folder and everything inside it, including nested folders and documents. Send `id`, `visibility`, and `password` or `emails` when that mode needs them. The link is the folder `url`. A folder share grants view, not edit, and does not change each document's own share.
+- `create_folder` takes `name`, optional `parentId`, and optional `workspaceId`. When `workspaceId` is omitted, the folder is created in the same library `create_note` would use. The parent must be in that library.
+- `move_document_to_folder` takes `documentId` and `folderId`. `folderId` null moves the document to the library root.
+- `move_folder` takes `folderId` and `parentId`. `parentId` null moves the folder to the library root. A folder cannot move into itself.
 
 ## Account
 

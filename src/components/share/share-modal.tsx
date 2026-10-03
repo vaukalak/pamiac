@@ -20,6 +20,7 @@ interface Properties {
   id: string;
   lockWorkspace?: boolean;
   markdownSlot?: boolean;
+  target?: "document" | "folder";
   visibility: Visibility;
   workspaceId: string | null;
   onClose: () => void;
@@ -33,6 +34,7 @@ export function ShareModal(props: Properties) {
     id,
     lockWorkspace = false,
     markdownSlot = false,
+    target = "document",
     visibility,
     workspaceId,
     onClose,
@@ -85,21 +87,25 @@ export function ShareModal(props: Properties) {
 
   const saveShare = useMutation({
     mutationFn: async function save() {
-      const response = await fetch(`/api/documents/${id}/share`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          visibility: mode,
-          password: password || undefined,
-          emails: emailText
-            .split(/[\n,]/)
-            .map((email) => email.trim())
-            .filter(Boolean),
-          ...(lockWorkspace
-            ? {}
-            : shareWorkspaceBody(workspaceId, workspaceChoice, spaces.data ?? [])),
-        }),
-      }).catch(() => null);
+      const folderTarget = target === "folder";
+      const response = await fetch(
+        folderTarget ? `/api/folders/${id}/share` : `/api/documents/${id}/share`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            visibility: mode,
+            password: password || undefined,
+            emails: emailText
+              .split(/[\n,]/)
+              .map((email) => email.trim())
+              .filter(Boolean),
+            ...(lockWorkspace
+              ? {}
+              : shareWorkspaceBody(workspaceId, workspaceChoice, spaces.data ?? [])),
+          }),
+        },
+      ).catch(() => null);
       const body = (response ? await response.json().catch(() => null) : null) as
         (Partial<ShareResult> & { error?: string }) | null;
       if (
@@ -109,7 +115,7 @@ export function ShareModal(props: Properties) {
         !body.visibility ||
         !body.emails ||
         body.hasPassword === undefined ||
-        body.workspaceId === undefined
+        (!folderTarget && body.workspaceId === undefined)
       ) {
         throw new Error(body?.error ?? "Could not update sharing");
       }
@@ -117,7 +123,7 @@ export function ShareModal(props: Properties) {
         visibility: body.visibility,
         emails: body.emails,
         hasPassword: body.hasPassword,
-        workspaceId: body.workspaceId,
+        workspaceId: folderTarget ? workspaceId : (body.workspaceId ?? null),
       };
     },
     onSuccess: (share) => {
@@ -161,7 +167,7 @@ export function ShareModal(props: Properties) {
         {lockWorkspace ? null : (
           <ShareWorkspaceChoice onSelect={setWorkspaceChoice} selectedId={workspaceChoice} />
         )}
-        <ShareLink id={id} key={mode} mode={mode} />
+        <ShareLink id={id} key={mode} mode={mode} path={target === "folder" ? "f" : "d"} />
         {markdownSlot && !lockWorkspace ? <div id="note-share-markdown" /> : null}
         <ShareActions
           error={saveShare.error instanceof Error ? saveShare.error.message : ""}

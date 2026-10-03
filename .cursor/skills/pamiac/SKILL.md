@@ -21,7 +21,7 @@ To browse the library in a browser, set a cookie on the app origin: name `pamiac
 
 ## Library
 
-Call `search_documents`, `list_workspaces`, `list_documents`, `read_document`, `create_note`, `create_diagram`, `update_note`, and `update_diagram`.
+Call `search_documents`, `list_workspaces`, `list_documents`, `read_document`, `create_note`, `create_diagram`, `update_note`, `update_diagram`, `list_folders`, `create_folder`, `move_document_to_folder`, `move_folder`, and `share_folder`.
 
 ### Search
 
@@ -37,10 +37,20 @@ Search reaches the workspace this token was bound to, and a personal binding rea
 
 `list_workspaces` lists the workspaces this connection can reach. Call it when the user does not name a workspace. When more than one workspace is returned, list those workspaces and ask the user which one to use before searching, reading, or writing. Do not guess. One workspace needs no question.
 
+### Folders
+
+`list_folders`, `create_folder`, `move_document_to_folder`, and `move_folder` place notes and diagrams in folders.
+
+- `list_folders` returns `{ folders }` with `id`, `name`, `parentId`, `workspaceId`, `visibility`, and `url`. `workspaceId` is null for the personal library. `url` is `/f/<id>`.
+- `share_folder` shares a folder and everything inside it, including nested folders and documents. Send `{ "id", "visibility", "password" optional, "emails" optional }`. The link is the folder `url`. A folder share grants view, not edit, and does not change each document's own share.
+- `create_folder` takes `name`, optional `parentId`, and optional `workspaceId`. When `workspaceId` is omitted, the folder is created in the same library `create_note` would use. The parent must be in that library.
+- `move_document_to_folder` takes `documentId` and `folderId`. `folderId` null moves the document to the library root.
+- `move_folder` takes `folderId` and `parentId`. `parentId` null moves the folder to the library root. A folder cannot move into itself.
+
 ### List, read, create, update
 
-- `list_documents` lists notes and diagrams. Pass `type` as `note` or `diagram` to filter.
-- `read_document` loads one document by `id`.
+- `list_documents` lists notes and diagrams. Pass `type` as `note` or `diagram` to filter. Each document includes `folderId`.
+- `read_document` loads one document by `id`. The payload includes `folderId`.
 - `create_note` adds a markdown note.
 - `create_diagram` adds a diagram.
 - `update_note` replaces a note.
@@ -145,11 +155,15 @@ If the POST returns that Google sign-in is not configured, say so and stop. Do n
 Once a token exists (`PAMIAC_TOKEN` in the environment, or status `ready` from Google login), call the document HTTP API with `Authorization: Bearer` and that token. Do not print the token. This HTTP API is only for a session where the pamiac MCP tools are not available.
 
 - `GET https://pamiac.com/api/agent/v1/workspaces` returns `{ workspaces }`. Same rule as `list_workspaces`: more than one workspace means list them and ask; one workspace needs no question.
+- `GET https://pamiac.com/api/agent/v1/folders` returns `{ folders }` with `id`, `name`, `parentId`, `workspaceId`, `visibility`, and `url`. `workspaceId` is null for the personal library. `url` is `/f/<id>`.
+- `POST https://pamiac.com/api/agent/v1/folders` with JSON `{ "name": "Notes", "workspaceId" optional, "parentId" optional }`. When `workspaceId` is omitted, the folder is created in the same library as a new note.
+- `POST https://pamiac.com/api/agent/v1/folders/move` with JSON `{ "kind": "document", "documentId": "...", "folderId": null }` or `{ "kind": "folder", "folderId": "...", "parentId": null }`. `folderId` null moves a document to the library root. `parentId` null moves a folder to the library root.
 - `POST https://pamiac.com/api/agent/v1/search` with JSON `{ "query": "checkout payment classes", "limit": 8 }`. Results include `id`, `type`, `title`, `url`, `score`, and `excerpt`.
 - `GET https://pamiac.com/api/agent/v1/documents` with optional query `type=note` or `type=diagram`.
 - `GET https://pamiac.com/api/agent/v1/documents/<id>`
 - `POST https://pamiac.com/api/agent/v1/documents` with JSON `{ "type": "note" | "diagram", "title" optional, "content" optional }`. Note content is markdown. Diagram content is `{ nodes, relations }`.
 - `PATCH https://pamiac.com/api/agent/v1/documents/<id>`
+- `PUT https://pamiac.com/api/agent/v1/folders/<id>/share` with JSON `{ "visibility", "password" optional, "emails" optional }` shares that folder and everything inside it, including nested folders. The link is `/f/<id>`.
 
 Notes stay a full markdown content replace plus `version` from the GET in the same turn:
 

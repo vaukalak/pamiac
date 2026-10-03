@@ -279,7 +279,10 @@ describe("share workspace choice", () => {
       access.indexOf("export function resolveAccess"),
       access.indexOf("const EMAIL"),
     );
-    const decision = page.slice(page.indexOf("resolveAccess({"), page.indexOf("let workspaces"));
+    const decision = page.slice(
+      page.indexOf("resolveInheritedAccess({"),
+      page.indexOf("let workspaces"),
+    );
     const visibilityWrite = update.slice(
       update.indexOf(".set({"),
       update.indexOf(".where(eq(documents.id, id))"),
@@ -409,8 +412,10 @@ describe("share workspace choice", () => {
       body.indexOf("const db = getDb()"),
     );
 
-    assert.match(shareFields, /input\.visibility === "emails"/);
-    assert.match(shareFields, /input\.visibility === "password"/);
+    const credentials = readFileSync(new URL("./share-update.ts", import.meta.url), "utf8");
+    assert.match(shareFields, /prepareShareCredentials\(/);
+    assert.match(credentials, /input\.visibility === "emails"/);
+    assert.match(credentials, /input\.visibility === "password"/);
     assert.equal(shareFields.includes("workspaceId"), false);
     assert.equal(workspaceAssign.includes("visibility"), false);
     assert.match(workspaceAssign, /input\.workspaceId === undefined/);

@@ -1,3 +1,4 @@
+import type { Visibility } from "./access.ts";
 import { PERSONAL_SPACE_ID } from "./library-spaces.ts";
 
 const FOLDER_NAME_MAX = 80;
@@ -8,13 +9,66 @@ export type FolderRecord = {
   parentId: string | null;
   workspaceId: string | null;
   sortIndex: number;
+  visibility: Visibility;
+  emails: string[];
+  hasPassword: boolean;
 };
+
+export function folderLink(id: string, origin = "") {
+  const path = `/f/${id}`;
+  if (!origin) return path;
+  return `${origin.replace(/\/$/, "")}${path}`;
+}
+
+export function presentListedFolder(
+  folder: {
+    id: string;
+    name: string;
+    parentId: string | null;
+    workspaceId: string | null;
+    visibility: Visibility;
+  },
+  origin: string,
+) {
+  return {
+    id: folder.id,
+    name: folder.name,
+    parentId: folder.parentId,
+    workspaceId: folder.workspaceId,
+    visibility: folder.visibility,
+    url: folderLink(folder.id, origin),
+  };
+}
+
+export function presentSharedFolder(
+  share: {
+    id: string;
+    name: string;
+    visibility: Visibility;
+    emails: string[];
+    hasPassword: boolean;
+  },
+  origin = "",
+) {
+  return {
+    ...share,
+    url: folderLink(share.id, origin),
+  };
+}
 
 export function folderName(input: string) {
   const name = input.trim();
   if (!name) throw new Error("Name the folder");
   if (Array.from(name).length > FOLDER_NAME_MAX) throw new Error("Name is too long");
   return name;
+}
+
+export function folderInAgentScope(
+  scope: { allScopes: boolean; workspaceIds: readonly string[] },
+  workspaceId: string | null,
+) {
+  if (scope.allScopes) return true;
+  return scope.workspaceIds.includes(workspaceId ?? PERSONAL_SPACE_ID);
 }
 
 export function libraryWorkspaceId(workspaceId: string) {

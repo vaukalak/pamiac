@@ -124,6 +124,10 @@ export const folders = pgTable(
     workspaceId: text("workspace_id").references(() => workspaces.id, { onDelete: "cascade" }),
     parentId: text("parent_id"),
     name: text("name").notNull(),
+    visibility: text("visibility", { enum: ["private", "public", "password", "emails"] })
+      .notNull()
+      .default("private"),
+    passwordHash: text("password_hash"),
     sortIndex: integer("sort_index").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
@@ -132,6 +136,18 @@ export const folders = pgTable(
     index("folder_workspace_idx").on(table.workspaceId),
     index("folder_parent_idx").on(table.parentId),
   ],
+);
+
+export const folderShares = pgTable(
+  "folder_share",
+  {
+    id: text("id").primaryKey(),
+    folderId: text("folder_id")
+      .notNull()
+      .references(() => folders.id, { onDelete: "cascade" }),
+    email: text("email").notNull(),
+  },
+  (table) => [uniqueIndex("folder_share_email_idx").on(table.folderId, table.email)],
 );
 
 export const documents = pgTable(

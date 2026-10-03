@@ -3958,6 +3958,21 @@ code {
   box-shadow: var(--home-shadow);
   color: var(--home-text);
 }
+.library-shell .folder-child-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 8px 0 16px;
+  padding: 0;
+  list-style: none;
+}
+.library-shell .folder-child-list a {
+  color: var(--home-text);
+  text-decoration: none;
+}
+.library-shell .folder-child-list a:hover {
+  text-decoration: underline;
+}
 .library-shell .document-gate h1 {
   font-size: clamp(32px, 4vw, 44px);
   margin-bottom: 8px;

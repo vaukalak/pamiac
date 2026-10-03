@@ -72,7 +72,7 @@ describe("document library shell", () => {
     assert.match(page, /if \(user\)/);
     assert.match(page, /listMemberWorkspaces\(user\.id\)/);
     assert.match(page, /documentSpaceLabel\(bundle\.document\.workspaceId, workspaces\)/);
-    assert.match(page, /<LockedDocument id=\{id\} reason=\{access\.reason\} \/>/);
+    assert.match(page, /<LockedDocument[\s\S]*reason=\{access\.reason\}/);
     assert.match(shell, /<LibrarySidebar|<DocumentSidebar/);
     assert.match(shell, /email !== null/);
     assert.match(shell, /library-shell-solo/);
