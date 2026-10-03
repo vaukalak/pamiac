@@ -30,7 +30,9 @@ import {
   DOCUMENT_VERSION_CONFLICT,
   documentVersionConflict,
 } from "@/lib/document-write";
+import { appBaseUrl } from "@/lib/config";
 import { HttpError } from "@/lib/http";
+import { sendNoteShared } from "@/lib/mail";
 import {
   documentsInSpace,
   isWorkspaceAdmin,
@@ -431,6 +433,17 @@ async function applyDocumentWorkspace(
   return placed.workspaceId;
 }
 
+async function senderLabel(ownerId: string) {
+  const [owner] = await getDb()
+    .select({ name: user.name, email: user.email })
+    .from(user)
+    .where(eq(user.id, ownerId));
+  const name = owner?.name.replace(/[\r\n]+/g, " ").trim() ?? "";
+  if (name) return name;
+  const email = owner?.email.replace(/[\r\n]+/g, " ").trim() ?? "";
+  return email || "Someone";
+}
+
 export async function updateShare(
   ownerId: string,
   id: string,
@@ -464,6 +477,11 @@ export async function updateShare(
       : await applyDocumentWorkspace(ownerId, id, current.workspaceId, input.workspaceId);
 
   const db = getDb();
+  const previousShares = await db
+    .select({ email: documentShares.email })
+    .from(documentShares)
+    .where(eq(documentShares.documentId, id));
+  const alreadyShared = new Set(previousShares.map((share) => share.email.toLowerCase()));
   await db
     .update(documents)
     .set({ visibility: input.visibility, passwordHash, updatedAt: new Date() })
@@ -477,6 +495,33 @@ export async function updateShare(
         email,
       })),
     );
+  }
+  const added = emails.filter((email) => !alreadyShared.has(email.toLowerCase()));
+  if (added.length) {
+    const senderName = await senderLabel(ownerId);
+    const noteUrl = `${appBaseUrl()}/d/${id}`;
+    const delivered: string[] = [];
+    try {
+      for (const email of added) {
+        await sendNoteShared({
+          email,
+          url: noteUrl,
+          senderName,
+          noteTitle: current.title,
+          accountRequired: true,
+        });
+        delivered.push(email);
+      }
+    } catch (error) {
+      const pending = added.filter((email) => !delivered.includes(email));
+      if (pending.length) {
+        await db
+          .delete(documentShares)
+          .where(and(eq(documentShares.documentId, id), inArray(documentShares.email, pending)));
+      }
+      console.error(error);
+      throw new HttpError(502, "Could not send the note email");
+    }
   }
   return {
     visibility: input.visibility,

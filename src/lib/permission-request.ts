@@ -100,10 +100,17 @@ export async function requestDocumentPermission(caller: Caller, documentId: stri
     .returning({ id: documentPermissionRequests.id });
   if (!inserted) return { requested: true as const };
 
+  const [requester] = await db
+    .select({ name: user.name })
+    .from(user)
+    .where(eq(user.id, caller.userId));
+  const requesterName = requester?.name.replace(/[\r\n]+/g, " ").trim() || undefined;
+
   try {
     await sendDocumentPermissionRequest({
       email: ownerEmail,
       requesterEmail,
+      requesterName,
       documentTitle: document.title,
       url: `${appBaseUrl()}/d/${documentId}`,
     });

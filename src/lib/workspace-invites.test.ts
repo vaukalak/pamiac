@@ -123,7 +123,7 @@ describe("workspace invitation", () => {
     assert.match(invite, /escapeHtml/);
     assert.match(invite, /send workspace invitations/);
     assert.match(magic, /deliverEmail/);
-    assert.match(magic, /Your Pamiac sign-in link/);
+    assert.match(magic, /Sign in to Pamiac/);
     assert.match(magic, /send magic links/);
     assert.ok(
       add.indexOf("Personal space cannot receive members") < add.indexOf("sendWorkspaceInvite"),

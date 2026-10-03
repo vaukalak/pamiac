@@ -160,11 +160,14 @@ export async function addWorkspacePerson(
     .from(workspaces)
     .where(eq(workspaces.id, person.workspaceId));
   if (!workspace) throw new HttpError(404, "Workspace not found");
+  const [actor] = await db.select({ name: user.name }).from(user).where(eq(user.id, actorId));
+  const inviterName = actor?.name.replace(/[\r\n]+/g, " ").trim() || undefined;
   try {
     await sendWorkspaceInvite({
       email: person.email,
       workspaceName: workspace.name,
       url: `${appBaseUrl()}${workspaceInvitePath(stored.id)}`,
+      inviterName,
     });
   } catch (error) {
     console.error(error);
