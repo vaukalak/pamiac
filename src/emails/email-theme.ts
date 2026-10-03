@@ -39,11 +39,13 @@ export const bodyStyle = {
   padding: "32px 12px",
 };
 
+export const cardPadding = "32px";
+
 export const cardStyle = {
   backgroundColor: emailTheme.surface,
   border: `1px solid ${emailTheme.border}`,
   borderRadius: "18px",
-  padding: "32px",
+  boxSizing: "border-box" as const,
 };
 
 export const eyebrowStyle = {
@@ -80,15 +82,14 @@ export const primaryButtonStyle = {
   ...emailFont,
   backgroundColor: emailTheme.accent,
   borderRadius: "12px",
+  boxSizing: "border-box" as const,
   color: emailTheme.onAccent,
-  display: "block",
   fontSize: "16px",
   fontWeight: "700",
   lineHeight: "20px",
   padding: "16px 24px",
   textAlign: "center" as const,
   textDecoration: "none",
-  width: "100%",
 };
 
 export const secondaryButtonStyle = {
@@ -98,20 +99,22 @@ export const secondaryButtonStyle = {
   color: emailTheme.text,
 };
 
+export const blockPadding = "16px";
+
 export const infoStyle = {
   backgroundColor: emailTheme.surfaceRaised,
   border: `1px solid ${emailTheme.border}`,
   borderRadius: "12px",
+  boxSizing: "border-box" as const,
   margin: "16px 0",
-  padding: "16px",
 };
 
 export const cardBlockStyle = {
   backgroundColor: emailTheme.surfaceRaised,
   border: `1px solid ${emailTheme.border}`,
   borderRadius: "12px",
+  boxSizing: "border-box" as const,
   margin: "16px 0",
-  padding: "16px",
 };
 
 export const linkStyle = {
@@ -119,7 +122,10 @@ export const linkStyle = {
   color: emailTheme.accent,
   fontSize: "14px",
   lineHeight: "20px",
+  maxWidth: "100%",
+  overflowWrap: "anywhere" as const,
   wordBreak: "break-all" as const,
+  wordWrap: "break-word" as const,
 };
 
 export const footerStyle = {
