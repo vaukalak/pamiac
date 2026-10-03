@@ -124,9 +124,9 @@ describe("email and password sign-in", () => {
     const client = read("src/lib/auth-client.ts");
     const copy = read("src/components/login/login-sign-in-copy.tsx");
 
-    expect(auth).toMatch(
-      /emailAndPassword:\s*\{\s*enabled:\s*true,\s*disableSignUp:\s*false,\s*\}/s,
-    );
+    expect(auth).toMatch(/emailAndPassword:\s*\{\s*enabled:\s*true,\s*disableSignUp:\s*false,/s);
+    expect(auth).toMatch(/sendResetPassword:/);
+    expect(auth).toMatch(/resetPasswordTokenExpiresIn:/);
     expect(client).not.toMatch(/signUp\.email/);
     expect(copy).toMatch(/title="Sign in or register"/);
     expect(copy).toMatch(

@@ -24,7 +24,8 @@ import {
 import { appBaseUrl, appSecret } from "@/lib/config";
 import { googleSocialProviders } from "@/lib/google-sign-in";
 import { mcpResourceUrl } from "@/lib/mcp-resource";
-import { sendMagicLink } from "@/lib/mail";
+import { MAGIC_LINK_EXPIRES_SECONDS, PASSWORD_RESET_EXPIRES_SECONDS } from "@/lib/email-expiry";
+import { sendEmailConfirmation, sendMagicLink, sendPasswordReset } from "@/lib/mail";
 
 function buildAuth() {
   return betterAuth({
@@ -39,6 +40,15 @@ function buildAuth() {
     emailAndPassword: {
       enabled: true,
       disableSignUp: false,
+      resetPasswordTokenExpiresIn: PASSWORD_RESET_EXPIRES_SECONDS,
+      sendResetPassword: async ({ user, url }) => {
+        await sendPasswordReset({ email: user.email, url });
+      },
+    },
+    emailVerification: {
+      sendVerificationEmail: async ({ user, url }) => {
+        await sendEmailConfirmation({ email: user.email, url });
+      },
     },
     socialProviders: googleSocialProviders(),
     database: drizzleAdapter(getDb(), {
@@ -70,6 +80,7 @@ function buildAuth() {
         metadataProfile: "mcp-2026-07-28",
       }),
       magicLink({
+        expiresIn: MAGIC_LINK_EXPIRES_SECONDS,
         sendMagicLink: async ({ email, url }) => {
           await sendMagicLink({ email, url });
         },

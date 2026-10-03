@@ -112,11 +112,14 @@ export async function resendWorkspacePending(
     .from(workspaces)
     .where(eq(workspaces.id, workspaceId));
   if (!workspace) throw new HttpError(404, "Workspace not found");
+  const [inviter] = await db.select({ name: user.name }).from(user).where(eq(user.id, actorId));
+  const inviterName = inviter?.name.replace(/[\r\n]+/g, " ").trim() || undefined;
   try {
     await sendWorkspaceInvite({
       email: pending.email,
       workspaceName: workspace.name,
       url: `${appBaseUrl()}${workspaceInvitePath(pending.id)}`,
+      inviterName,
     });
   } catch (error) {
     console.error(error);
