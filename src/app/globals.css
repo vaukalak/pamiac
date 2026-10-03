@@ -2603,6 +2603,13 @@ code {
 .library-shell > .home-board {
   z-index: 0;
 }
+@media (max-width: 760px) {
+  .library-shell:not(.library-shell-solo) .home-pad,
+  .library-shell:not(.library-shell-solo) .home-trace-glow,
+  .library-shell:not(.library-shell-solo) .home-trace-pulse {
+    display: none;
+  }
+}
 .library-shell > .library-sidebar {
   position: relative;
   z-index: 2;
