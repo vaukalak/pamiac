@@ -32,6 +32,8 @@ interface Properties {
   version: number;
   editable: boolean;
   onChange: (markdown: string) => void;
+  onHoldSaves: () => void;
+  onReleaseSaves: () => void;
   libraryShell?: boolean;
   workspaceId: string | null;
 }
@@ -98,7 +100,17 @@ function commentIds(blocks: readonly { id: string; children?: readonly { id: str
 }
 
 export function NoteEditor(props: Properties) {
-  const { id, markdown, version, editable, onChange, libraryShell = false, workspaceId } = props;
+  const {
+    id,
+    markdown,
+    version,
+    editable,
+    onChange,
+    onHoldSaves,
+    onReleaseSaves,
+    libraryShell = false,
+    workspaceId,
+  } = props;
   const idRef = useRef(id);
   idRef.current = id;
   const uploadImage = useMutation({
@@ -106,10 +118,21 @@ export function NoteEditor(props: Properties) {
   });
   const uploadImageRef = useRef(uploadImage.mutateAsync);
   uploadImageRef.current = uploadImage.mutateAsync;
+  const holdSavesRef = useRef(onHoldSaves);
+  const releaseSavesRef = useRef(onReleaseSaves);
+  holdSavesRef.current = onHoldSaves;
+  releaseSavesRef.current = onReleaseSaves;
   const editor = useCreateBlockNote({
     schema: noteSchema,
     setIdAttribute: true,
-    uploadFile: editable ? (file) => uploadImageRef.current(file) : undefined,
+    uploadFile: editable
+      ? (file) => {
+          holdSavesRef.current();
+          return uploadImageRef.current(file).finally(() => {
+            releaseSavesRef.current();
+          });
+        }
+      : undefined,
   });
   const ready = useRef(false);
   const applying = useRef(false);
