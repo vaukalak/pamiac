@@ -21,7 +21,7 @@ To browse the library in a browser, set a cookie on the app origin: name `pamiac
 
 ## Library
 
-Call `search_documents`, `list_workspaces`, `list_documents`, `read_document`, `create_note`, `create_diagram`, `update_note`, `update_diagram`, `list_folders`, `create_folder`, `move_document_to_folder`, `move_folder`, and `share_folder`.
+Call `search_documents`, `list_workspaces`, `list_documents`, `read_document`, `create_note`, `create_diagram`, `update_note`, `update_diagram`, `upload_image`, `list_folders`, `create_folder`, `move_document_to_folder`, `move_folder`, and `share_folder`.
 
 ### Search
 
@@ -78,6 +78,8 @@ Update a note. Send `version` from `read_document` in the same turn:
 ```json
 { "content": "# updated markdown", "version": 3 }
 ```
+
+`upload_image` takes `id`, base64 `data`, and optional `mediaType`. It returns `{ url }`. The image is a JPEG, PNG, WebP, or GIF on a note. Then embed `![description](url)` via `update_note` and `version` from `read_document`.
 
 Notes store markdown in `content`. Diagrams store:
 
@@ -163,6 +165,7 @@ Once a token exists (`PAMIAC_TOKEN` in the environment, or status `ready` from G
 - `GET https://pamiac.com/api/agent/v1/documents/<id>`
 - `POST https://pamiac.com/api/agent/v1/documents` with JSON `{ "type": "note" | "diagram", "title" optional, "content" optional }`. Note content is markdown. Diagram content is `{ nodes, relations }`.
 - `PATCH https://pamiac.com/api/agent/v1/documents/<id>`
+- `POST https://pamiac.com/api/agent/v1/documents/<id>/images` with JSON `{ "data": "<base64>", "mediaType" optional }` and `Authorization: Bearer`. It returns `{ url }` for a JPEG, PNG, WebP, or GIF on a note. Then embed `![description](url)` with the document PATCH and `version` from the GET.
 - `PUT https://pamiac.com/api/agent/v1/folders/<id>/share` with JSON `{ "visibility", "password" optional, "emails" optional }` shares that folder and everything inside it, including nested folders. The link is `/f/<id>`.
 
 Notes stay a full markdown content replace plus `version` from the GET in the same turn:

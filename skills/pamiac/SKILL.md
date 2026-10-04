@@ -23,6 +23,7 @@ A note stores markdown in `content`.
 
 - `create_note` adds a note. Send the full markdown as `content`.
 - `update_note` replaces that note. Send the full markdown you want kept, not a fragment. Send `version` from `read_document`. On conflict, the tool returns the current `version`, `title`, and `content`. Re-apply the same change onto that content and update with that `version`.
+- `upload_image` takes `id`, base64 `data`, and optional `mediaType`. It returns `{ url }`. The image is a JPEG, PNG, WebP, or GIF on a note. Then embed `![description](url)` via `update_note` and `version` from `read_document`.
 
 ## Diagrams
 
