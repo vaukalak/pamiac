@@ -12,7 +12,8 @@
     "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\"",
     "db:migrate": "node --experimental-strip-types scripts/enable-vector.ts && drizzle-kit migrate",
     "db:push": "node --experimental-strip-types scripts/enable-vector.ts && drizzle-kit push",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "postinstall": "node --experimental-strip-types scripts/patch-cursor-native-redirect.ts"
   },
   "dependencies": {
     "@better-auth/cimd": "^1.7.6",

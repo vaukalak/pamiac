@@ -1,6 +1,7 @@
 import { toNextJsHandler } from "better-auth/next-js";
 import { getAuth } from "@/lib/auth";
 import { ensureLiveJwks } from "@/lib/ensure-jwks";
+import { prepareOauthRegisterRequest } from "@/lib/oauth-native-registration";
 
 export async function handleAuthRequest(request: Request) {
   if (!process.env.DATABASE_URL) {
@@ -8,5 +9,6 @@ export async function handleAuthRequest(request: Request) {
   }
   await ensureLiveJwks();
   const handlers = toNextJsHandler(getAuth());
-  return request.method === "POST" ? handlers.POST(request) : handlers.GET(request);
+  const prepared = await prepareOauthRegisterRequest(request);
+  return prepared.method === "POST" ? handlers.POST(prepared) : handlers.GET(prepared);
 }
