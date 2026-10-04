@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, type MouseEvent, type RefObject } from "react";
 import { NoteNotifyPanel } from "@/components/note-notify/note-notify-panel";
 
 interface Properties {
+  anchorRef: RefObject<HTMLElement | null>;
   documentId: string;
   onClose: () => void;
 }
@@ -29,19 +30,35 @@ function holdOutside(backdrop: HTMLElement) {
 }
 
 export function NoteNotifyDialog(props: Properties) {
-  const { documentId, onClose } = props;
+  const { anchorRef, documentId, onClose } = props;
   const dialogRef = useRef<HTMLDivElement>(null);
   const backdropRef = useRef<HTMLDivElement>(null);
   const onCloseRef = useRef(onClose);
+  const [narrow, setNarrow] = useState(false);
   onCloseRef.current = onClose;
+
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 760px)");
+    const apply = () => setNarrow(media.matches);
+    apply();
+    media.addEventListener("change", apply);
+    return () => media.removeEventListener("change", apply);
+  }, []);
 
   useEffect(() => {
     const node = dialogRef.current;
     const backdrop = backdropRef.current;
     if (!node || !backdrop) return;
+    const surface = backdrop;
     const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    node.querySelector<HTMLElement>("button, select, textarea")?.focus();
-    const release = holdOutside(backdrop);
+    node.querySelector<HTMLElement>("input, textarea, button")?.focus();
+    const media = window.matchMedia("(max-width: 760px)");
+    let release = function releaseInert() {};
+
+    function syncInert() {
+      release();
+      release = media.matches ? holdOutside(surface) : function releaseInert() {};
+    }
 
     function onKey(event: KeyboardEvent) {
       if (event.key === "Escape") {
@@ -66,17 +83,38 @@ export function NoteNotifyDialog(props: Properties) {
       }
     }
 
+    function onPointerDown(event: PointerEvent) {
+      const anchor = anchorRef.current;
+      if (anchor && event.target instanceof Node && anchor.contains(event.target)) return;
+      onCloseRef.current();
+    }
+
+    syncInert();
+    media.addEventListener("change", syncInert);
     document.addEventListener("keydown", onKey);
+    document.addEventListener("pointerdown", onPointerDown);
     return () => {
+      media.removeEventListener("change", syncInert);
       document.removeEventListener("keydown", onKey);
+      document.removeEventListener("pointerdown", onPointerDown);
       release();
       previous?.focus();
     };
-  }, []);
+  }, [anchorRef]);
+
+  function onBackdrop(event: MouseEvent<HTMLDivElement>) {
+    if (event.target !== event.currentTarget) return;
+    onClose();
+  }
 
   return (
-    <div className="share-backdrop" onClick={onClose} ref={backdropRef} role="presentation">
-      <NoteNotifyPanel dialogRef={dialogRef} documentId={documentId} onClose={onClose} />
+    <div className="note-notify-layer" onClick={onBackdrop} ref={backdropRef} role="presentation">
+      <NoteNotifyPanel
+        dialogRef={dialogRef}
+        documentId={documentId}
+        modal={narrow}
+        onClose={onClose}
+      />
     </div>
   );
 }

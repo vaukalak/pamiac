@@ -218,6 +218,7 @@ export const noteNotifications = pgTable("note_notification", {
     .notNull()
     .default("never"),
   criteria: text("criteria").notNull().default(""),
+  criteriaMatched: boolean("criteria_matched").notNull().default(false),
   baselineContent: text("baseline_content"),
   latestContent: text("latest_content"),
   dueAt: timestamp("due_at", { withTimezone: true }),

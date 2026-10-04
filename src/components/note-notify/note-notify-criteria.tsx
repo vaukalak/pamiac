@@ -1,20 +1,26 @@
 "use client";
 
-import { useFormContext } from "react-hook-form";
-import type { NoteNotifyDraft } from "@/components/note-notify/note-notify-draft";
+import { NoteNotifyTest } from "@/components/note-notify/note-notify-test";
 import { Form } from "@/ui/Form";
+import { Paragraph } from "@/ui/Paragraph";
 
-export function NoteNotifyCriteria() {
-  const { watch } = useFormContext<NoteNotifyDraft>();
-  const mode = watch("mode");
-  if (mode !== "criteria") return null;
+interface Properties {
+  documentId: string;
+}
+
+export function NoteNotifyCriteria(props: Properties) {
+  const { documentId } = props;
 
   return (
-    <Form.Textarea
-      label="When to send the notification"
-      name="criteria"
-      placeholder="Describe the changes that should email you"
-      rows={4}
-    />
+    <div className="note-notify-criteria">
+      <Form.Textarea
+        label="Condition"
+        name="criteria"
+        placeholder="Describe the condition you want Pamiac to watch for..."
+        rows={4}
+      />
+      <Paragraph>Example: “A blocker is added or the launch date changes.”</Paragraph>
+      <NoteNotifyTest documentId={documentId} />
+    </div>
   );
 }

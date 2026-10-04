@@ -1,30 +1,21 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import type { NoteNotifyDraft } from "@/components/note-notify/note-notify-draft";
+import { readNoteSubscription } from "@/components/note-notify/note-notify-read";
 import { NoteNotifySave } from "@/components/note-notify/note-notify-save";
 import { Alert } from "@/ui/Alert";
 import { Paragraph } from "@/ui/Paragraph";
 
 interface Properties {
   documentId: string;
-}
-
-async function readSubscription(documentId: string): Promise<NoteNotifyDraft> {
-  const response = await fetch(`/api/documents/${documentId}/notification`);
-  const body = (await response.json().catch(() => null)) as
-    (NoteNotifyDraft & { error?: string }) | null;
-  if (!response.ok || !body || !body.mode) {
-    throw new Error(body?.error ?? "Could not load notification settings");
-  }
-  return { mode: body.mode, criteria: body.criteria ?? "" };
+  onClose: () => void;
 }
 
 export function NoteNotifyBody(props: Properties) {
-  const { documentId } = props;
+  const { documentId, onClose } = props;
   const subscription = useQuery({
     queryKey: ["note-notification", documentId],
-    queryFn: () => readSubscription(documentId),
+    queryFn: () => readNoteSubscription(documentId),
   });
 
   if (subscription.isPending) return <Paragraph>Loading notification settings.</Paragraph>;
@@ -35,5 +26,5 @@ export function NoteNotifyBody(props: Properties) {
         : "Could not load notification settings";
     return <Alert>{message}</Alert>;
   }
-  return <NoteNotifySave documentId={documentId} initial={subscription.data} />;
+  return <NoteNotifySave documentId={documentId} initial={subscription.data} onClose={onClose} />;
 }

@@ -3,14 +3,22 @@ import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import { ZodError } from "zod";
 import {
+  CRITERIA_VERDICT_COPY,
   JEV_DECIDE_URL,
   NOTE_NOTIFY_QUIET_MS,
+  criteriaEmailDecision,
   criteriaMatches,
+  jevAuthedRequest,
+  jevCriteriaTestBody,
   jevDecideBody,
   jevDecideRequest,
+  jevRepeatBody,
   noteBurstDelivery,
+  parseCriteriaTest,
   parseNoteNotification,
   planNoteBurst,
+  readCriteriaVerdict,
+  readRepeatsEveryChange,
   shouldEmailNote,
   type NoteBurst,
 } from "./note-notify.ts";
@@ -42,6 +50,63 @@ describe("jev decide request", () => {
     assert.equal(body.questions.matches_criteria.instructions, INSTRUCTIONS);
     assert.equal(body.questions.matches_criteria.criteria.true, "mention the launch");
     assert.equal(JSON.stringify(body).includes("secret-key"), false);
+  });
+});
+
+describe("criteria test and repeat suppression", () => {
+  it("asks a choice question about the current note and keeps the key on the request", () => {
+    const body = jevCriteriaTestBody({
+      note: "Launch is Friday",
+      criteria: "A blocker is added",
+    });
+    const request = jevAuthedRequest("secret-key", body);
+
+    assert.equal(request.headers.Authorization, "Bearer secret-key");
+    assert.equal(body.questions.current.type, "choice");
+    assert.equal(body.state.note, "Launch is Friday");
+    assert.equal(body.state.condition, "A blocker is added");
+    assert.equal(JSON.stringify(body).includes("secret-key"), false);
+    assert.equal(JSON.stringify(body).includes("email"), false);
+    assert.equal(readCriteriaVerdict({ answers: { current: { choice: "matches" } } }), "matches");
+    assert.equal(readCriteriaVerdict({ answers: { current: { choice: "misses" } } }), "misses");
+    assert.equal(readCriteriaVerdict({ answers: { current: { choice: "future" } } }), "future");
+    assert.equal(readCriteriaVerdict({ answers: { current: { choice: "other" } } }), null);
+    assert.equal(readCriteriaVerdict(null), null);
+    assert.equal(CRITERIA_VERDICT_COPY.matches, "Matches this note");
+    assert.equal(CRITERIA_VERDICT_COPY.misses, "Doesn't match this note");
+    assert.equal(CRITERIA_VERDICT_COPY.future, "Needs a future change to match");
+    assert.deepEqual(parseCriteriaTest({ criteria: "  launch date  " }), {
+      criteria: "launch date",
+    });
+  });
+
+  it("emails a criteria match only on a false-to-true edge unless every change was requested", () => {
+    const body = jevRepeatBody("tell me every time the date changes");
+    assert.equal(body.questions.cadence.type, "choice");
+    assert.equal(readRepeatsEveryChange({ answers: { cadence: { choice: "every" } } }), true);
+    assert.equal(readRepeatsEveryChange({ answers: { cadence: { choice: "edge" } } }), false);
+    assert.equal(readRepeatsEveryChange({}), false);
+
+    assert.deepEqual(
+      criteriaEmailDecision({ matched: true, previouslyMatched: false, repeats: false }),
+      { email: true, matched: true },
+    );
+    assert.deepEqual(
+      criteriaEmailDecision({ matched: true, previouslyMatched: true, repeats: false }),
+      { email: false, matched: true },
+    );
+    assert.deepEqual(
+      criteriaEmailDecision({ matched: false, previouslyMatched: true, repeats: false }),
+      { email: false, matched: false },
+    );
+    assert.deepEqual(
+      criteriaEmailDecision({ matched: true, previouslyMatched: false, repeats: false }),
+      { email: true, matched: true },
+    );
+    assert.deepEqual(
+      criteriaEmailDecision({ matched: true, previouslyMatched: true, repeats: true }),
+      { email: true, matched: true },
+    );
   });
 });
 
@@ -136,7 +201,7 @@ describe("note notification input", () => {
     );
     assert.throws(
       () => parseNoteNotification({ mode: "criteria", criteria: "   " }),
-      (error: unknown) => error instanceof ZodError && /Describe when/.test(error.message),
+      (error: unknown) => error instanceof ZodError && /Describe the condition/.test(error.message),
     );
     assert.throws(
       () => parseNoteNotification({ mode: "criteria", criteria: "x".repeat(2001) }),

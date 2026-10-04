@@ -5,10 +5,15 @@ import { appBaseUrl } from "@/lib/config";
 import { HttpError } from "@/lib/http";
 import { sendNoteUpdated } from "@/lib/mail";
 import {
-  criteriaMatches,
-  jevDecideRequest,
+  criteriaEmailDecision,
+  criteriaMatchResult,
+  jevAuthedRequest,
+  jevCriteriaTestBody,
+  jevDecideBody,
+  jevRepeatBody,
   planNoteBurst,
-  shouldEmailNote,
+  readCriteriaVerdict,
+  readRepeatsEveryChange,
   type NoteBurstDelivery,
   type NoteNotifyMode,
 } from "@/lib/note-notify";
@@ -65,30 +70,76 @@ export async function saveNoteNotification(
   const criteria = input.mode === "criteria" ? input.criteria.trim() : "";
   await getDb()
     .insert(noteNotifications)
-    .values({ documentId: id, mode: input.mode, criteria })
+    .values({ documentId: id, mode: input.mode, criteria, criteriaMatched: false })
     .onConflictDoUpdate({
       target: noteNotifications.documentId,
-      set: { mode: input.mode, criteria },
+      set: { mode: input.mode, criteria, criteriaMatched: false },
     });
   return { mode: input.mode, criteria };
 }
 
-async function criteriaAllows(input: { oldText: string; newText: string; criteria: string }) {
+async function postDecide(body: unknown) {
   const apiKey = process.env.JEV_API_KEY?.trim();
-  if (!apiKey) return false;
-  const request = jevDecideRequest({ ...input, apiKey });
+  if (!apiKey) return null;
+  const request = jevAuthedRequest(apiKey, body);
   try {
     const response = await fetch(request.url, {
       method: request.method,
       headers: request.headers,
       body: JSON.stringify(request.body),
     });
-    if (!response.ok) return false;
-    const payload: unknown = await response.json();
-    return criteriaMatches(payload);
+    if (!response.ok) return null;
+    return (await response.json()) as unknown;
   } catch {
-    return false;
+    return null;
   }
+}
+
+async function deliverOwnerEmail(input: { documentId: string; ownerId: string; title: string }) {
+  const [owner] = await getDb()
+    .select({ email: user.email })
+    .from(user)
+    .where(eq(user.id, input.ownerId));
+  if (!owner?.email) return;
+  await sendNoteUpdated({
+    email: owner.email,
+    noteTitle: input.title,
+    url: `${appBaseUrl()}/d/${input.documentId}`,
+  });
+}
+
+async function sendCriteriaUpdate(input: {
+  criteria: string;
+  documentId: string;
+  oldText: string;
+  newText: string;
+  ownerId: string;
+  previouslyMatched: boolean;
+  title: string;
+}) {
+  const judged = await postDecide(
+    jevDecideBody({
+      criteria: input.criteria,
+      newText: input.newText,
+      oldText: input.oldText,
+    }),
+  );
+  if (!judged) return;
+  const matched = criteriaMatchResult(judged);
+  if (matched === null) return;
+  const cadence = matched ? await postDecide(jevRepeatBody(input.criteria)) : null;
+  const repeats = cadence ? readRepeatsEveryChange(cadence) : false;
+  const decision = criteriaEmailDecision({
+    matched,
+    previouslyMatched: input.previouslyMatched,
+    repeats,
+  });
+  await getDb()
+    .update(noteNotifications)
+    .set({ criteriaMatched: decision.matched })
+    .where(eq(noteNotifications.documentId, input.documentId));
+  if (!decision.email) return;
+  await deliverOwnerEmail(input);
 }
 
 async function sendNoteUpdateEmail(input: {
@@ -108,29 +159,40 @@ async function sendNoteUpdateEmail(input: {
     .where(eq(documents.id, input.documentId));
   if (!document || document.type !== "note") return;
   const [subscription] = await db
-    .select({ mode: noteNotifications.mode, criteria: noteNotifications.criteria })
+    .select({
+      criteria: noteNotifications.criteria,
+      criteriaMatched: noteNotifications.criteriaMatched,
+      mode: noteNotifications.mode,
+    })
     .from(noteNotifications)
     .where(eq(noteNotifications.documentId, input.documentId));
   const mode = subscription?.mode ?? "never";
-  const matched =
-    mode === "criteria"
-      ? await criteriaAllows({
-          oldText: input.oldText,
-          newText: input.newText,
-          criteria: subscription?.criteria ?? "",
-        })
-      : true;
-  if (!shouldEmailNote(mode, matched)) return;
-  const [owner] = await db
-    .select({ email: user.email })
-    .from(user)
-    .where(eq(user.id, document.ownerId));
-  if (!owner?.email) return;
-  await sendNoteUpdated({
-    email: owner.email,
-    noteTitle: document.title,
-    url: `${appBaseUrl()}/d/${input.documentId}`,
+  if (mode === "never") return;
+  if (mode === "criteria") {
+    await sendCriteriaUpdate({
+      criteria: subscription?.criteria ?? "",
+      documentId: input.documentId,
+      newText: input.newText,
+      oldText: input.oldText,
+      ownerId: document.ownerId,
+      previouslyMatched: subscription?.criteriaMatched ?? false,
+      title: document.title,
+    });
+    return;
+  }
+  await deliverOwnerEmail({
+    documentId: input.documentId,
+    ownerId: document.ownerId,
+    title: document.title,
   });
+}
+
+export async function testNoteCriteria(ownerId: string, id: string, criteria: string) {
+  const document = await ownedNote(ownerId, id);
+  const payload = await postDecide(jevCriteriaTestBody({ criteria, note: document.content }));
+  const verdict = payload ? readCriteriaVerdict(payload) : null;
+  if (!verdict) throw new HttpError(502, "Could not test this condition");
+  return { result: verdict };
 }
 
 async function deliverArmedNote(documentId: string, expectedDueAt: number) {

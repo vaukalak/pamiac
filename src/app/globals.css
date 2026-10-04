@@ -4280,6 +4280,20 @@ code {
   .library-shell:has(.note-edit-menu) > .library-main {
     padding-top: 116px;
   }
+  .library-shell .note-notify-anchor .note-notify-layer {
+    position: absolute;
+    inset: auto;
+    top: calc(100% + 8px);
+    right: 0;
+    display: block;
+    width: min(440px, calc(100vw - 24px));
+    padding: 0;
+    background: transparent;
+  }
+  .library-shell .note-notify-anchor .note-notify-layer .note-notify-panel {
+    width: 100%;
+    max-height: min(70vh, 640px);
+  }
 }
 .library-shell .doc-list {
   gap: 6px;
@@ -5373,4 +5387,80 @@ code {
   .library-shell .share-access-dialog .share-markdown-actions {
     grid-template-columns: 1fr;
   }
+}
+
+.library-shell .note-notify-anchor {
+  position: relative;
+}
+.library-shell .note-notify-bell {
+  position: relative;
+}
+.library-shell .icon-button.note-notify-bell.is-on,
+.library-shell .icon-button.note-notify-bell.is-on:hover {
+  border-color: color-mix(in srgb, var(--home-lime) 70%, transparent);
+  background: color-mix(in srgb, var(--home-lime) 14%, transparent);
+  color: var(--home-lime);
+}
+.library-shell .note-notify-dot {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--home-lime);
+  pointer-events: none;
+}
+.library-shell .note-notify-layer {
+  position: fixed;
+  z-index: 40;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  width: auto;
+  padding: 16px;
+  background: rgba(5, 8, 5, 0.78);
+}
+.library-shell .note-notify-layer .note-notify-panel {
+  width: min(580px, 100%);
+  max-height: calc(100dvh - 32px);
+}
+.library-shell .note-notify-panel .choice {
+  grid-template-columns: minmax(0, 1fr) 22px;
+}
+.library-shell .note-notify-panel .share-mode-copy {
+  grid-column: 1;
+  grid-row: 1;
+}
+.library-shell .note-notify-panel .choice input[type="radio"] {
+  grid-column: 2;
+  grid-row: 1;
+}
+.library-shell .note-notify-panel label,
+.library-shell .note-notify-criteria .text-pretty {
+  color: var(--home-soft);
+}
+.library-shell .note-notify-criteria {
+  display: grid;
+  gap: 10px;
+}
+.library-shell .note-notify-test {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+}
+.library-shell .note-notify-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.library-shell .note-notify-actions .btn {
+  width: 100%;
+}
+.library-shell:has(.note-notify-layer) .library-mobile-header,
+.library-shell:has(.note-notify-layer) .library-menu-button {
+  z-index: 1;
+}
+.library-shell:has(.library-main .note-notify-layer) > .library-main {
+  z-index: 4;
 }

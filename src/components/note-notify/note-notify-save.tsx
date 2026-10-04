@@ -2,19 +2,16 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
-import {
-  NOTE_NOTIFY_MODES,
-  type NoteNotifyDraft,
-} from "@/components/note-notify/note-notify-draft";
-import { NoteNotifyCriteria } from "@/components/note-notify/note-notify-criteria";
+import { NoteNotifyActions } from "@/components/note-notify/note-notify-actions";
+import type { NoteNotifyDraft } from "@/components/note-notify/note-notify-draft";
+import { NoteNotifyModes } from "@/components/note-notify/note-notify-modes";
 import { Alert } from "@/ui/Alert";
-import { Button } from "@/ui/Button";
 import { Form } from "@/ui/Form";
-import { Paragraph } from "@/ui/Paragraph";
 
 interface Properties {
   documentId: string;
   initial: NoteNotifyDraft;
+  onClose: () => void;
 }
 
 async function saveSubscription(documentId: string, values: NoteNotifyDraft) {
@@ -35,7 +32,7 @@ async function saveSubscription(documentId: string, values: NoteNotifyDraft) {
 }
 
 export function NoteNotifySave(props: Properties) {
-  const { documentId, initial } = props;
+  const { documentId, initial, onClose } = props;
   const queryClient = useQueryClient();
   const form = useForm<NoteNotifyDraft>({
     defaultValues: { mode: initial.mode, criteria: initial.criteria },
@@ -45,13 +42,14 @@ export function NoteNotifySave(props: Properties) {
     onSuccess: (saved) => {
       queryClient.setQueryData(["note-notification", documentId], saved);
       form.reset(saved);
+      onClose();
     },
   });
 
   function submit(values: NoteNotifyDraft) {
     if (save.isPending) return;
     if (values.mode === "criteria" && !values.criteria.trim()) {
-      form.setError("criteria", { message: "Describe when to send the notification" });
+      form.setError("criteria", { message: "Describe the condition" });
       return;
     }
     save.mutate(values);
@@ -60,14 +58,9 @@ export function NoteNotifySave(props: Properties) {
   const error = save.error instanceof Error ? save.error.message : "";
 
   return (
-    <Form.Context form={form} onSubmit={submit}>
-      <Paragraph>Choose when this note should email you.</Paragraph>
-      <Form.Select label="When" name="mode" options={NOTE_NOTIFY_MODES} />
-      <NoteNotifyCriteria />
-      <Button className="library-lime" disabled={save.isPending} type="submit">
-        {save.isPending ? "Saving…" : "Save"}
-      </Button>
-      {save.isSuccess ? <Paragraph className="hint">Notification saved.</Paragraph> : null}
+    <Form.Context className="share-access-form" form={form} onSubmit={submit}>
+      <NoteNotifyModes documentId={documentId} />
+      <NoteNotifyActions pending={save.isPending} onCancel={onClose} />
       {error ? <Alert>{error}</Alert> : null}
     </Form.Context>
   );
