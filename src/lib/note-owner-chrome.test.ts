@@ -27,7 +27,8 @@ describe("library note inset", () => {
     const css = read("../app/globals.css");
     const paper = block(css, "\n.note-sheet {");
     const sheet = block(css, ".library-shell .note-sheet {");
-    const editor = block(css, ".library-shell .note-editor .bn-editor {");
+    const editorAt = css.lastIndexOf(".library-shell .note-editor .bn-editor {");
+    const editor = block(css.slice(editorAt), ".library-shell .note-editor .bn-editor {");
 
     assert.match(paper, /padding:\s*36px 0 48px/);
     assert.match(sheet, /padding:\s*22px 14px 48px/);
