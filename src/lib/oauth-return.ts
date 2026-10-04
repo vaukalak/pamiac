@@ -70,6 +70,15 @@ export function oauthClientLabel(clientId: string) {
   }
 }
 
+const CURSOR_OAUTH_CALLBACK = "cursor://anysphere.cursor-mcp/oauth/callback";
+
+function isCursorOauthCallback(url: string, parsed: URL) {
+  if (parsed.protocol !== "cursor:" || url.includes("#")) return false;
+  if (parsed.username.length > 0 || parsed.password.length > 0) return false;
+  const path = url.split("?")[0]?.split("#")[0];
+  return path === CURSOR_OAUTH_CALLBACK;
+}
+
 export function oauthRedirectTarget(value: unknown) {
   if (!value || typeof value !== "object" || !("url" in value)) return null;
   const url = value.url;
@@ -78,6 +87,7 @@ export function oauthRedirectTarget(value: unknown) {
   try {
     const parsed = new URL(url);
     if (parsed.protocol === "https:" || parsed.protocol === "http:") return parsed.toString();
+    if (isCursorOauthCallback(url, parsed)) return parsed.toString();
   } catch {
     return null;
   }
