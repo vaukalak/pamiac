@@ -5461,7 +5461,7 @@ code {
 }
 .library-shell:has(.note-notify-layer) .library-mobile-header,
 .library-shell:has(.note-notify-layer) .library-menu-button {
-  z-index: 1;
+  z-index: 1 !important;
 }
 .library-shell:has(.library-main .note-notify-layer) > .library-main {
   z-index: 4;
