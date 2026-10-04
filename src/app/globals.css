@@ -4292,7 +4292,8 @@ code {
   }
   .library-shell .note-notify-anchor .note-notify-layer .note-notify-panel {
     width: 100%;
-    max-height: min(70vh, 640px);
+    max-height: min(78vh, 920px);
+    overflow-y: auto;
   }
 }
 .library-shell .doc-list {
@@ -5424,6 +5425,7 @@ code {
 .library-shell .note-notify-layer .note-notify-panel {
   width: min(580px, 100%);
   max-height: calc(100dvh - 32px);
+  overflow-y: auto;
 }
 .library-shell .note-notify-panel .choice {
   grid-template-columns: minmax(0, 1fr) 22px;
