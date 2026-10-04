@@ -2,7 +2,7 @@
 
 import { useCreateBlockNote } from "@blocknote/react";
 import { useMutation } from "@tanstack/react-query";
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState } from "react";
 import { bindNoteSelectAll } from "@/components/note/note-select-all";
 import { NoteEditorFrame } from "@/components/note/note-editor-frame";
 import { NoteEditorSurface } from "@/components/note/note-editor-surface";
@@ -23,6 +23,7 @@ import {
   type NoteCommentMap,
 } from "@/lib/note-blocks";
 import { flattenWikiBlock, linkifyWikiBlocks } from "@/lib/note-link";
+import { useResolvedScheme } from "@/lib/use-theme-choice";
 import "@blocknote/mantine/style.css";
 import "@blocknote/core/fonts/inter.css";
 
@@ -55,20 +56,6 @@ async function postNoteImage(documentId: string, file: File) {
     throw new Error(payload?.error || "Image upload failed");
   }
   return payload.url;
-}
-
-function subscribeToColorScheme(onStoreChange: () => void) {
-  const query = window.matchMedia("(prefers-color-scheme: dark)");
-  query.addEventListener("change", onStoreChange);
-  return () => query.removeEventListener("change", onStoreChange);
-}
-
-function colorSchemeSnapshot() {
-  return window.matchMedia("(prefers-color-scheme: dark)").matches;
-}
-
-function colorSchemeServerSnapshot() {
-  return false;
 }
 
 function scrollToBlock(id: string) {
@@ -143,11 +130,7 @@ export function NoteEditor(props: Properties) {
   const commentsRef = useRef<NoteCommentMap>(readNoteComments(markdown || ""));
   const [comments, setComments] = useState<NoteCommentMap>(commentsRef.current);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const dark = useSyncExternalStore(
-    subscribeToColorScheme,
-    colorSchemeSnapshot,
-    colorSchemeServerSnapshot,
-  );
+  const scheme = useResolvedScheme();
 
   function noteMarkdown() {
     const marked = markedMarkdownFromBlocks(editor.document, (block) =>
@@ -271,7 +254,7 @@ export function NoteEditor(props: Properties) {
         editable={editable}
         editor={editor}
         onChange={handleChange}
-        theme={libraryShell || dark ? "dark" : "light"}
+        theme={libraryShell || scheme === "dark" ? "dark" : "light"}
       />
       <NoteLasso editor={editor} editable={editable} />
     </NoteEditorFrame>

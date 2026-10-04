@@ -65,8 +65,8 @@ describe("library shell writing surfaces", () => {
       /\.library-shell \.note-sheet ::selection\s*\{[^}]*background:\s*var\(--home-lime\)/,
     );
     assert.match(noteEditor, /libraryShell = false/);
-    assert.match(noteEditor, /theme=\{libraryShell \|\| dark \? "dark" : "light"\}/);
-    assert.match(noteEditor, /matchMedia\("\(prefers-color-scheme: dark\)"\)/);
+    assert.match(noteEditor, /theme=\{libraryShell \|\| scheme === "dark" \? "dark" : "light"\}/);
+    assert.match(noteEditor, /useResolvedScheme/);
     assert.match(noteDocument, /libraryShell/);
     assert.match(
       css,
@@ -102,7 +102,8 @@ describe("library shell writing surfaces", () => {
     assert.match(flow, /--xy-connectionline-stroke:\s*var\(--home-lime\)/);
     assert.match(fields, /border:\s*1px solid var\(--home-hair\)/);
     assert.match(fields, /color:\s*var\(--home-text\)/);
-    assert.match(canvas, /colorMode="system"/);
+    assert.match(canvas, /useThemeChoice/);
+    assert.match(canvas, /colorMode=\{choice\}/);
     assert.doesNotMatch(light, /\.library-shell \.uml-card \{/);
   });
 });

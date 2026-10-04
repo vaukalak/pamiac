@@ -152,11 +152,12 @@ test("the note editor keeps theme wiring and mounts one custom side menu", () =>
     "utf8",
   );
 
-  assert.match(noteEditor, /useSyncExternalStore/);
-  assert.match(noteEditor, /matchMedia\("\(prefers-color-scheme: dark\)"\)/);
-  assert.match(noteEditor, /return false/);
+  const theme = readFileSync(new URL("./theme.ts", import.meta.url), "utf8");
+  assert.match(noteEditor, /useResolvedScheme/);
+  assert.match(theme, /matchMedia\("\(prefers-color-scheme: dark\)"\)/);
+  assert.match(theme, /return "light"/);
   assert.match(noteEditor, /libraryShell = false/);
-  assert.match(noteEditor, /theme=\{libraryShell \|\| dark \? "dark" : "light"\}/);
+  assert.match(noteEditor, /theme=\{libraryShell \|\| scheme === "dark" \? "dark" : "light"\}/);
   assert.match(noteEditor, /export function NoteEditor/);
   assert.match(surface, /sideMenu=\{false\}/);
   assert.match(surface, /<SideMenuController sideMenu=\{NoteSideMenu\} \/>/);
