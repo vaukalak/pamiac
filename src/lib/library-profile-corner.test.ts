@@ -35,8 +35,9 @@ describe("library profile corner", () => {
     assert.ok(header.indexOf("<LibraryMenuButton") < header.indexOf("<LibraryBrand"));
     assert.ok(header.indexOf("<LibraryBrand") < header.indexOf("<ProfileMenu"));
     assert.match(panel, /<LibraryBrand \/>/);
-    assert.ok(panel.indexOf("<LibraryBrand />") < panel.indexOf('className="library-rail-label"'));
-    assert.equal(/ProfileMenu|library-email|email/.test(panel), false);
+    assert.ok(panel.indexOf("<LibraryBrand />") < panel.indexOf("<WorkspaceSelector"));
+    assert.match(panel, /<LibrarySidebarFooter email=\{email\} \/>/);
+    assert.equal(/library-email/.test(panel), false);
     assert.equal(
       existsSync(new URL("../components/library/library-account.tsx", import.meta.url)),
       false,

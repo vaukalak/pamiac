@@ -56,21 +56,23 @@ describe("library chrome", () => {
   });
 
   it("shows a space initial, the full name, and a tooltip", () => {
-    const space = read("../components/library/workspace-space.tsx");
     const selector = read("../components/library/workspace-selector.tsx");
+    const option = read("../components/library/workspace-switcher-option.tsx");
+    const menu = read("../components/library/workspace-switcher-menu.tsx");
     const filters = read("../components/library/library-filters.tsx");
     const css = read("../app/globals.css");
 
-    assert.match(space, /aria-label=\{label\}/);
-    assert.match(space, /aria-pressed=\{pressed\}/);
-    assert.match(space, /aria-hidden="true"/);
-    assert.match(space, /spaceInitial\(label\)/);
-    assert.match(space, /spaceTip\(label\)/);
-    assert.match(space, /className="workspace-space-tip"/);
-    assert.equal(/title=/.test(space), false);
+    assert.match(selector, /<WorkspaceSwitcherTrigger/);
+    assert.match(selector, /current\?\.label/);
+    assert.equal(/WorkspaceSpace/.test(selector), false);
+    assert.match(option, /selected=\{current\}/);
+    assert.match(option, /workspace-switcher-check/);
+    assert.match(menu, /const SEARCH_AT = 8/);
+    assert.match(menu, /spaces\.length >= SEARCH_AT/);
+    assert.match(menu, /\+ Add workspace/);
     assert.equal(/FilterChip/.test(selector), false);
     assert.match(filters, /FilterChip/);
-    assert.match(selector, /pressed=\{selectedId === space\.id\}/);
+    assert.match(menu, /selectedId === space\.id/);
     assert.match(css, /button:hover \.workspace-space-tip/);
     assert.match(css, /button:focus \.workspace-space-tip/);
     assert.match(css, /button:focus-visible \.workspace-space-tip/);

@@ -56,7 +56,10 @@ describe("library dashboard chrome risks", () => {
   });
 
   it("keeps invite on the members page and support beside the account email", () => {
-    const rail = read("../components/library/library-rail-links.tsx");
+    const rail = read("../components/library/library-sidebar-footer.tsx");
+    const agents = read("../components/library/library-agents-links.tsx");
+    const connections = read("../components/library/library-connections-link.tsx");
+    const connect = read("../components/library/library-connect-agent-link.tsx");
     const invite = read("../components/workspace-members/workspace-members-invite.tsx");
     const links = read("../components/library/library-workspace-links.tsx");
     const panel = read("../components/header/profile-menu-panel.tsx");
@@ -67,7 +70,11 @@ describe("library dashboard chrome risks", () => {
 
     assert.equal(/Invite teammates|LibraryInviteLink/.test(rail), false);
     assert.match(rail, /href="\/support"/);
-    assert.match(rail, /LibraryConnectLink/);
+    assert.match(agents, /LibraryConnectAgentLink/);
+    assert.match(connect, /Connect agent/);
+    assert.match(connect, /href="\/connect\/agent"/);
+    assert.match(connections, /Connections/);
+    assert.match(connections, /href="\/workspace\/tokens"/);
     assert.match(invite, /Invite member/);
     assert.match(invite, /managesWorkspace/);
     assert.match(invite, /if \(!managing\) return null/);
