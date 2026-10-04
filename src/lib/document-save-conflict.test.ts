@@ -95,7 +95,10 @@ describe("editor conflict retry", () => {
     assert.equal(/version:\s*versionQuery/.test(note), false);
     assert.match(note, /conflictRetries\.current >= 3/);
     assert.match(note, /if \(!dirty\.current\)/);
-    assert.match(note, /setRemote\(\{ markdown: error\.content, version: error\.version \}\)/);
+    assert.match(
+      note,
+      /const readableContent = rewriteStoredR2Images\(error\.content\);\s*latest\.current\.content = readableContent;\s*setRemote\(\{ markdown: readableContent, version: error\.version \}\)/,
+    );
     assert.match(note, /if \(!titleDirty\.current\)/);
     assert.match(note, /payload\.content = latest\.current\.content/);
     assert.match(note, /payload\.title = latest\.current\.title/);

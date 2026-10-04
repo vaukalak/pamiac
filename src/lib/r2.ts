@@ -108,6 +108,61 @@ export function r2PutRequest(
   };
 }
 
+export function r2GetRequest(config: R2Config, input: { key: string; now: Date }): R2Put {
+  const amzDate = amzTimestamp(input.now);
+  const dateStamp = amzDate.slice(0, 8);
+  const payloadHash = sha256Hex("");
+  const host = `${config.accountId}.r2.cloudflarestorage.com`;
+  const canonicalUri = `/${encodePath(config.bucket)}/${encodePath(input.key)}`;
+  const canonicalHeaders = [
+    `host:${host}`,
+    `x-amz-content-sha256:${payloadHash}`,
+    `x-amz-date:${amzDate}`,
+  ]
+    .map((line) => `${line}\n`)
+    .join("");
+  const signedHeaders = "host;x-amz-content-sha256;x-amz-date";
+  const canonicalRequest = [
+    "GET",
+    canonicalUri,
+    "",
+    canonicalHeaders,
+    signedHeaders,
+    payloadHash,
+  ].join("\n");
+  const scope = `${dateStamp}/auto/s3/aws4_request`;
+  const stringToSign = ["AWS4-HMAC-SHA256", amzDate, scope, sha256Hex(canonicalRequest)].join("\n");
+  const signature = createHmac("sha256", signingKey(config.secretAccessKey, dateStamp))
+    .update(stringToSign)
+    .digest("hex");
+  return {
+    url: `https://${host}${canonicalUri}`,
+    headers: {
+      authorization: `AWS4-HMAC-SHA256 Credential=${config.accessKeyId}/${scope}, SignedHeaders=${signedHeaders}, Signature=${signature}`,
+      "x-amz-content-sha256": payloadHash,
+      "x-amz-date": amzDate,
+    },
+  };
+}
+
+export async function getR2Object(
+  config: R2Config,
+  input: { key: string; now?: Date },
+  fetchImpl: typeof fetch = fetch,
+) {
+  const request = r2GetRequest(config, {
+    key: input.key,
+    now: input.now ?? new Date(),
+  });
+  const response = await fetchImpl(request.url, {
+    method: "GET",
+    headers: request.headers,
+  });
+  if (response.status === 404) return null;
+  if (!response.ok) throw new HttpError(502, "Could not load the image.");
+  return { bytes: new Uint8Array(await response.arrayBuffer()) };
+}
+
 export async function putR2Object(
   config: R2Config,
   input: { key: string; bytes: Uint8Array; contentType: string; now?: Date },
