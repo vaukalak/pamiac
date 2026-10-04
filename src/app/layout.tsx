@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, IBM_Plex_Mono, Literata, Manrope, Outfit } from "next/font/google";
 import { QueryProvider } from "@/components/query-provider";
+import { ThemeBoot } from "@/components/theme-boot";
 import { appBaseUrl } from "@/lib/config";
+import { themeInitScript } from "@/lib/theme";
 import { appShareTarget, sharePageMetadata, sharePreviewFromDocument } from "@/lib/share-preview";
 import "./globals.css";
 
@@ -47,6 +49,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       suppressHydrationWarning
     >
       <body>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <ThemeBoot />
         <QueryProvider>{children}</QueryProvider>
       </body>
     </html>

@@ -38,7 +38,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --paper: #141210;
     --paper-deep: #0e0c0a;
     --paper-top: #1c1916;
@@ -74,7 +74,7 @@
     color-scheme: dark;
   }
 
-  .note-editor .bn-container[data-color-scheme] {
+  :where(:root:not([data-theme="light"])) .note-editor .bn-container[data-color-scheme] {
     --bn-colors-editor-text: var(--ink);
     --bn-colors-editor-background: var(--card);
     --bn-colors-menu-text: var(--ink);
@@ -91,6 +91,60 @@
     --bn-colors-border: var(--line);
     --bn-colors-side-menu: var(--ink-soft);
   }
+}
+
+html[data-theme="dark"] {
+  --paper: #141210;
+  --paper-deep: #0e0c0a;
+  --paper-top: #1c1916;
+  --ink: #f4efe6;
+  --ink-soft: #a89880;
+  --line: #7d7264;
+  --card: #221e19;
+  --teal: #6ec9c0;
+  --teal-deep: #1f6f69;
+  --amber: #e39a62;
+  --danger: #e7a097;
+  --shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+  --on-ink: #141210;
+  --field: #1b1814;
+  --wash: #2c2822;
+  --dev-wash: #2c2822;
+  --glow: rgba(110, 201, 192, 0.14);
+  --focus: 0 0 0 3px rgba(110, 201, 192, 0.35);
+  --danger-line: #a86b64;
+  --empty: rgba(34, 30, 25, 0.72);
+  --canvas: #1a1714;
+  --canvas-grid: #2e2923;
+  --flow-grid: #3a342c;
+  --uml-fill: #2a251f;
+  --uml-ink: #f4efe6;
+  --uml-note: #3a3120;
+  --uml-note-edge: #e2b56a;
+  --uml-note-shadow: #e39a62;
+  --mark-line: #141210;
+  --scrim: rgba(0, 0, 0, 0.55);
+  --secret-bg: #0c1816;
+  --secret-ink: #d7f3ee;
+  color-scheme: dark;
+}
+
+:where(html[data-theme="dark"]) .note-editor .bn-container[data-color-scheme] {
+  --bn-colors-editor-text: var(--ink);
+  --bn-colors-editor-background: var(--card);
+  --bn-colors-menu-text: var(--ink);
+  --bn-colors-menu-background: var(--card);
+  --bn-colors-tooltip-text: var(--ink);
+  --bn-colors-tooltip-background: var(--wash);
+  --bn-colors-hovered-text: var(--ink);
+  --bn-colors-hovered-background: var(--wash);
+  --bn-colors-selected-text: var(--on-ink);
+  --bn-colors-selected-background: var(--teal);
+  --bn-colors-disabled-text: var(--ink-soft);
+  --bn-colors-disabled-background: var(--paper-deep);
+  --bn-colors-shadow: var(--paper-deep);
+  --bn-colors-border: var(--line);
+  --bn-colors-side-menu: var(--ink-soft);
 }
 
 * {
@@ -1393,7 +1447,8 @@ code {
 .view-toggle button:focus-visible,
 .workspace-selector button:focus-visible,
 .library-plus:focus-visible,
-.menu-item:focus-visible {
+.menu-item:focus-visible,
+.profile-theme-option:focus-visible {
   outline: 2px solid var(--teal);
   outline-offset: 2px;
 }
@@ -1435,6 +1490,45 @@ code {
   color: var(--ink);
   font-size: 14px;
   word-break: break-all;
+}
+.profile-theme {
+  margin: 4px 0 2px;
+  padding: 6px 4px 8px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+}
+.profile-theme-legend {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 0 6px 2px;
+  color: var(--ink-soft);
+  font-size: 13px;
+  font-weight: 650;
+}
+.profile-theme-option {
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 8px 4px;
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.2;
+}
+.profile-theme-option:hover {
+  background: var(--paper-deep);
+}
+.profile-theme-option[aria-checked="true"] {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--on-ink);
+}
+.profile-theme-option[aria-checked="true"]:hover {
+  background: var(--ink);
+  color: var(--on-ink);
 }
 
 .library-tools {
@@ -2864,6 +2958,25 @@ code {
 .library-shell .profile-email {
   color: var(--home-text);
   border-bottom-color: var(--home-line);
+}
+.library-shell .profile-theme {
+  border-bottom-color: var(--home-line);
+}
+.library-shell .profile-theme-legend {
+  color: var(--home-soft);
+}
+.library-shell .profile-theme-option {
+  border-color: var(--home-hair);
+  color: var(--home-text);
+}
+.library-shell .profile-theme-option:hover {
+  background: color-mix(in srgb, var(--home-lime) 12%, transparent);
+}
+.library-shell .profile-theme-option[aria-checked="true"],
+.library-shell .profile-theme-option[aria-checked="true"]:hover {
+  border-color: var(--home-lime);
+  background: var(--home-lime);
+  color: var(--home-on-lime);
 }
 .library-shell .workspace-selector {
   width: 100%;
