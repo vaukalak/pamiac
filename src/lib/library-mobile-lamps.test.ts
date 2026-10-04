@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
+import { readStylesheet } from "./stylesheet.ts";
 
 function read(path: string) {
   return readFileSync(new URL(path, import.meta.url), "utf8");
@@ -34,7 +35,7 @@ function mediaParts(source: string, query: string) {
 
 describe("mobile library lamps", () => {
   it("hides pads and traveling pulses only on a narrow authenticated library shell", () => {
-    const css = read("../app/globals.css");
+    const css = readStylesheet();
     const narrowParts = mediaParts(css, "(max-width: 760px)");
     const narrow = narrowParts.blocks.join("\n");
     const outside = narrowParts.spans

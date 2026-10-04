@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
+import { readStylesheet } from "./stylesheet.ts";
 
 function read(path: string) {
   return readFileSync(new URL(path, import.meta.url), "utf8");
@@ -23,7 +24,7 @@ function block(source: string, header: string) {
 }
 
 describe("open document focus frame", () => {
-  const css = read("../app/globals.css");
+  const css = readStylesheet();
 
   it("keeps the lime focus ring on library controls", () => {
     const focus = block(css, ".library-shell :focus-visible {");

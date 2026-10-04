@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
+import { readStylesheet } from "./stylesheet.ts";
 
 function read(path: string) {
   return readFileSync(new URL(path, import.meta.url), "utf8");
@@ -15,7 +16,7 @@ function block(source: string, start: string, end: string) {
 
 describe("markdown block menu stacking", () => {
   it("paints the drag-handle menu above the left sidebar while it is open", () => {
-    const css = read("../app/globals.css");
+    const css = readStylesheet();
     const sidebar = block(css, ".library-shell > .library-sidebar {", ".library-mobile-header {");
     const drawer = block(
       css,

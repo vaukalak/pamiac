@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
+import { readStylesheet } from "./stylesheet.ts";
 
-const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8");
+const css = readStylesheet();
 const noteEditor = readFileSync(new URL("../components/note-editor.tsx", import.meta.url), "utf8");
 const umlEditor = readFileSync(
   new URL("../components/diagram/uml-canvas.tsx", import.meta.url),
@@ -166,8 +167,9 @@ test("light, dark, and system choices drive tokens, notes, and diagrams", () => 
   assert.match(theme, /localStorage/);
   assert.match(theme, /themeInitScript/);
   assert.match(noteEditor, /useResolvedScheme/);
-  assert.match(noteEditor, /libraryShell = false/);
-  assert.match(noteEditor, /theme=\{libraryShell \|\| scheme === "dark" \? "dark" : "light"\}/);
+  assert.match(noteEditor, /libraryShell\?: boolean/);
+  assert.match(noteEditor, /theme=\{scheme === "dark" \? "dark" : "light"\}/);
+  assert.doesNotMatch(noteEditor, /libraryShell \|\| scheme === "dark"/);
   const noteDocument = readFileSync(
     new URL("../components/document/note-document.tsx", import.meta.url),
     "utf8",

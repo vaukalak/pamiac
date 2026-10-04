@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
+import { readStylesheet } from "./stylesheet.ts";
 
 function read(path: string) {
   return readFileSync(new URL(path, import.meta.url), "utf8");
@@ -26,7 +27,7 @@ function expect(actual: string) {
 
 describe("library mobile header", () => {
   it("keeps the desktop corner free of a second logo and a header bar", () => {
-    const css = read("../app/globals.css");
+    const css = readStylesheet();
     const bar = block(css, ".library-mobile-header {", ".library-mobile-header .brand");
 
     expect(bar).toMatch(/background:\s*transparent/);
@@ -38,7 +39,7 @@ describe("library mobile header", () => {
   });
 
   it("pads library content below the pinned mobile bar", () => {
-    const css = read("../app/globals.css");
+    const css = readStylesheet();
     const narrow = css.slice(css.lastIndexOf("@media (max-width: 760px)"));
 
     expect(narrow).toMatch(/\.library-shell > \.library-main\s*\{[^}]*padding-top:\s*72px/);

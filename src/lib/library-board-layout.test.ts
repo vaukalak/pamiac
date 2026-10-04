@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
+import { readStylesheet } from "./stylesheet.ts";
 
 function read(path: string) {
   return readFileSync(new URL(path, import.meta.url), "utf8");
@@ -11,7 +12,7 @@ describe("library board layout", () => {
     const board = read("../components/library/document-board.tsx");
     const sidebar = read("../components/library/library-sidebar-panel.tsx");
     const page = read("../app/workspace/page.tsx");
-    const css = read("../app/globals.css");
+    const css = readStylesheet();
     const shell = css.slice(css.indexOf(".library-shell {"), css.indexOf(".library-main"));
 
     assert.ok(board.indexOf("<LibrarySidebar") < board.indexOf('className="library-main"'));

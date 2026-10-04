@@ -1,13 +1,14 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
+import { readStylesheet } from "./stylesheet.ts";
 
 const form = readFileSync(
   new URL("../components/login/login-magic-link-form.tsx", import.meta.url),
   "utf8",
 );
 const field = readFileSync(new URL("../ui/Form/Input.tsx", import.meta.url), "utf8");
-const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8");
+const css = readStylesheet();
 
 function expect(actual: string) {
   return {
@@ -73,7 +74,7 @@ describe("sign-in email sentence", () => {
     const sentence = block(css, ".home .home-sign-in-panel .error {");
     const card = block(css, ".auth-card p {");
 
-    expect(sentence).toMatch(/color:\s*#ffb4ab/);
+    expect(sentence).toMatch(/color:\s*var\(--home-danger\)/);
     expect(sentence).toMatch(/margin-top:\s*8px/);
     expect(sentence).not.toMatch(/aria-live|var\(--ink-soft\)|var\(--teal\)|var\(--home-lime\)/);
     expect(card).toMatch(/color:\s*var\(--ink-soft\)/);

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
+import { readStylesheet } from "./stylesheet.ts";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { maskTokenSecret } from "../components/tokens/token-secret-mask.ts";
@@ -111,7 +112,7 @@ describe("token secret copy and reveal", () => {
   });
 
   it("keeps the icon buttons at the end of the secret row", () => {
-    const css = read("src/app/globals.css");
+    const css = readStylesheet();
     const row = slice(css, ".secret {", ".skill {");
     const library = slice(
       css,

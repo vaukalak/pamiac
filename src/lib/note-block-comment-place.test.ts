@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
+import { readStylesheet } from "./stylesheet.ts";
 import {
   commentBlockMatchIndex,
   noteCommentBlockClearance,
@@ -85,7 +86,7 @@ describe("note block comment placement", () => {
   it("keeps the composer on the block viewport box until the block exists", () => {
     const comment = read("../components/note/note-block-comment.tsx");
     const place = read("./note-block-comment-place.ts");
-    const css = read("../app/globals.css");
+    const css = readStylesheet();
     const card = css.slice(
       css.indexOf(".note-block-comment {"),
       css.indexOf(".note-block-comment-card {"),

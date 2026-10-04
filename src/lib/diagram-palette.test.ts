@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
+import { readStylesheet } from "./stylesheet.ts";
 import { UML_KINDS, parseDiagram } from "./diagram.ts";
 import { PALETTE_GROUPS, blankNodeData } from "./diagram-palette.ts";
 
@@ -131,7 +132,7 @@ test("summary Space stops propagation and does not assign details.open", () => {
 });
 
 test("activation bar uses a fixed height instead of filling its parent", () => {
-  const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8");
+  const css = readStylesheet();
   const start = css.indexOf(".uml-card.kind-activation {");
   const end = css.indexOf(".uml-card.kind-fragment", start);
   const block = css.slice(start, end);

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { describe, it } from "node:test";
+import { readStylesheet } from "./stylesheet.ts";
 import { fileURLToPath } from "node:url";
 import { CONNECT_PLATFORMS, connectTokenName, platformFromClientId } from "./connect-platforms.ts";
 
@@ -72,7 +73,7 @@ describe("connections page chooser", () => {
     const setup = read("src/components/connect/connect-gemini-setup.tsx");
     const branch = read("src/components/connect/connect-platform-setup.tsx");
     const mark = read("src/components/connect/connect-platform-mark.tsx");
-    const css = read("src/app/globals.css");
+    const css = readStylesheet();
     const pageBlock = css.slice(
       css.indexOf(".library-shell .library-main > .token-connect {"),
       css.indexOf(".library-shell .token-connect h3,"),

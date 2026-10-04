@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
+import { readStylesheet } from "./stylesheet.ts";
 import { openWorkspaceName, spaceInitial, spaceTip } from "./library-spaces.ts";
 
 function read(path: string) {
@@ -59,7 +60,7 @@ describe("library chrome", () => {
     const space = read("../components/library/workspace-space.tsx");
     const selector = read("../components/library/workspace-selector.tsx");
     const filters = read("../components/library/library-filters.tsx");
-    const css = read("../app/globals.css");
+    const css = readStylesheet();
 
     assert.match(space, /aria-label=\{label\}/);
     assert.match(space, /aria-pressed=\{pressed\}/);
@@ -116,7 +117,7 @@ describe("library chrome", () => {
   });
 
   it("spaces the add-workspace dialog like the support panel", () => {
-    const css = read("../app/globals.css");
+    const css = readStylesheet();
     const dialog = css.slice(
       css.indexOf(".library-shell .workspace-add-dialog {"),
       css.indexOf(".library-shell .workspace-add-dialog .share-dialog-head"),
@@ -165,7 +166,7 @@ describe("library chrome", () => {
   });
 
   it("shows workspace details on settings and loads people from the members route", () => {
-    const css = read("../app/globals.css");
+    const css = readStylesheet();
     const settings = read("../components/workspace-settings/workspace-settings-details.tsx");
     const route = read("../app/api/workspaces/[id]/members/route.ts");
     const danger = css.slice(

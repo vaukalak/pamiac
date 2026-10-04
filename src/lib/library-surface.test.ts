@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
+import { readStylesheet } from "./stylesheet.ts";
 
 function read(path: string) {
   return readFileSync(new URL(path, import.meta.url), "utf8");
@@ -23,7 +24,7 @@ function block(source: string, header: string) {
 }
 
 describe("library shell writing surfaces", () => {
-  const css = read("../app/globals.css");
+  const css = readStylesheet();
   const noteEditor = read("../components/note-editor.tsx");
   const noteDocument = read("../components/document/note-document.tsx");
   const canvas = read("../components/diagram/uml-canvas.tsx");
@@ -47,13 +48,16 @@ describe("library shell writing surfaces", () => {
     const sheet = block(css, ".library-shell .note-sheet {");
     const colors = block(css, ".library-shell .note-editor .bn-container[data-color-scheme] {");
 
-    assert.match(sheet, /background:\s*color-mix\(in srgb, var\(--home-ground\) 72%, #101610\)/);
+    assert.match(
+      sheet,
+      /background:\s*color-mix\(in srgb, var\(--home-ground\) 72%, var\(--home-ink\)\)/,
+    );
     assert.match(sheet, /border:\s*1px solid var\(--home-hair\)/);
     assert.match(sheet, /color:\s*var\(--home-text\)/);
     assert.match(sheet, /caret-color:\s*var\(--home-lime\)/);
     assert.doesNotMatch(sheet, /var\(--card\)|var\(--ink\)/);
     assert.match(colors, /--bn-colors-editor-text:\s*var\(--home-text\)/);
-    assert.match(colors, /--bn-colors-menu-background:\s*#0d110e/);
+    assert.match(colors, /--bn-colors-menu-background:\s*var\(--home-menu\)/);
     assert.match(colors, /--bn-colors-tooltip-background:\s*var\(--home-panel\)/);
     assert.match(colors, /--bn-colors-hovered-text:\s*var\(--home-text\)/);
     assert.match(colors, /--bn-colors-selected-background:\s*var\(--home-lime\)/);
@@ -64,8 +68,9 @@ describe("library shell writing surfaces", () => {
       css,
       /\.library-shell \.note-sheet ::selection\s*\{[^}]*background:\s*var\(--home-lime\)/,
     );
-    assert.match(noteEditor, /libraryShell = false/);
-    assert.match(noteEditor, /theme=\{libraryShell \|\| scheme === "dark" \? "dark" : "light"\}/);
+    assert.match(noteEditor, /libraryShell\?: boolean/);
+    assert.match(noteEditor, /theme=\{scheme === "dark" \? "dark" : "light"\}/);
+    assert.doesNotMatch(noteEditor, /libraryShell \|\| scheme === "dark"/);
     assert.match(noteEditor, /useResolvedScheme/);
     assert.match(noteDocument, /libraryShell/);
     assert.match(
@@ -84,9 +89,12 @@ describe("library shell writing surfaces", () => {
     const fields = block(css, ".library-shell .inspector input,");
 
     assert.match(wrap, /--canvas:\s*var\(--home-ground\)/);
-    assert.match(wrap, /--canvas-grid:\s*rgba\(185,\s*245,\s*66,\s*0\.16\)/);
+    assert.match(
+      wrap,
+      /--canvas-grid:\s*color-mix\(in srgb, var\(--home-lime\) 16%, transparent\)/,
+    );
     assert.match(wrap, /--uml-ink:\s*var\(--home-text\)/);
-    assert.match(wrap, /--uml-note:\s*#1c2414/);
+    assert.match(wrap, /--uml-note:\s*var\(--home-note\)/);
     assert.match(wrap, /box-shadow:\s*none/);
     assert.match(card, /box-shadow:\s*none/);
     assert.match(card, /border:\s*1px solid var\(--home-hair\)/);
@@ -96,8 +104,8 @@ describe("library shell writing surfaces", () => {
     assert.match(note, /box-shadow:\s*none/);
     assert.doesNotMatch(note, /#f6e7b8/);
     assert.match(css, /\.library-shell \.canvas-empty\s*\{[^}]*color:\s*var\(--home-soft\)/);
-    assert.match(flow, /--xy-minimap-background-color:\s*#0c100c/);
-    assert.match(flow, /--xy-controls-button-background-color:\s*#101610/);
+    assert.match(flow, /--xy-minimap-background-color:\s*var\(--home-minimap\)/);
+    assert.match(flow, /--xy-controls-button-background-color:\s*var\(--home-ink\)/);
     assert.match(flow, /--xy-controls-button-color:\s*var\(--home-text\)/);
     assert.match(flow, /--xy-connectionline-stroke:\s*var\(--home-lime\)/);
     assert.match(fields, /border:\s*1px solid var\(--home-hair\)/);
