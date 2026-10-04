@@ -1,6 +1,8 @@
 export const TOKEN_SKILL = `Read PAMIAC_TOKEN from the agent environment. The pamiac MCP server sends Authorization: Bearer <PAMIAC_TOKEN> when that variable is set. Do not print the token. Do not ask the user to paste the token. Do not invent a token.
 
-Use the pamiac MCP tools for search, list, read, create, and update. Do not curl the document API. Call list_workspaces, search_documents, list_documents, read_document, create_note, create_diagram, update_note, update_diagram, list_folders, create_folder, move_document_to_folder, move_folder, and share_folder.
+Use the pamiac MCP tools for search, list, read, create, and update. Do not curl the document API. Call list_workspaces, search_documents, list_documents, read_document, create_note, create_diagram, update_note, update_diagram, upload_image, list_folders, create_folder, move_document_to_folder, move_folder, and share_folder.
+
+upload_image takes id, base64 data, and optional mediaType, stores a JPEG, PNG, WebP, or GIF on a note only, returns { url }, then embed ![description](url) with update_note and version from read_document.
 
 search_documents
 { "query": "checkout payment classes", "limit": 8 }
@@ -41,6 +43,7 @@ GET https://pamiac.com/api/agent/v1/documents with optional query type=note or t
 GET https://pamiac.com/api/agent/v1/documents/<id>
 POST https://pamiac.com/api/agent/v1/documents with JSON { "type": "note" | "diagram", "title" optional, "content" optional }. Note content is markdown. Diagram content is { nodes, relations }.
 PATCH https://pamiac.com/api/agent/v1/documents/<id>
+POST https://pamiac.com/api/agent/v1/documents/<id>/images with JSON { "data": "<base64>", "mediaType" optional } and Authorization Bearer. It returns { url } for a JPEG, PNG, WebP, or GIF on a note only. Then embed ![description](url) with the document PATCH and version from the GET.
 PUT https://pamiac.com/api/agent/v1/folders/<id>/share with JSON { "visibility", "password" optional, "emails" optional } shares that folder and everything inside it, including nested folders. The link is /f/<id>.
 Notes stay a full markdown content replace plus version from the GET in the same turn: { "content": "# updated markdown", "version": 3 }.
 Diagrams: the HTTP body wraps the merge in patch. { "version": 4, "patch": { "nodes": [{ "id": "user", "methods": ["login(): void"] }], "deleteNodes": [], "relations": [], "deleteRelations": [] } }. Do not send nodes at the top level of the PATCH body. Same field rules as update_diagram: only fields present, omit other nodes, omit position to keep layout. A version conflict returns the current version, title, and content.

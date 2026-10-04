@@ -27,6 +27,7 @@ import {
 } from "@/lib/folders";
 import { UML_KINDS, UML_RELATIONS } from "@/lib/diagram";
 import { diagramPatchSchema } from "@/lib/diagram-patch";
+import { decodeImageBase64 } from "@/lib/image-base64";
 import { HttpError } from "@/lib/http";
 import { MCP_INSTRUCTIONS, UPDATE_DIAGRAM_DESCRIPTION } from "@/lib/mcp-instructions";
 import {
@@ -38,6 +39,7 @@ import { createAnnotations, readAnnotations, replaceAnnotations } from "@/lib/mc
 import { profileContent } from "@/lib/mcp-profile";
 import { starterPrompts } from "@/lib/mcp-prompts";
 import { attachPamiacSkill } from "@/lib/mcp-skill";
+import { uploadAgentNoteImage } from "@/lib/note-image";
 
 const profileOutput = z
   .object({
@@ -184,6 +186,20 @@ const updateNoteInput = z
     title: titleField,
     content: z.string().max(MAX_CONTENT_LENGTH),
     version: documentVersion,
+  })
+  .strict();
+
+const uploadImageInput = z
+  .object({
+    id: documentId,
+    data: z.string(),
+    mediaType: z.string().optional(),
+  })
+  .strict();
+
+const uploadImageOutput = z
+  .object({
+    url: z.string(),
   })
   .strict();
 
@@ -469,6 +485,31 @@ export function createPamiacMcpServer(
           scope,
         );
         return textResult(presentReadableDocument(presentDocument(document, origin)));
+      } catch (error) {
+        return errorResult(failureMessage(error));
+      }
+    },
+  );
+
+  server.registerTool(
+    "upload_image",
+    {
+      description:
+        "Store a JPEG, PNG, WebP, or GIF on a note. data is base64 without a data: URL prefix. Returns { url }. Then put ![description](url) into the note with update_note and version from read_document.",
+      inputSchema: uploadImageInput,
+      outputSchema: uploadImageOutput,
+      annotations: createAnnotations,
+    },
+    async ({ id, data, mediaType }) => {
+      if (!userId) return errorResult("Sign-in required");
+      try {
+        const uploaded = await uploadAgentNoteImage(
+          userId,
+          id,
+          { bytes: decodeImageBase64(data), type: mediaType ?? "" },
+          scope,
+        );
+        return textResult({ url: uploaded.url });
       } catch (error) {
         return errorResult(failureMessage(error));
       }
