@@ -2697,6 +2697,18 @@ code {
 .library-shell > .home-board {
   z-index: 0;
 }
+/* The shell grows with the document list. Pin the board and its dim to the
+   viewport so slice matches the one-screen login framing. Narrow shells are
+   already one visual viewport and scroll inside that box. */
+@media (min-width: 761px) {
+  .library-shell > .home-board,
+  .library-shell::after {
+    position: fixed;
+    inset: 0 auto auto 0;
+    width: 100%;
+    height: 100vh;
+  }
+}
 @media (max-width: 760px) {
   .library-shell:not(.library-shell-solo) .home-pad,
   .library-shell:not(.library-shell-solo) .home-trace-glow,
