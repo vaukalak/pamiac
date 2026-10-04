@@ -80,15 +80,28 @@ test("an unsafe consent query does not leave the app", () => {
   assert.equal(isSafeRelativePath(oauthConsentReturnPath(params)), true);
 });
 
-test("consent redirect targets are http(s) or a relative path", () => {
+test("consent redirect targets are http(s), the Cursor callback, or a relative path", () => {
   assert.equal(
     oauthRedirectTarget({ url: "https://chatgpt.com/connector/callback?code=1" }),
     "https://chatgpt.com/connector/callback?code=1",
+  );
+  assert.equal(
+    oauthRedirectTarget({
+      url: "cursor://anysphere.cursor-mcp/oauth/callback?code=1&state=s",
+    }),
+    "cursor://anysphere.cursor-mcp/oauth/callback?code=1&state=s",
   );
   assert.equal(oauthRedirectTarget({ url: "/oauth/consent" }), "/oauth/consent");
   assert.equal(oauthRedirectTarget({ url: "javascript:alert(1)" }), null);
   assert.equal(oauthRedirectTarget({ url: "//evil.example" }), null);
   assert.equal(oauthRedirectTarget({ url: "data:text/html,hi" }), null);
+  assert.equal(oauthRedirectTarget({ url: "cursor://evil.example/oauth/callback" }), null);
+  assert.equal(
+    oauthRedirectTarget({
+      url: "cursor://anysphere.cursor-mcp/oauth/callback#code",
+    }),
+    null,
+  );
   assert.equal(oauthRedirectTarget(null), null);
 });
 

@@ -101,12 +101,25 @@ function isOauthRegisterPost(request: Request) {
   return new URL(request.url).pathname.endsWith("/oauth2/register");
 }
 
+function registrationHeaders(request: Request, body: Uint8Array) {
+  const headers = new Headers(request.headers);
+  headers.delete("transfer-encoding");
+  headers.delete("connection");
+  headers.delete("keep-alive");
+  headers.set("content-length", String(body.byteLength));
+  return headers;
+}
+
 export async function prepareOauthRegisterRequest(request: Request) {
   if (!isOauthRegisterPost(request)) return request;
   const original = new Uint8Array(await request.arrayBuffer());
   const rewritten = rewriteNativeRegistrationBody(original);
   const body = rewritten ?? original;
-  const headers = new Headers(request.headers);
-  headers.set("content-length", String(body.byteLength));
-  return new Request(request, { body, headers });
+  const init: RequestInit & { duplex: "half" } = {
+    method: "POST",
+    headers: registrationHeaders(request, body),
+    body,
+    duplex: "half",
+  };
+  return new Request(request.url, init);
 }
