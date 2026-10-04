@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
+import { readStylesheet } from "./stylesheet.ts";
 
 function read(path: string) {
   return readFileSync(new URL(path, import.meta.url), "utf8");
@@ -9,7 +10,7 @@ function read(path: string) {
 describe("new folder in the create menu", () => {
   it("keeps the heading on Create and Connect, without a third pill", () => {
     const actions = read("../components/library/library-heading-actions.tsx");
-    const css = read("../app/globals.css");
+    const css = readStylesheet();
 
     assert.match(actions, /<LibraryCreate workspaceId=\{workspaceId\} \/>/);
     assert.match(actions, /<LibraryConnectLink className="btn secondary library-connect" \/>/);

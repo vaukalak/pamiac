@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
 import { describe, it } from "node:test";
+import { readStylesheet } from "./stylesheet.ts";
 import { shareDraftError, shareEmailList } from "../components/share/share-draft.ts";
 
 function read(path: string) {
@@ -101,10 +102,10 @@ describe("share popup", () => {
   });
 
   it("paints an opaque dialog and keeps the selected card in lime", () => {
-    const css = read("../app/globals.css");
+    const css = readStylesheet();
     const access = css.slice(css.indexOf(".library-shell .share-access-dialog {"));
 
-    assert.match(access, /background:\s*#0a0f0a/);
+    assert.match(access, /background:\s*var\(--home-menu\)/);
     assert.equal(/background:\s*rgba\(/.test(access.slice(0, access.indexOf("}"))), false);
     assert.match(access, /width:\s*min\(580px, 100%\)/);
     assert.match(access, /border-radius:\s*20px/);

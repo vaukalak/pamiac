@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
+import { readStylesheet } from "./stylesheet.ts";
 import {
   collapseLeftoverSelection,
   cursorPlacement,
@@ -279,7 +280,7 @@ describe("note lasso geometry", () => {
 describe("note lasso wiring", () => {
   it("highlights intersecting note blocks and does not select editor text", () => {
     const gesture = read("../components/note/note-lasso.tsx");
-    const css = read("../app/globals.css");
+    const css = readStylesheet();
     const move = gesture.slice(gesture.indexOf("function onPointerMove"));
     const beforePrevent = move.slice(0, move.indexOf("event.preventDefault()"));
     assert.match(beforePrevent, /dragPastThreshold/);
@@ -300,7 +301,7 @@ describe("note lasso wiring", () => {
 
   it("paints during the drag, keeps a miss from clearing the previous highlight, and clears a click", () => {
     const gesture = read("../components/note/note-lasso.tsx");
-    const css = read("../app/globals.css");
+    const css = readStylesheet();
     const move = gesture.slice(gesture.indexOf("function onPointerMove"));
     const up = gesture.slice(gesture.indexOf("function onPointerUp"));
     assert.match(move, /lassoSelection\(blockBoxes\(root\), next\)/);
@@ -334,7 +335,7 @@ describe("note lasso wiring", () => {
   });
 
   it("washes only the innermost hovered block and keeps a lasso highlight", () => {
-    const css = read("../app/globals.css");
+    const css = readStylesheet();
     assert.match(
       css,
       /\.note-editor \.bn-block:hover:not\(:has\(\.bn-block:hover\)\) > \.bn-block-content \{\s*background: var\(--note-lasso-fill\);/,
@@ -420,7 +421,7 @@ describe("note lasso wiring", () => {
 
   it("blocks text selection for the armed gesture and fades the wash in after a document change", () => {
     const gesture = read("../components/note/note-lasso.tsx");
-    const css = read("../app/globals.css");
+    const css = readStylesheet();
     const show = gesture.slice(gesture.indexOf("function show"));
     const showBody = show.slice(0, show.indexOf("function clearHighlight"));
     const move = gesture.slice(
@@ -516,7 +517,7 @@ describe("note lasso wiring", () => {
 
   it("fades the marquee in once and washes a contentless block from a transparent tint", () => {
     const gesture = read("../components/note/note-lasso.tsx");
-    const css = read("../app/globals.css");
+    const css = readStylesheet();
     const paint = gesture.slice(
       gesture.indexOf("function paintLasso"),
       gesture.indexOf("function collapseEditorSelection"),

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
+import { readStylesheet } from "./stylesheet.ts";
 
 function read(path: string) {
   return readFileSync(new URL(path, import.meta.url), "utf8");
@@ -15,7 +16,7 @@ describe("library folder card", () => {
     const name = read("../components/library/folder-card-name.tsx");
     const picture = read("../components/library/folder-card-picture.tsx");
     const icon = read("../components/library/folder-icon.tsx");
-    const css = read("../app/globals.css");
+    const css = readStylesheet();
     const folderRule = css.slice(
       css.indexOf(".library-shell .folder-card {"),
       css.indexOf(".library-shell .folder-card.dragging"),

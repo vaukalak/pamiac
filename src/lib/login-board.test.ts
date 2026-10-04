@@ -1,13 +1,14 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
+import { readStylesheet } from "./stylesheet.ts";
 
 const page = readFileSync(new URL("../app/login/page.tsx", import.meta.url), "utf8");
 const form = readFileSync(
   new URL("../components/login/login-magic-link-form.tsx", import.meta.url),
   "utf8",
 );
-const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8");
+const css = readStylesheet();
 
 function expect(actual: string) {
   return {
@@ -72,10 +73,12 @@ describe("login board", () => {
     expect(signIn).toMatch(
       /\.home \.home-sign-in-panel input:focus,\s*\.home \.home-sign-in-panel textarea:focus\s*\{[^}]*border-color:\s*var\(--home-lime\)/,
     );
-    expect(signIn).toMatch(/box-shadow:\s*0 0 0 3px rgba\(185,\s*245,\s*66,\s*0\.35\)/);
+    expect(signIn).toMatch(
+      /box-shadow:\s*0 0 0 3px color-mix\(in srgb, var\(--home-lime\) 35%, transparent\)/,
+    );
     expect(signIn).toMatch(/input:-webkit-autofill/);
     expect(signIn).toMatch(/-webkit-text-fill-color:\s*var\(--home-text\)/);
-    expect(signIn).toMatch(/box-shadow:\s*0 0 0 1000px #101410 inset/);
+    expect(signIn).toMatch(/box-shadow:\s*0 0 0 1000px var\(--home-field\) inset/);
     expect(signIn).toMatch(
       /\.home \.home-sign-in-panel \.btn:not\(\.ghost\)\s*\{[^}]*width:\s*100%[^}]*background:\s*var\(--home-lime\)[^}]*color:\s*var\(--home-on-lime\)/,
     );

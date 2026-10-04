@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
+import { readStylesheet } from "./stylesheet.ts";
 import {
   libraryFilter,
   libraryPanel,
@@ -63,7 +64,7 @@ describe("document library shell", () => {
     const shell = read("../components/document/document-shell.tsx");
     const screen = read("../components/document-screen.tsx");
     const sidebar = read("../components/document/document-sidebar.tsx");
-    const css = read("../app/globals.css");
+    const css = readStylesheet();
 
     assert.equal(/AppHeader/.test(page), false);
     assert.match(page, /<DocumentShell/);

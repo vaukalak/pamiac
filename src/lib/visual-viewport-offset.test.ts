@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
+import { readStylesheet } from "./stylesheet.ts";
 import {
   clearVisualViewportOffset,
   visualViewportBox,
@@ -49,7 +50,7 @@ describe("visual viewport offset", () => {
   });
 
   it("pins the note header and the item edit menu in that order", () => {
-    const css = read("../app/globals.css");
+    const css = readStylesheet();
     const header = read("../components/library/library-mobile-header.tsx");
     const toolbar = read("../components/note/note-formatting-toolbar-controller.tsx");
     const mobile = read("../components/note/note-mobile-formatting-toolbar.tsx");

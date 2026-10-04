@@ -1,0 +1,148 @@
+:root {
+  --paper: #f3efe4;
+  --paper-deep: #e6e0d1;
+  --paper-top: #f7f4ec;
+  --ink: #1a1814;
+  --ink-soft: #5e584e;
+  --line: #d8d0c2;
+  --card: #fffdf8;
+  --teal: #0e6b66;
+  --teal-deep: #084743;
+  --amber: #b8612b;
+  --danger: #9c3b32;
+  --shadow: 0 18px 50px rgba(48, 36, 18, 0.08);
+  --on-ink: #f7f4ec;
+  --field: #fff;
+  --wash: #f6f1e6;
+  --dev-wash: #f4efe2;
+  --glow: rgba(14, 107, 102, 0.08);
+  --focus: 0 0 0 3px rgba(14, 107, 102, 0.15);
+  --danger-line: #e3c6c2;
+  --empty: rgba(255, 253, 248, 0.6);
+  --canvas: #fbf8f2;
+  --canvas-grid: #efeae0;
+  --flow-grid: #d9d0c0;
+  --uml-fill: #fffdf8;
+  --uml-ink: #1a1814;
+  --uml-note: #f6e7b8;
+  --uml-note-edge: #6d5420;
+  --uml-note-shadow: #b8612b;
+  --mark-line: #f3efe4;
+  --scrim: rgba(26, 24, 20, 0.35);
+  --secret-bg: #14211f;
+  --secret-ink: #e7f6f3;
+  --serif: "Fraunces", "Literata", "Iowan Old Style", Georgia, serif;
+  --sans: "Outfit", "Manrope", "Avenir Next", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #141210;
+    --paper-deep: #0e0c0a;
+    --paper-top: #1c1916;
+    --ink: #f4efe6;
+    --ink-soft: #a89880;
+    --line: #7d7264;
+    --card: #221e19;
+    --teal: #6ec9c0;
+    --teal-deep: #1f6f69;
+    --amber: #e39a62;
+    --danger: #e7a097;
+    --shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+    --on-ink: #141210;
+    --field: #1b1814;
+    --wash: #2c2822;
+    --dev-wash: #2c2822;
+    --glow: rgba(110, 201, 192, 0.14);
+    --focus: 0 0 0 3px rgba(110, 201, 192, 0.35);
+    --danger-line: #a86b64;
+    --empty: rgba(34, 30, 25, 0.72);
+    --canvas: #1a1714;
+    --canvas-grid: #2e2923;
+    --flow-grid: #3a342c;
+    --uml-fill: #2a251f;
+    --uml-ink: #f4efe6;
+    --uml-note: #3a3120;
+    --uml-note-edge: #e2b56a;
+    --uml-note-shadow: #e39a62;
+    --mark-line: #141210;
+    --scrim: rgba(0, 0, 0, 0.55);
+    --secret-bg: #0c1816;
+    --secret-ink: #d7f3ee;
+    color-scheme: dark;
+  }
+
+  :where(:root:not([data-theme="light"])) .note-editor .bn-container[data-color-scheme] {
+    --bn-colors-editor-text: var(--ink);
+    --bn-colors-editor-background: var(--card);
+    --bn-colors-menu-text: var(--ink);
+    --bn-colors-menu-background: var(--card);
+    --bn-colors-tooltip-text: var(--ink);
+    --bn-colors-tooltip-background: var(--wash);
+    --bn-colors-hovered-text: var(--ink);
+    --bn-colors-hovered-background: var(--wash);
+    --bn-colors-selected-text: var(--on-ink);
+    --bn-colors-selected-background: var(--teal);
+    --bn-colors-disabled-text: var(--ink-soft);
+    --bn-colors-disabled-background: var(--paper-deep);
+    --bn-colors-shadow: var(--paper-deep);
+    --bn-colors-border: var(--line);
+    --bn-colors-side-menu: var(--ink-soft);
+  }
+}
+
+html[data-theme="dark"] {
+  --paper: #141210;
+  --paper-deep: #0e0c0a;
+  --paper-top: #1c1916;
+  --ink: #f4efe6;
+  --ink-soft: #a89880;
+  --line: #7d7264;
+  --card: #221e19;
+  --teal: #6ec9c0;
+  --teal-deep: #1f6f69;
+  --amber: #e39a62;
+  --danger: #e7a097;
+  --shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+  --on-ink: #141210;
+  --field: #1b1814;
+  --wash: #2c2822;
+  --dev-wash: #2c2822;
+  --glow: rgba(110, 201, 192, 0.14);
+  --focus: 0 0 0 3px rgba(110, 201, 192, 0.35);
+  --danger-line: #a86b64;
+  --empty: rgba(34, 30, 25, 0.72);
+  --canvas: #1a1714;
+  --canvas-grid: #2e2923;
+  --flow-grid: #3a342c;
+  --uml-fill: #2a251f;
+  --uml-ink: #f4efe6;
+  --uml-note: #3a3120;
+  --uml-note-edge: #e2b56a;
+  --uml-note-shadow: #e39a62;
+  --mark-line: #141210;
+  --scrim: rgba(0, 0, 0, 0.55);
+  --secret-bg: #0c1816;
+  --secret-ink: #d7f3ee;
+  color-scheme: dark;
+}
+
+:where(html[data-theme="dark"]) .note-editor .bn-container[data-color-scheme] {
+  --bn-colors-editor-text: var(--ink);
+  --bn-colors-editor-background: var(--card);
+  --bn-colors-menu-text: var(--ink);
+  --bn-colors-menu-background: var(--card);
+  --bn-colors-tooltip-text: var(--ink);
+  --bn-colors-tooltip-background: var(--wash);
+  --bn-colors-hovered-text: var(--ink);
+  --bn-colors-hovered-background: var(--wash);
+  --bn-colors-selected-text: var(--on-ink);
+  --bn-colors-selected-background: var(--teal);
+  --bn-colors-disabled-text: var(--ink-soft);
+  --bn-colors-disabled-background: var(--paper-deep);
+  --bn-colors-shadow: var(--paper-deep);
+  --bn-colors-border: var(--line);
+  --bn-colors-side-menu: var(--ink-soft);
+}
