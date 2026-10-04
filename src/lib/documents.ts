@@ -32,6 +32,7 @@ import {
 import { appBaseUrl } from "@/lib/config";
 import { HttpError } from "@/lib/http";
 import { sendNoteShared } from "@/lib/mail";
+import { onNoteContentChanged } from "@/lib/note-notify-run";
 import {
   documentsInSpace,
   isWorkspaceAdmin,
@@ -307,6 +308,9 @@ export async function updateDocumentContent(
   scope?: AgentScope,
 ) {
   const db = getDb();
+  const noteChange: { value: { previousContent: string; nextContent: string } | null } = {
+    value: null,
+  };
   const updated = await db.transaction(async (tx) => {
     const [current] = await tx.select().from(documents).where(eq(documents.id, id)).for("update");
     if (!current) throw new HttpError(404, "Document not found");
@@ -346,6 +350,9 @@ export async function updateDocumentContent(
       const message = error instanceof Error ? error.message : "Invalid content";
       throw new HttpError(400, message);
     }
+    if (current.type === "note" && written.content !== current.content) {
+      noteChange.value = { previousContent: current.content, nextContent: written.content };
+    }
     const [row] = await tx
       .update(documents)
       .set({
@@ -359,6 +366,17 @@ export async function updateDocumentContent(
     return row;
   });
   await upsertEmbedding(updated);
+  if (noteChange.value) {
+    try {
+      await onNoteContentChanged({
+        documentId: id,
+        previousContent: noteChange.value.previousContent,
+        nextContent: noteChange.value.nextContent,
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  }
   return updated;
 }
 

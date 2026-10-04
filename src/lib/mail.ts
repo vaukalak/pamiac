@@ -5,6 +5,7 @@ import { MagicLinkEmail, magicLinkText } from "../emails/MagicLinkEmail.ts";
 import { NoteAccessRequestEmail, noteAccessRequestText } from "../emails/NoteAccessRequestEmail.ts";
 import { FolderSharedEmail, folderSharedText } from "../emails/FolderSharedEmail.ts";
 import { NoteSharedEmail, noteSharedText } from "../emails/NoteSharedEmail.ts";
+import { NoteUpdatedEmail, noteUpdatedText } from "../emails/NoteUpdatedEmail.ts";
 import { ResetPasswordEmail, resetPasswordText } from "../emails/ResetPasswordEmail.ts";
 import {
   WorkspaceInvitationEmail,
@@ -293,6 +294,29 @@ export async function sendNoteShared({
     missingKey: "RESEND_API_KEY is required to send note shares",
     log: `Note shared with ${email}`,
     failure: "Could not send the note email",
+  });
+}
+
+export async function sendNoteUpdated({
+  email,
+  url,
+  noteTitle,
+}: {
+  email: string;
+  url: string;
+  noteTitle: string;
+}) {
+  const title = oneLine(noteTitle) || "a note";
+  await deliverEmail({
+    email,
+    url,
+    template: "note-updated",
+    subject: `"${title}" was updated`,
+    react: createElement(NoteUpdatedEmail, { noteTitle: title, noteUrl: url }),
+    text: noteUpdatedText({ noteTitle: title, noteUrl: url }),
+    missingKey: "RESEND_API_KEY is required to send note updates",
+    log: `Note updated for ${email}`,
+    failure: "Could not send the note update email",
   });
 }
 

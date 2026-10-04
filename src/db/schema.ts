@@ -210,6 +210,19 @@ export const documentPermissionRequests = pgTable(
   ],
 );
 
+export const noteNotifications = pgTable("note_notification", {
+  documentId: text("document_id")
+    .primaryKey()
+    .references(() => documents.id, { onDelete: "cascade" }),
+  mode: text("mode", { enum: ["never", "any", "criteria"] })
+    .notNull()
+    .default("never"),
+  criteria: text("criteria").notNull().default(""),
+  baselineContent: text("baseline_content"),
+  latestContent: text("latest_content"),
+  dueAt: timestamp("due_at", { withTimezone: true }),
+});
+
 export const imageUploads = pgTable(
   "image_upload",
   {

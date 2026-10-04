@@ -2,11 +2,13 @@
 
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import { NoteNotifyButton } from "@/components/note-notify/note-notify-button";
 import { Alert } from "@/ui/Alert";
 import { Button } from "@/ui/Button";
 
 interface Properties {
   id: string;
+  kind: "note" | "diagram";
   onShare: () => void;
 }
 
@@ -16,7 +18,7 @@ async function deleteDocument(id: string) {
 }
 
 export function DocumentOwnerActions(props: Properties) {
-  const { id, onShare } = props;
+  const { id, kind, onShare } = props;
   const router = useRouter();
   const remove = useMutation({
     mutationFn: () => deleteDocument(id),
@@ -37,6 +39,7 @@ export function DocumentOwnerActions(props: Properties) {
       <Button className="secondary small" onClick={onShare} type="button">
         Share
       </Button>
+      {kind === "note" ? <NoteNotifyButton documentId={id} /> : null}
       <Button
         className="danger icon-button"
         disabled={remove.isPending}

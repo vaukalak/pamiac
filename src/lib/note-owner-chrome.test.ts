@@ -56,7 +56,7 @@ describe("owner delete control", () => {
     assert.match(actions, /\{message \? <Alert>\{message\}<\/Alert> : null\}/);
     assert.match(
       screen,
-      /<DocumentOwnerActions id=\{id\} onShare=\{\(\) => setSharing\(true\)\} \/>/,
+      /<DocumentOwnerActions id=\{id\} kind=\{type\} onShare=\{\(\) => setSharing\(true\)\} \/>/,
     );
   });
 });
