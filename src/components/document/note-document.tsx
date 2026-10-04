@@ -17,6 +17,7 @@ import {
 import { useDocumentVersion } from "@/components/document/use-document-version";
 import { NoteShareMarkdown } from "@/components/note/note-share-markdown";
 import { defaultTitle } from "@/lib/content";
+import { rewriteStoredR2Images } from "@/lib/stored-image-url";
 import {
   noteConflictAction,
   noteSaveGate,
@@ -46,11 +47,12 @@ function noteName(title: string) {
 
 export function NoteDocument(props: Properties) {
   const { id, title, content, version, canEdit, crumb, sharing, tools, workspaceId } = props;
+  const readable = rewriteStoredR2Images(content);
   const queryClient = useQueryClient();
   const [name, setName] = useState(noteName(title));
-  const [remote, setRemote] = useState({ markdown: content, version });
+  const [remote, setRemote] = useState({ markdown: readable, version });
   const persistedTitle = useRef(title);
-  const latest = useRef({ title, content });
+  const latest = useRef({ title, content: readable });
   const dirty = useRef(false);
   const titleDirty = useRef(false);
   const saveInFlight = useRef(false);
@@ -123,8 +125,9 @@ export function NoteDocument(props: Properties) {
     conflictRetries.current += 1;
     appliedVersion.current = error.version;
     if (!dirty.current) {
-      latest.current.content = error.content;
-      setRemote({ markdown: error.content, version: error.version });
+      const readableContent = rewriteStoredR2Images(error.content);
+      latest.current.content = readableContent;
+      setRemote({ markdown: readableContent, version: error.version });
     }
     if (!titleDirty.current) {
       persistedTitle.current = error.title;
@@ -238,7 +241,7 @@ export function NoteDocument(props: Properties) {
         dirty: dirty.current,
         saveInFlight: false,
         localMarkdown: latest.current.content,
-        remoteMarkdown: document.content,
+        remoteMarkdown: rewriteStoredR2Images(document.content),
         remoteVersion: document.version,
         appliedVersion: appliedVersion.current,
       });

@@ -18,7 +18,19 @@ import {
   type ImageUsageRow,
   type StoredImage,
 } from "./image-upload.ts";
-import { putR2Object, readR2Config, r2PutRequest, type R2Config } from "./r2.ts";
+import {
+  getR2Object,
+  putR2Object,
+  readR2Config,
+  r2GetRequest,
+  r2PutRequest,
+  type R2Config,
+} from "./r2.ts";
+import {
+  imageObjectContentType,
+  isImageObjectKey,
+  rewriteStoredR2Images,
+} from "./stored-image-url.ts";
 
 const NOW = new Date("2026-10-03T12:00:00.000Z");
 const CAP = MONTHLY_IMAGE_BYTE_CAP;
@@ -253,6 +265,17 @@ describe("image upload acceptance", () => {
     assert.match(generated, /^[0-9a-f]{32}\.gif$/);
     assert.notEqual(generated, imageObjectKey("gif"));
     assert.equal(imagePublicUrl("https://cdn.example/", key), `https://cdn.example/${key}`);
+    assert.equal(
+      imagePublicUrl(
+        "https://387cdb1c68988ce1812f67c510b491a3.r2.cloudflarestorage.com",
+        "91c3de96f8fef51134e8ee697c17e07f.jpg",
+      ),
+      "/i/91c3de96f8fef51134e8ee697c17e07f.jpg",
+    );
+    assert.equal(
+      imagePublicUrl("https://pub-abc.r2.dev/", "91c3de96f8fef51134e8ee697c17e07f.jpg"),
+      "https://pub-abc.r2.dev/91c3de96f8fef51134e8ee697c17e07f.jpg",
+    );
   });
 
   it("treats an advertised body over the monthly cap as too large", () => {
@@ -347,6 +370,131 @@ describe("r2 client", () => {
     assert.deepEqual(seen, [
       { url: "https://account.r2.cloudflarestorage.com/notes/abc123.jpg", method: "PUT" },
     ]);
+  });
+
+  it("signs a get for the bucket key without putting the secret in the url", () => {
+    const key = "91c3de96f8fef51134e8ee697c17e07f.jpg";
+    const first = r2GetRequest(config, { key, now: NOW });
+    const second = r2GetRequest(config, { key, now: NOW });
+    const changed = r2GetRequest(config, { key: "ab".repeat(16) + ".png", now: NOW });
+    assert.equal(first.url, `https://account.r2.cloudflarestorage.com/notes/${key}`);
+    assert.equal(first.url.includes("secret"), false);
+    assert.equal(first.headers.authorization.includes("secret"), false);
+    assert.match(first.headers.authorization, /^AWS4-HMAC-SHA256 /);
+    assert.match(first.headers.authorization, /Credential=key\/20261003\/auto\/s3\/aws4_request/);
+    assert.equal(first.headers.authorization, second.headers.authorization);
+    assert.notEqual(first.headers.authorization, changed.headers.authorization);
+    assert.equal(
+      first.headers["x-amz-content-sha256"],
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    );
+  });
+
+  it("returns object bytes from a signed get and treats 404 as missing", async () => {
+    const seen: { url: string; method: string; authorization: string }[] = [];
+    const loaded = await getR2Object(config, { key: "abc123.jpg", now: NOW }, async (url, init) => {
+      seen.push({
+        url: String(url),
+        method: init?.method ?? "",
+        authorization: new Headers(init?.headers).get("authorization") ?? "",
+      });
+      return new Response(Uint8Array.from([1, 2, 3]), { status: 200 });
+    });
+    assert.deepEqual(loaded?.bytes, Uint8Array.from([1, 2, 3]));
+    assert.equal(seen[0]?.method, "GET");
+    assert.equal(seen[0]?.url, "https://account.r2.cloudflarestorage.com/notes/abc123.jpg");
+    assert.match(seen[0]?.authorization ?? "", /AWS4-HMAC-SHA256/);
+    assert.equal(seen[0]?.url.includes("secret"), false);
+    assert.equal(
+      await getR2Object(config, { key: "abc123.jpg", now: NOW }, async () => {
+        return new Response("missing", { status: 404 });
+      }),
+      null,
+    );
+    await assert.rejects(
+      () =>
+        getR2Object(config, { key: "abc123.jpg", now: NOW }, async () => {
+          return new Response("denied", { status: 403 });
+        }),
+      (error: unknown) =>
+        error instanceof HttpError &&
+        error.status === 502 &&
+        error.message === "Could not load the image.",
+    );
+  });
+});
+
+describe("stored r2 image urls", () => {
+  const key = "91c3de96f8fef51134e8ee697c17e07f.jpg";
+  const host = "https://387cdb1c68988ce1812f67c510b491a3.r2.cloudflarestorage.com";
+
+  it("accepts only a 32 hex object key with an image extension", () => {
+    assert.equal(isImageObjectKey(key), true);
+    assert.equal(isImageObjectKey("ab".repeat(16) + ".png"), true);
+    assert.equal(isImageObjectKey("ab".repeat(16) + ".webp"), true);
+    assert.equal(isImageObjectKey("ab".repeat(16) + ".gif"), true);
+    assert.equal(isImageObjectKey("ab".repeat(16) + ".svg"), false);
+    assert.equal(isImageObjectKey("ab".repeat(15) + ".jpg"), false);
+    assert.equal(isImageObjectKey(`${key}/../../secret`), false);
+    assert.equal(isImageObjectKey("../etc/passwd"), false);
+    assert.equal(isImageObjectKey(`notes/${key}`), false);
+    assert.equal(isImageObjectKey(key.toUpperCase()), false);
+  });
+
+  it("rewrites s3 image urls with or without a bucket segment and leaves other hosts", () => {
+    assert.equal(rewriteStoredR2Images(`${host}/${key}`), `/i/${key}`);
+    assert.equal(rewriteStoredR2Images(`![shot](${host}/notes/${key})`), `![shot](/i/${key})`);
+    const other = `https://cdn.example/${key} and https://images.example.com/file.jpg`;
+    assert.equal(rewriteStoredR2Images(other), other);
+    assert.equal(
+      rewriteStoredR2Images(`https://pub-abc.r2.dev/${key}`),
+      `https://pub-abc.r2.dev/${key}`,
+    );
+    assert.equal(
+      rewriteStoredR2Images(`http://${host.slice("https://".length)}/${key}`),
+      `http://${host.slice("https://".length)}/${key}`,
+    );
+    assert.equal(
+      rewriteStoredR2Images(`${host}/folder/notes/${key}`),
+      `${host}/folder/notes/${key}`,
+    );
+    assert.equal(
+      rewriteStoredR2Images(`https://cdn.example/r2.cloudflarestorage.com/${key}`),
+      `https://cdn.example/r2.cloudflarestorage.com/${key}`,
+    );
+    assert.equal(rewriteStoredR2Images(`${host}/${key}?X-Amz-Signature=secret`), `/i/${key}`);
+    assert.equal(rewriteStoredR2Images(rewriteStoredR2Images(`${host}/${key}`)), `/i/${key}`);
+    assert.equal(rewriteStoredR2Images(`See ${host}/${key}.`), `See /i/${key}.`);
+    assert.equal(imageObjectContentType(key), "image/jpeg");
+    assert.equal(imageObjectContentType("ab".repeat(16) + ".svg"), null);
+    assert.equal(imagePublicUrl(`${host}/`, key), `/i/${key}`);
+    assert.equal(
+      imagePublicUrl("https://images.example.com", key),
+      `https://images.example.com/${key}`,
+    );
+  });
+
+  it("serves only an allowlisted key from the signed reader", () => {
+    const route = readFileSync(new URL("../app/i/[key]/route.ts", import.meta.url), "utf8");
+    assert.match(route, /imageObjectContentType\(key\)/);
+    assert.match(route, /getR2Object\(readR2Config\(\), \{ key \}\)/);
+    assert.match(route, /cache-control": "public, max-age=31536000, immutable"/);
+    assert.match(route, /status: 404/);
+    assert.equal(route.includes("requireLibraryUser"), false);
+    assert.equal(route.includes("getLibrarySession"), false);
+    const page = readFileSync(new URL("../app/d/[id]/page.tsx", import.meta.url), "utf8");
+    const editor = readFileSync(
+      new URL("../components/document/note-document.tsx", import.meta.url),
+      "utf8",
+    );
+    const publicNote = readFileSync(
+      new URL("../components/public-note/public-note.tsx", import.meta.url),
+      "utf8",
+    );
+    assert.match(page, /rewriteStoredR2Images\(bundle\.document\.content\)/);
+    assert.match(editor, /rewriteStoredR2Images\(content\)/);
+    assert.match(editor, /rewriteStoredR2Images\(document\.content\)/);
+    assert.match(publicNote, /rewriteStoredR2Images\(markdown\)/);
   });
 });
 

@@ -30,10 +30,7 @@ describe("raw note view", () => {
     assert.match(page, /searchParams: Promise<\{ view\?: string \| string\[\] \}>/);
     assert.match(gate, /documentType === "note"/);
     assert.match(gate, /access\.level === "view" \|\| access\.level === "edit"/);
-    assert.match(
-      gate,
-      /<NoteRawView markdown=\{noteExportMarkdown\(bundle\.document\.content\)\} \/>/,
-    );
+    assert.match(gate, /<NoteRawView markdown=\{noteExportMarkdown\(renderedContent\)\} \/>/);
     assert.equal(gate.includes("DocumentShell"), false);
     assert.match(page, /<DocumentShell/);
     assert.match(raw, /<pre className="note-raw">\{markdown\}<\/pre>/);

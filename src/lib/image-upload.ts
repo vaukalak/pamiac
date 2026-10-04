@@ -1,5 +1,6 @@
 import { randomBytes } from "node:crypto";
 import { HttpError } from "./http.ts";
+import { isR2StorageHost } from "./stored-image-url.ts";
 
 export const MONTHLY_IMAGE_BYTE_CAP = 50 * 1024 * 1024;
 
@@ -101,7 +102,15 @@ export function imageObjectKey(
 }
 
 export function imagePublicUrl(publicBaseUrl: string, key: string) {
-  return `${publicBaseUrl.replace(/\/+$/, "")}/${key}`;
+  const base = publicBaseUrl.replace(/\/+$/, "");
+  let host = "";
+  try {
+    host = new URL(base).hostname;
+  } catch {
+    host = "";
+  }
+  if (isR2StorageHost(host)) return `/i/${key}`;
+  return `${base}/${key}`;
 }
 
 export type StoredImage = {

@@ -14,6 +14,7 @@ import { folderGrantChain } from "@/lib/folders";
 import { documentSpaceLabel, type NamedWorkspace } from "@/lib/library-spaces";
 import { loadSharePreview } from "@/lib/load-share-preview";
 import { noteExportMarkdown } from "@/lib/note-file";
+import { rewriteStoredR2Images } from "@/lib/stored-image-url";
 import { isRawNoteView } from "@/lib/note-raw";
 import { unlockCookieName, unlockMatches } from "@/lib/passwords";
 import { documentShareTarget, sharePageMetadata } from "@/lib/share-preview";
@@ -112,12 +113,16 @@ export default async function DocumentPage(props: Properties) {
   }
 
   const documentType = bundle.document.type === "diagram" ? "diagram" : "note";
+  const renderedContent =
+    documentType === "note"
+      ? rewriteStoredR2Images(bundle.document.content)
+      : bundle.document.content;
   if (
     isRawNoteView(query.view) &&
     documentType === "note" &&
     (access.level === "view" || access.level === "edit")
   ) {
-    return <NoteRawView markdown={noteExportMarkdown(bundle.document.content)} />;
+    return <NoteRawView markdown={noteExportMarkdown(renderedContent)} />;
   }
   const spaceName = user ? documentSpaceLabel(bundle.document.workspaceId, workspaces) : null;
   const body =
@@ -134,7 +139,7 @@ export default async function DocumentPage(props: Properties) {
       <DocumentScreen
         key={bundle.document.visibility}
         canEdit={access.level === "edit"}
-        content={bundle.document.content}
+        content={renderedContent}
         emails={bundle.emails}
         hasPassword={Boolean(bundle.document.passwordHash)}
         id={bundle.document.id}
