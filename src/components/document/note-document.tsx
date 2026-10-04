@@ -17,7 +17,12 @@ import {
 import { useDocumentVersion } from "@/components/document/use-document-version";
 import { NoteShareMarkdown } from "@/components/note/note-share-markdown";
 import { defaultTitle } from "@/lib/content";
-import { remoteNoteMarkdown, remoteNoteTitle } from "@/lib/note-sync";
+import {
+  noteConflictAction,
+  noteSaveGate,
+  remoteNoteMarkdown,
+  remoteNoteTitle,
+} from "@/lib/note-sync";
 
 const NoteEditor = dynamic(() => import("@/components/note-editor").then((mod) => mod.NoteEditor), {
   ssr: false,
@@ -49,6 +54,7 @@ export function NoteDocument(props: Properties) {
   const dirty = useRef(false);
   const titleDirty = useRef(false);
   const saveInFlight = useRef(false);
+  const uploadHolds = useRef(0);
   const appliedVersion = useRef(version);
   const conflictRetries = useRef(0);
   const saveGeneration = useRef(0);
@@ -88,17 +94,20 @@ export function NoteDocument(props: Properties) {
   }
 
   function publish(payload: { title?: string; content?: string; version: number }) {
+    if (saveInFlight.current || uploadHolds.current > 0) return;
     const sent = { title: payload.title, content: payload.content };
     const generation = ++saveGeneration.current;
     saveInFlight.current = true;
     save.mutate(payload, {
       onSuccess: (result) => {
         if (generation !== saveGeneration.current) return;
+        saveInFlight.current = false;
         conflictRetries.current = 0;
         markSaved(result, sent);
       },
       onError: (error) => {
         if (generation !== saveGeneration.current) return;
+        saveInFlight.current = false;
         if (retryConflict(error)) return;
         queryClient.setQueryData(documentEditKey(id, "body"), "error");
       },
@@ -127,11 +136,16 @@ export function NoteDocument(props: Properties) {
     };
     if (dirty.current) payload.content = latest.current.content;
     if (titleDirty.current) payload.title = latest.current.title;
-    if (payload.content === undefined && payload.title === undefined) {
+    const action = noteConflictAction({
+      uploadHeld: uploadHolds.current > 0,
+      dirty: dirty.current,
+      titleDirty: titleDirty.current,
+    });
+    if (action === "settle") {
       queryClient.setQueryData(documentEditKey(id, "body"), "clean");
       return true;
     }
-    publish(payload);
+    if (action === "publish") publish(payload);
     return true;
   }
 
@@ -144,12 +158,19 @@ export function NoteDocument(props: Properties) {
       latest.current.title = partial.title;
       titleDirty.current = true;
     }
-    if (!dirty.current && !titleDirty.current) {
+    const gate = noteSaveGate({
+      dirty: dirty.current,
+      titleDirty: titleDirty.current,
+      canEdit,
+      uploadHeld: uploadHolds.current > 0,
+      saveInFlight: saveInFlight.current,
+    });
+    if (gate === "clean") {
       queryClient.setQueryData(documentEditKey(id, "body"), "clean");
       return;
     }
     queryClient.setQueryData(documentEditKey(id, "body"), "dirty");
-    if (!canEdit) return;
+    if (gate !== "debounce") return;
     if (timer.current) window.clearTimeout(timer.current);
     timer.current = window.setTimeout(() => {
       timer.current = null;
@@ -161,6 +182,21 @@ export function NoteDocument(props: Properties) {
       conflictRetries.current = 0;
       publish(payload);
     }, 700);
+  }
+
+  function holdSaves() {
+    uploadHolds.current += 1;
+    if (timer.current) {
+      window.clearTimeout(timer.current);
+      timer.current = null;
+    }
+  }
+
+  function releaseSaves() {
+    uploadHolds.current = Math.max(0, uploadHolds.current - 1);
+    if (uploadHolds.current > 0) return;
+    if (!dirty.current && !titleDirty.current) return;
+    schedule();
   }
 
   function commitTitle(value: string) {
@@ -187,10 +223,16 @@ export function NoteDocument(props: Properties) {
   useEffect(() => {
     const remoteVersion = versionQuery.data?.version;
     if (!canEdit || remoteVersion == null || remoteVersion <= appliedVersion.current) return;
-    if (saveInFlight.current || save.isPending) return;
+    if (saveInFlight.current || save.isPending || uploadHolds.current > 0) return;
     let cancelled = false;
     void readOwnerDocument(id).then((document) => {
-      if (cancelled || saveInFlight.current || typeof document.content !== "string") return;
+      if (
+        cancelled ||
+        saveInFlight.current ||
+        uploadHolds.current > 0 ||
+        typeof document.content !== "string"
+      )
+        return;
       if (document.version <= appliedVersion.current) return;
       const next = remoteNoteMarkdown({
         dirty: dirty.current,
@@ -252,6 +294,8 @@ export function NoteDocument(props: Properties) {
           version={remote.version}
           workspaceId={workspaceId}
           onChange={(markdown) => schedule({ content: markdown })}
+          onHoldSaves={holdSaves}
+          onReleaseSaves={releaseSaves}
         />
       </div>
     </div>
