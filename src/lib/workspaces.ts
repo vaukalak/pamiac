@@ -1,6 +1,7 @@
 import { and, asc, eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { workspaceMembers, workspaces } from "@/db/schema";
+import { captureServerEvent, workspaceCreatedEvent } from "@/lib/analytics";
 import { HttpError } from "@/lib/http";
 import {
   firstMember,
@@ -49,6 +50,7 @@ export async function createNamedWorkspace(userId: string, name: string): Promis
       role,
     });
   });
+  await captureServerEvent(workspaceCreatedEvent(userId));
   return { id, name: label, role };
 }
 

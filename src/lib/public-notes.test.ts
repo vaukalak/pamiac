@@ -38,6 +38,10 @@ describe("public privacy and terms notes", () => {
     assert.match(privacyNote.markdown, /Purposes/);
     assert.match(privacyNote.markdown, /Recipients/);
     assert.match(privacyNote.markdown, /Resend/);
+    assert.match(
+      privacyNote.markdown,
+      /PostHog receives product events such as page views, notification-check events, and onboarding and usage events, and does not receive note text or email addresses/,
+    );
     assert.match(privacyNote.markdown, /Retention/);
     assert.match(privacyNote.markdown, /15 minutes/);
     assert.match(privacyNote.markdown, /7 days/);

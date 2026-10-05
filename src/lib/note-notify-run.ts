@@ -1,6 +1,12 @@
 import { and, eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { documents, noteNotifications, user } from "@/db/schema";
+import {
+  captureNotificationCheckConfirmed,
+  captureNotificationCheckTriggered,
+  captureServerEvent,
+  noteNotificationSavedEvent,
+} from "@/lib/analytics";
 import { appBaseUrl } from "@/lib/config";
 import { HttpError } from "@/lib/http";
 import { sendNoteUpdated } from "@/lib/mail";
@@ -75,6 +81,13 @@ export async function saveNoteNotification(
       target: noteNotifications.documentId,
       set: { mode: input.mode, criteria, criteriaMatched: false },
     });
+  await captureServerEvent(
+    noteNotificationSavedEvent({
+      userId: ownerId,
+      documentId: id,
+      mode: input.mode,
+    }),
+  );
   return { mode: input.mode, criteria };
 }
 
@@ -117,6 +130,11 @@ async function sendCriteriaUpdate(input: {
   previouslyMatched: boolean;
   title: string;
 }) {
+  await captureNotificationCheckTriggered({
+    documentId: input.documentId,
+    source: "delivery",
+    userId: input.ownerId,
+  });
   const judged = await postDecide(
     jevDecideBody({
       criteria: input.criteria,
@@ -127,6 +145,12 @@ async function sendCriteriaUpdate(input: {
   if (!judged) return;
   const matched = criteriaMatchResult(judged);
   if (matched === null) return;
+  await captureNotificationCheckConfirmed({
+    documentId: input.documentId,
+    source: "delivery",
+    userId: input.ownerId,
+    result: matched,
+  });
   const cadence = matched ? await postDecide(jevRepeatBody(input.criteria)) : null;
   const repeats = cadence ? readRepeatsEveryChange(cadence) : false;
   const decision = criteriaEmailDecision({
@@ -189,9 +213,20 @@ async function sendNoteUpdateEmail(input: {
 
 export async function testNoteCriteria(ownerId: string, id: string, criteria: string) {
   const document = await ownedNote(ownerId, id);
+  await captureNotificationCheckTriggered({
+    documentId: id,
+    source: "test",
+    userId: ownerId,
+  });
   const payload = await postDecide(jevCriteriaTestBody({ criteria, note: document.content }));
   const verdict = payload ? readCriteriaVerdict(payload) : null;
   if (!verdict) throw new HttpError(502, "Could not test this condition");
+  await captureNotificationCheckConfirmed({
+    documentId: id,
+    source: "test",
+    userId: ownerId,
+    result: verdict,
+  });
   return { result: verdict };
 }
 

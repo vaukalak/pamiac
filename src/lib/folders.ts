@@ -16,6 +16,7 @@ import {
   libraryWorkspaceId,
   presentSharedFolder,
 } from "@/lib/folder-library";
+import { captureServerEvent, folderCreatedEvent } from "@/lib/analytics";
 import { HttpError } from "@/lib/http";
 import { PERSONAL_SPACE_ID } from "@/lib/library-spaces";
 import { sendFolderShared } from "@/lib/mail";
@@ -163,6 +164,9 @@ export async function createFolder(
       workspaceId: folders.workspaceId,
       sortIndex: folders.sortIndex,
     });
+  if (created) {
+    await captureServerEvent(folderCreatedEvent({ userId, folderId: created.id }));
+  }
   return created;
 }
 

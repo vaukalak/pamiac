@@ -1,6 +1,8 @@
 import { ZodError } from "zod";
+import { captureServerEvent, supportRequestSentEvent } from "@/lib/analytics";
 import { HttpError, errorResponse, json, readJson } from "@/lib/http";
 import { sendSupportRequest } from "@/lib/mail";
+import { getSession } from "@/lib/session";
 import { supportRequestSchema } from "@/lib/support";
 
 function supportFailure(error: unknown) {
@@ -21,6 +23,13 @@ export async function POST(request: Request) {
   try {
     const input = supportRequestSchema.parse(await readJson(request));
     await sendSupportRequest(input);
+    try {
+      const session = await getSession();
+      const userId = session.status === "ok" ? (session.session?.user.id ?? null) : null;
+      await captureServerEvent(supportRequestSentEvent(userId));
+    } catch {
+      // Analytics must not change the product result.
+    }
     return json({ ok: true });
   } catch (error) {
     return supportFailure(error);

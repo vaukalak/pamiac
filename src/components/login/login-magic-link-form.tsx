@@ -5,6 +5,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useForm, type FieldErrors, type Resolver } from "react-hook-form";
 import { LoginLinkSent } from "@/components/login/login-link-sent";
 import { LoginSendFailure } from "@/components/login/login-send-failure";
+import { captureBrowserEvent } from "@/lib/analytics-browser";
 import { authClient } from "@/lib/auth-client";
 import { loginAnnouncement } from "@/lib/login-announcement";
 import { loginSendFailureSentence } from "@/lib/login-send-failure";
@@ -61,6 +62,7 @@ async function sendMagicLink(input: { email: string; nextPath: string; showDevLi
   if (result.error) {
     throw new Error(loginSendFailureSentence(result.error.message));
   }
+  await captureBrowserEvent("magic_link_requested");
   rememberSentLoginAddress(email);
   if (!showDevLink) return { devUrl: null };
   try {

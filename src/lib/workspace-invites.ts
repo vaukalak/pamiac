@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { workspaceInvites, workspaceMembers, workspaces } from "@/db/schema";
+import { captureServerEvent, workspaceInviteAcceptedEvent } from "@/lib/analytics";
 import { HttpError } from "@/lib/http";
 import { workspaceRole, type WorkspaceRole } from "@/lib/library-spaces";
 import { sameInviteEmail } from "@/lib/workspace-invite-link";
@@ -59,6 +60,7 @@ export async function acceptWorkspaceInvite(userId: string, email: string, invit
       target: [workspaceMembers.workspaceId, workspaceMembers.userId],
     });
   await db.delete(workspaceInvites).where(eq(workspaceInvites.id, allowed.id));
+  await captureServerEvent(workspaceInviteAcceptedEvent(userId));
   return { id: allowed.id, workspaceName: allowed.workspaceName };
 }
 

@@ -5,6 +5,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useForm, type FieldErrors, type Resolver } from "react-hook-form";
 import { LoginPasswordCreateFields } from "@/components/login/login-password-create-fields";
 import { LoginSendFailure } from "@/components/login/login-send-failure";
+import { captureBrowserEvent } from "@/lib/analytics-browser";
 import { authClient } from "@/lib/auth-client";
 import { loginSendFailureSentence } from "@/lib/login-send-failure";
 import { Button } from "@/ui/Button";
@@ -97,6 +98,7 @@ async function signInWithPassword(input: { email: string; password: string; next
   if (result.error) {
     throw new Error(loginSendFailureSentence(result.error.message, SIGN_IN_FAILURE));
   }
+  await captureBrowserEvent("password_sign_in");
 }
 
 async function registerWithPassword(input: { email: string; password: string; nextPath: string }) {

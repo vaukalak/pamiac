@@ -3,6 +3,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { LoginGoogleAgentCopy } from "@/components/login/login-google-agent-copy";
 import { LoginSendFailure } from "@/components/login/login-send-failure";
+import { captureBrowserEvent } from "@/lib/analytics-browser";
 import { authClient } from "@/lib/auth-client";
 import { loginAnnouncement } from "@/lib/login-announcement";
 import { loginSendFailureSentence } from "@/lib/login-send-failure";
@@ -31,6 +32,7 @@ async function startGoogleSignIn(nextPath: string) {
   if (result.error) {
     throw new Error(loginSendFailureSentence(result.error.message, GOOGLE_FAILURE));
   }
+  await captureBrowserEvent("google_sign_in_started");
 }
 
 export function LoginGoogle(props: Properties) {
