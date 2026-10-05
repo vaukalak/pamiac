@@ -71,6 +71,20 @@
       "when": 1790810800000,
       "tag": "0009_folder-share",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1790810900000,
+      "tag": "0010_note-notification",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1790811000000,
+      "tag": "0011_note-notification-arm",
+      "breakpoints": true
     }
   ]
 }

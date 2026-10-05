@@ -54,7 +54,7 @@ export function DocumentScreen(props: Properties) {
     <div className="library-heading-actions topbar-tools">
       <SaveState canEdit={canEdit} id={id} />
       {isOwner ? (
-        <DocumentOwnerActions id={id} onShare={() => setSharing(true)} />
+        <DocumentOwnerActions id={id} kind={type} onShare={() => setSharing(true)} />
       ) : (
         <span className="badge">{shareState.visibility}</span>
       )}

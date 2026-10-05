@@ -8,6 +8,7 @@ interface Properties {
   onClick?: () => void;
   pressed?: boolean;
   expanded?: boolean;
+  title?: string;
 }
 
 export function Button(props: Properties) {
@@ -19,6 +20,7 @@ export function Button(props: Properties) {
     onClick,
     pressed,
     expanded,
+    title,
   } = props;
   const classes = className ? `btn ${className}` : "btn";
 
@@ -29,6 +31,7 @@ export function Button(props: Properties) {
       className={classes}
       disabled={disabled}
       onClick={onClick}
+      title={title}
       type={type}
     >
       {children}
