@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 import { describe, it } from "node:test";
+import { readStylesheet } from "./stylesheet.ts";
 
 function read(path: string) {
   return readFileSync(new URL(path, import.meta.url), "utf8");
@@ -45,7 +46,7 @@ describe("library profile corner", () => {
   });
 
   it("pins the lime account button to the viewport corner and opens the menu downward", () => {
-    const css = read("../app/globals.css");
+    const css = readStylesheet();
     const corner = block(css, ".library-mobile-header {", ".library-mobile-header .brand");
     const menu = block(css, ".library-shell .profile-menu {", ".library-shell .profile-email {");
     const button = block(
@@ -62,7 +63,10 @@ describe("library profile corner", () => {
     assert.match(menu, /right:\s*0/);
     assert.match(menu, /bottom:\s*auto/);
     assert.match(menu, /left:\s*auto/);
-    assert.match(menu, /background:\s*rgba\(13,\s*17,\s*14,\s*0\.96\)/);
+    assert.match(
+      menu,
+      /background:\s*color-mix\(in srgb, var\(--home-panel-solid\) 96%, transparent\)/,
+    );
     assert.equal(/bottom:\s*calc\(100% \+ 8px\)/.test(menu), false);
     assert.match(button, /border-color:\s*var\(--home-lime\)/);
     assert.match(button, /color:\s*var\(--home-lime\)/);
@@ -73,7 +77,7 @@ describe("library profile corner", () => {
   });
 
   it("insets the brand and the library column so the corner button does not cover them", () => {
-    const css = read("../app/globals.css");
+    const css = readStylesheet();
     const brand = block(css, ".library-shell .brand {", ".library-shell .brand-mark {");
     const main = block(css, ".library-shell .library-main {", ".library-shell .library-crumb {");
     const narrow = css.slice(css.lastIndexOf("@media (max-width: 760px)"));

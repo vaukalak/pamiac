@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
+import { readStylesheet } from "./stylesheet.ts";
 
 function read(path: string) {
   return readFileSync(new URL(path, import.meta.url), "utf8");
@@ -24,7 +25,7 @@ function block(source: string, header: string) {
 
 describe("library note inset", () => {
   it("keeps a tighter library gutter than the editor default and leaves the paper sheet", () => {
-    const css = read("../app/globals.css");
+    const css = readStylesheet();
     const paper = block(css, "\n.note-sheet {");
     const sheet = block(css, ".library-shell .note-sheet {");
     const editor = block(css, ".library-shell .note-editor .bn-editor {");
@@ -56,7 +57,7 @@ describe("owner delete control", () => {
     assert.match(actions, /\{message \? <Alert>\{message\}<\/Alert> : null\}/);
     assert.match(
       screen,
-      /<DocumentOwnerActions id=\{id\} onShare=\{\(\) => setSharing\(true\)\} \/>/,
+      /<DocumentOwnerActions id=\{id\} kind=\{type\} onShare=\{\(\) => setSharing\(true\)\} \/>/,
     );
   });
 });

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
+import { readStylesheet } from "./stylesheet.ts";
 
 const page = readFileSync(new URL("../app/support/page.tsx", import.meta.url), "utf8");
 const form = readFileSync(
@@ -8,7 +9,7 @@ const form = readFileSync(
   "utf8",
 );
 const home = readFileSync(new URL("../app/page.tsx", import.meta.url), "utf8");
-const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8");
+const css = readStylesheet();
 
 function expect(actual: string) {
   return {
@@ -73,7 +74,7 @@ describe("support board", () => {
     expect(support).toMatch(
       /\.home \.home-support-panel label\s*\{[^}]*color:\s*var\(--home-text\)/,
     );
-    expect(support).toMatch(/background:\s*#101410/);
+    expect(support).toMatch(/background:\s*var\(--home-field\)/);
     expect(support).toMatch(/border-color:\s*var\(--home-line\)/);
     expect(support).toMatch(/caret-color:\s*var\(--home-lime\)/);
     expect(support).toMatch(
@@ -82,8 +83,12 @@ describe("support board", () => {
     expect(support).toMatch(
       /\.home \.home-support-panel input:focus,\s*\.home \.home-support-panel textarea:focus\s*\{[^}]*border-color:\s*var\(--home-lime\)/,
     );
-    expect(support).toMatch(/box-shadow:\s*0 0 0 3px rgba\(185,\s*245,\s*66,\s*0\.35\)/);
-    expect(support).toMatch(/\.home \.home-support-panel \.error\s*\{[^}]*color:\s*#ffb4ab/);
+    expect(support).toMatch(
+      /box-shadow:\s*0 0 0 3px color-mix\(in srgb, var\(--home-lime\) 35%, transparent\)/,
+    );
+    expect(support).toMatch(
+      /\.home \.home-support-panel \.error\s*\{[^}]*color:\s*var\(--home-danger\)/,
+    );
     expect(support).toMatch(
       /\.home \.home-support-panel \.btn\s*\{[^}]*width:\s*100%[^}]*background:\s*var\(--home-lime\)[^}]*color:\s*var\(--home-on-lime\)/,
     );

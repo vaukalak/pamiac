@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
+import { readStylesheet } from "./stylesheet.ts";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -112,7 +113,7 @@ describe("new connection dialog", () => {
   });
 
   it("keeps a long MCP link wrapping and keyboard-visible inside the library dialog", () => {
-    const css = read("src/app/globals.css");
+    const css = readStylesheet();
     const link = slice(css, ".dev-link {", ".workspace {");
     const endpoint = slice(
       css,
@@ -130,13 +131,15 @@ describe("new connection dialog", () => {
   });
 
   it("paints connection dialog errors in the dark library panel color", () => {
-    const css = read("src/app/globals.css");
+    const css = readStylesheet();
 
-    expect(css).toMatch(/\.library-shell \.token-connect-dialog \.error \{\s*color: #ffb4ab;\s*\}/);
+    expect(css).toMatch(
+      /\.library-shell \.token-connect-dialog \.error \{\s*color: var\(--home-danger\);\s*\}/,
+    );
   });
 
   it("paints the connection dialog opaque and keeps the home panel and consent card translucent", () => {
-    const css = read("src/app/globals.css");
+    const css = readStylesheet();
     const chrome = slice(css, ".home .connect-agent-panel,", ".home .connect-agent-panel {");
     const home = slice(
       css,
@@ -153,18 +156,22 @@ describe("new connection dialog", () => {
 
     expect(chrome).toMatch(/\.library-shell \.token-connect-dialog\.token-connect \{/);
     expect(chrome).toMatch(/width: min\(660px, 100%\);/);
-    expect(chrome).toMatch(/border: 1px solid rgba\(185, 245, 66, 0\.32\);/);
+    expect(chrome).toMatch(
+      /border: 1px solid color-mix\(in srgb, var\(--home-lime\) 32%, transparent\);/,
+    );
     expect(chrome).toMatch(/border-radius: 22px;/);
     expect(chrome).not.toMatch(/background:/);
-    expect(home).toMatch(/background:\s*rgba\(8, 14, 11, 0\.94\);/);
-    expect(dialog).toMatch(/background:\s*rgb\(8, 14, 11\);/);
+    expect(home).toMatch(
+      /background:\s*color-mix\(in srgb, var\(--home-panel-solid\) 94%, transparent\);/,
+    );
+    expect(dialog).toMatch(/background:\s*var\(--home-panel-solid\);/);
     expect(dialog).not.toMatch(/rgba\(/);
     expect(consent).toMatch(/background:\s*rgba\(8, 14, 11, 0\.94\);/);
     expect(backdrop).toMatch(/background:\s*var\(--scrim\);/);
   });
 
   it("keeps the selected connection tab label readable on hover", () => {
-    const css = read("src/app/globals.css");
+    const css = readStylesheet();
     const hover = slice(
       css,
       '.library-shell .token-connect-tabs .btn.secondary[aria-pressed="true"]:hover {',

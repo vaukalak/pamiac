@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
+import { readStylesheet } from "./stylesheet.ts";
 
 const features = readFileSync(
   new URL("../components/home/home-features.tsx", import.meta.url),
@@ -24,7 +25,7 @@ const spaces = readFileSync(
   new URL("../components/home/preview-spaces.tsx", import.meta.url),
   "utf8",
 );
-const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8");
+const css = readStylesheet();
 
 function mediaBlock(source: string, query: string) {
   const header = `@media ${query}`;

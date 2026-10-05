@@ -131,7 +131,7 @@ describe("workspace member content edit", () => {
     assert.match(tools, /\{isOwner \? \(/);
     assert.match(
       tools,
-      /<DocumentOwnerActions id=\{id\} onShare=\{\(\) => setSharing\(true\)\} \/>/,
+      /<DocumentOwnerActions id=\{id\} kind=\{type\} onShare=\{\(\) => setSharing\(true\)\} \/>/,
     );
     assert.equal(/\{canEdit \? \(/.test(tools), false);
     assert.match(screen, /<NoteDocument[\s\S]*canEdit=\{canEdit\}/);

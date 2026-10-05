@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
+import { readStylesheet } from "./stylesheet.ts";
 import { isRawNoteView } from "./note-raw.ts";
 
 function read(path: string) {
@@ -21,7 +22,7 @@ describe("raw note view", () => {
   it("renders note markdown without the document shell and leaves every other view in the shell", () => {
     const page = read("../app/d/[id]/page.tsx");
     const raw = read("../components/document/note-raw-view.tsx");
-    const css = read("../app/globals.css");
+    const css = readStylesheet();
     const gate = page.slice(
       page.indexOf("isRawNoteView(query.view)"),
       page.indexOf("const spaceName"),

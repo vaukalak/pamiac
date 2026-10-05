@@ -87,17 +87,8 @@ function commentIds(blocks: readonly { id: string; children?: readonly { id: str
 }
 
 export function NoteEditor(props: Properties) {
-  const {
-    id,
-    markdown,
-    version,
-    editable,
-    onChange,
-    onHoldSaves,
-    onReleaseSaves,
-    libraryShell = false,
-    workspaceId,
-  } = props;
+  const { id, markdown, version, editable, onChange, onHoldSaves, onReleaseSaves, workspaceId } =
+    props;
   const idRef = useRef(id);
   idRef.current = id;
   const uploadImage = useMutation({
@@ -254,7 +245,7 @@ export function NoteEditor(props: Properties) {
         editable={editable}
         editor={editor}
         onChange={handleChange}
-        theme={libraryShell || scheme === "dark" ? "dark" : "light"}
+        theme={scheme === "dark" ? "dark" : "light"}
       />
       <NoteLasso editor={editor} editable={editable} />
     </NoteEditorFrame>

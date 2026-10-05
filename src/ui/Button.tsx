@@ -12,6 +12,7 @@ interface Properties {
   popup?: "dialog" | "listbox" | "menu";
   role?: "option";
   selected?: boolean;
+  title?: string;
 }
 
 export function Button(props: Properties) {
@@ -27,6 +28,7 @@ export function Button(props: Properties) {
     expanded,
     role,
     selected,
+    title,
   } = props;
   const classes = className ? `btn ${className}` : "btn";
 
@@ -41,6 +43,7 @@ export function Button(props: Properties) {
       disabled={disabled}
       onClick={onClick}
       role={role}
+      title={title}
       type={type}
     >
       {children}

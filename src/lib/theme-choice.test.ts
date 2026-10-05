@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
+import { readStylesheet } from "./stylesheet.ts";
 import {
   applyThemeChoice,
   dataThemeAttribute,
@@ -217,7 +218,7 @@ describe("theme choice", () => {
 
 describe("theme surfaces", () => {
   it("uses the same warm dark tokens for an explicit dark choice and the dark scheme", () => {
-    const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8");
+    const css = readStylesheet();
     const media = ruleBody(
       mediaBlock(css, "(prefers-color-scheme: dark)"),
       ':root:not([data-theme="light"])',

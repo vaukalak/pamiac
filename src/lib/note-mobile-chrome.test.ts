@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
+import { readStylesheet } from "./stylesheet.ts";
 import {
   blockIds,
   canDropBlock,
@@ -85,7 +86,7 @@ describe("mobile note chrome", () => {
 
   it("keeps the desktop side menu and removes its buttons on a narrow viewport", () => {
     const sideMenu = read("../components/note/note-side-menu.tsx");
-    const css = read("../app/globals.css");
+    const css = readStylesheet();
     const sheet = block(
       css.slice(css.lastIndexOf("@media (max-width: 760px)")),
       "@media (max-width: 760px) {",

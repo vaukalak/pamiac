@@ -1,12 +1,13 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
+import { readStylesheet } from "./stylesheet.ts";
 
 const login = readFileSync(
   new URL("../components/login/login-sign-in-copy.tsx", import.meta.url),
   "utf8",
 );
-const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8");
+const css = readStylesheet();
 
 function expect(actual: string) {
   return {

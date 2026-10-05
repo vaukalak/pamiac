@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 import { describe, it } from "node:test";
+import { readStylesheet } from "./stylesheet.ts";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -56,7 +57,7 @@ describe("token form dialog", () => {
     const dialog = read("src/components/tokens/token-form-dialog.tsx");
     const panel = read("src/components/tokens/token-form-dialog-panel.tsx");
     const heading = read("src/components/tokens/token-form-dialog-heading.tsx");
-    const css = read("src/app/globals.css");
+    const css = readStylesheet();
 
     assert.match(dialog, /document\.querySelector\("\.library-shell"\)/);
     assert.match(dialog, /document\.body/);

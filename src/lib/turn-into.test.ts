@@ -156,8 +156,9 @@ test("the note editor keeps theme wiring and mounts one custom side menu", () =>
   assert.match(noteEditor, /useResolvedScheme/);
   assert.match(theme, /matchMedia\("\(prefers-color-scheme: dark\)"\)/);
   assert.match(theme, /return "light"/);
-  assert.match(noteEditor, /libraryShell = false/);
-  assert.match(noteEditor, /theme=\{libraryShell \|\| scheme === "dark" \? "dark" : "light"\}/);
+  assert.match(noteEditor, /libraryShell\?: boolean/);
+  assert.match(noteEditor, /theme=\{scheme === "dark" \? "dark" : "light"\}/);
+  assert.doesNotMatch(noteEditor, /libraryShell \|\| scheme === "dark"/);
   assert.match(noteEditor, /export function NoteEditor/);
   assert.match(surface, /sideMenu=\{false\}/);
   assert.match(surface, /<SideMenuController sideMenu=\{NoteSideMenu\} \/>/);

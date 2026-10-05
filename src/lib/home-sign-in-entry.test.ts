@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
 import { describe, it } from "node:test";
+import { readStylesheet } from "./stylesheet.ts";
 
 const home = readFileSync(new URL("../app/page.tsx", import.meta.url), "utf8");
 const hero = readFileSync(new URL("../components/home/home-hero.tsx", import.meta.url), "utf8");
@@ -25,7 +26,7 @@ const nav = readFileSync(
   new URL("../components/header/app-header-nav.tsx", import.meta.url),
   "utf8",
 );
-const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8");
+const css = readStylesheet();
 
 const homeDirectory = new URL("../components/home/", import.meta.url);
 const homeSources = readdirSync(homeDirectory).map((name) =>

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
+import { readStylesheet } from "./stylesheet.ts";
 
 function read(path: string) {
   return readFileSync(new URL(path, import.meta.url), "utf8");
@@ -51,7 +52,7 @@ describe("library sidebar and create plus", () => {
 
   it("marks the open space and paints document create with the home lime", () => {
     const selector = read("../components/library/workspace-selector.tsx");
-    const css = read("../app/globals.css");
+    const css = readStylesheet();
     const plus = css.slice(
       css.indexOf(".library-shell .library-create .library-plus {"),
       css.indexOf(".library-shell .library-create .library-plus:hover"),
@@ -81,7 +82,7 @@ describe("library sidebar and create plus", () => {
   });
 
   it("bolds only the selected workspace row", () => {
-    const css = read("../app/globals.css");
+    const css = readStylesheet();
     const idle = css.slice(
       css.indexOf(".library-shell .workspace-selector button.workspace-switcher-option {"),
       css.indexOf(".library-shell .workspace-selector button.workspace-switcher-option:hover"),
@@ -113,7 +114,7 @@ describe("library sidebar and create plus", () => {
   });
 
   it("pins the desktop sidebar to the viewport and scrolls the nav above the footer", () => {
-    const css = read("../app/globals.css");
+    const css = read("../app/circuit-library.css");
     const panel = read("../components/library/library-sidebar-panel.tsx");
     const scroll = read("../components/library/library-sidebar-scroll.tsx");
     const desktop = css.slice(

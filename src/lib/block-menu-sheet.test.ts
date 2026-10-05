@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
+import { readStylesheet } from "./stylesheet.ts";
 
 function read(path: string) {
   return readFileSync(new URL(path, import.meta.url), "utf8");
@@ -23,7 +24,7 @@ function block(source: string, header: string) {
 }
 
 function sheetMedia() {
-  const css = read("../app/globals.css");
+  const css = readStylesheet();
   return block(
     css.slice(css.lastIndexOf("@media (max-width: 760px)")),
     "@media (max-width: 760px) {",
@@ -83,7 +84,7 @@ describe("mobile block menu sheets", () => {
       sheet,
       ".library-shell:has(.note-editor .bn-drag-handle-menu),\n  .library-shell:has(.note-editor .note-turn-into-menu),\n  .library-shell:has(.note-editor .bn-drag-handle-menu .bn-color-picker-dropdown) {",
     );
-    const css = read("../app/globals.css");
+    const css = readStylesheet();
     const desktop = css.slice(
       css.indexOf(".library-shell:has(.bn-drag-handle-menu) > .library-main {"),
       css.indexOf(".library-shell ::selection"),
