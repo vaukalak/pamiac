@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
+import { readStylesheet } from "./stylesheet.ts";
 
 const login = readFileSync(new URL("../app/login/page.tsx", import.meta.url), "utf8");
 const form = readFileSync(
@@ -11,7 +12,7 @@ const sent = readFileSync(
   new URL("../components/login/login-link-sent.tsx", import.meta.url),
   "utf8",
 );
-const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8");
+const css = readStylesheet();
 const locked = readFileSync(new URL("../components/locked-document.tsx", import.meta.url), "utf8");
 const member = readFileSync(
   new URL("../components/library/workspace-member-add.tsx", import.meta.url),
@@ -63,7 +64,7 @@ describe("sign-in email fill", () => {
 
     expect(fields).toMatch(/background:\s*var\(--field\)/);
     expect(fields).toMatch(/border:\s*1px solid var\(--line\)/);
-    expect(email).toMatch(/background:\s*#101410/);
+    expect(email).toMatch(/background:\s*var\(--home-field\)/);
     expect(email).toMatch(/caret-color:\s*var\(--home-lime\)/);
     expect(email).toMatch(/border-color:\s*var\(--home-line\)/);
     expect(email).not.toMatch(/var\(--field\)|var\(--teal\)|var\(--focus\)/);

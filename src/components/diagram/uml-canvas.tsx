@@ -37,6 +37,7 @@ import {
   markRelationDeleted,
 } from "@/lib/diagram-dirty";
 import { DIAGRAM_NODE_FIELDS } from "@/lib/diagram-patch";
+import { useThemeChoice } from "@/lib/use-theme-choice";
 
 const nodeTypes = { uml: UmlNodeView };
 
@@ -170,6 +171,7 @@ function applyDiagram(diagram: DiagramContent, currentNodes: UmlFlowNode[], curr
 
 export function UmlCanvas(props: Properties) {
   const { id, initial, version, editable } = props;
+  const choice = useThemeChoice();
   const starting = toFlow(readDiagram(initial));
   const [nodes, setNodes, onNodesChange] = useNodesState<UmlFlowNode>(starting.nodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(starting.edges);
@@ -403,7 +405,7 @@ export function UmlCanvas(props: Properties) {
           nodesDraggable={editable}
           nodesConnectable={editable}
           elementsSelectable
-          colorMode="system"
+          colorMode={choice}
         >
           <Background color="var(--flow-grid)" gap={22} />
           <Controls />

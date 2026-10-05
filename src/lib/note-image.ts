@@ -2,7 +2,12 @@ import { randomUUID } from "node:crypto";
 import { and, eq, gte, lt, sql } from "drizzle-orm";
 import { getDb } from "@/db";
 import { imageUploads } from "@/db/schema";
-import { getEditableDocument, requireLibraryUser } from "@/lib/documents";
+import {
+  getAgentDocument,
+  getEditableDocument,
+  requireLibraryUser,
+  type AgentScope,
+} from "@/lib/documents";
 import { HttpError } from "@/lib/http";
 import { acceptImageUpload, imageBytesThisMonth, utcMonthWindow } from "@/lib/image-upload";
 import { putR2Object, readR2Config } from "@/lib/r2";
@@ -30,21 +35,19 @@ async function usedImageBytes(
   return imageBytesThisMonth(rows, userId, now);
 }
 
-export async function uploadNoteImage(
+async function storeNoteImage(
+  userId: string,
   documentId: string,
   file: { bytes: Uint8Array; type: string },
 ) {
-  const user = await requireLibraryUser();
-  const document = await getEditableDocument(user.id, documentId);
-  if (!document) throw new HttpError(404, "Document not found");
   const config = readR2Config();
   const now = new Date();
   return getDb().transaction(async (tx) => {
-    await tx.execute(sql`select pg_advisory_xact_lock(hashtextextended(${user.id}, 0))`);
-    const usedBytes = await usedImageBytes(tx, user.id, now);
+    await tx.execute(sql`select pg_advisory_xact_lock(hashtextextended(${userId}, 0))`);
+    const usedBytes = await usedImageBytes(tx, userId, now);
     return acceptImageUpload({
-      userId: user.id,
-      documentId: document.id,
+      userId,
+      documentId,
       bytes: file.bytes,
       declaredType: file.type,
       usedBytes,
@@ -68,4 +71,26 @@ export async function uploadNoteImage(
       },
     });
   });
+}
+
+export async function uploadNoteImage(
+  documentId: string,
+  file: { bytes: Uint8Array; type: string },
+) {
+  const user = await requireLibraryUser();
+  const document = await getEditableDocument(user.id, documentId);
+  if (!document) throw new HttpError(404, "Document not found");
+  return storeNoteImage(user.id, document.id, file);
+}
+
+export async function uploadAgentNoteImage(
+  userId: string,
+  documentId: string,
+  file: { bytes: Uint8Array; type: string },
+  scope: AgentScope,
+) {
+  const document = await getAgentDocument(userId, documentId, scope);
+  if (!document) throw new HttpError(404, "Document not found");
+  if (document.type !== "note") throw new HttpError(400, "Images belong on notes.");
+  return storeNoteImage(userId, document.id, file);
 }

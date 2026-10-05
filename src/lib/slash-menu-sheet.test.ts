@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
+import { readStylesheet } from "./stylesheet.ts";
 
 function read(path: string) {
   return readFileSync(new URL(path, import.meta.url), "utf8");
@@ -24,7 +25,7 @@ function block(source: string, header: string) {
 
 describe("mobile slash menu sheet", () => {
   it("pins the slash menu to the bottom of a narrow viewport", () => {
-    const css = read("../app/globals.css");
+    const css = readStylesheet();
     const sheet = block(
       css.slice(css.lastIndexOf("@media (max-width: 760px)")),
       "@media (max-width: 760px) {",
@@ -59,7 +60,7 @@ describe("mobile slash menu sheet", () => {
   });
 
   it("does not make the floating wrapper a transform containing block", () => {
-    const css = read("../app/globals.css");
+    const css = readStylesheet();
     const sheet = block(
       css.slice(css.lastIndexOf("@media (max-width: 760px)")),
       "@media (max-width: 760px) {",
@@ -76,7 +77,7 @@ describe("mobile slash menu sheet", () => {
   });
 
   it("dims the screen with the library scrim and lifts the sheet above the header", () => {
-    const css = read("../app/globals.css");
+    const css = readStylesheet();
     const sheet = block(
       css.slice(css.lastIndexOf("@media (max-width: 760px)")),
       "@media (max-width: 760px) {",

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef } from "react";
+import { ProfileTheme } from "@/components/header/profile-theme";
 import { authClient } from "@/lib/auth-client";
 
 interface Properties {
@@ -32,6 +33,7 @@ export function ProfileMenuPanel(props: Properties) {
   return (
     <div className="profile-menu" id={id} role="menu">
       <p className="profile-email">{email}</p>
+      <ProfileTheme />
       <Link className="menu-item" href="/profile" onClick={onClose} ref={firstRef} role="menuitem">
         Plan
       </Link>

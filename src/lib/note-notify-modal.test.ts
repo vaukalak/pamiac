@@ -12,7 +12,7 @@ describe("note notify phone modal", () => {
     const layer = source("../components/note-notify/note-notify-layer.tsx");
     const panel = source("../components/note-notify/note-notify-panel.tsx");
     const portal = source("../components/library/document-share-portal.tsx");
-    const css = source("../app/globals.css");
+    const css = source("../app/circuit-library.css");
     const phone = dialog.slice(dialog.indexOf("if (narrow)"), dialog.lastIndexOf("return ("));
     const wide = dialog.slice(dialog.lastIndexOf("return ("));
 

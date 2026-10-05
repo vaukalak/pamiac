@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
+import { readStylesheet } from "./stylesheet.ts";
 
 function read(path: string) {
   return readFileSync(new URL(path, import.meta.url), "utf8");
@@ -91,7 +92,7 @@ describe("library mobile menu", () => {
   });
 
   it("slides a drawer over the small screen and leaves the desktop column in place", () => {
-    const css = read("../app/globals.css");
+    const css = readStylesheet();
     const stacked = block(
       css,
       "@media (max-width: 760px) {",
@@ -161,7 +162,7 @@ describe("library mobile menu", () => {
   });
 
   it("raises library main above the sidebar only while a document card menu is open", () => {
-    const css = read("../app/globals.css");
+    const css = readStylesheet();
     const base = block(
       css,
       ".library-shell > .library-main,\n.library-shell > .library-status {",

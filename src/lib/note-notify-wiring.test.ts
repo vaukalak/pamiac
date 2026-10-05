@@ -108,7 +108,7 @@ describe("note notification wiring", () => {
     const save = source("../components/note-notify/note-notify-save.tsx");
     const bell = source("../components/note-notify/note-notify-bell.tsx");
     const dialog = source("../components/note-notify/note-notify-dialog.tsx");
-    const css = source("../app/globals.css");
+    const css = source("../app/circuit-library.css");
 
     assert.match(draft, /Never/);
     assert.match(draft, /Any change/);

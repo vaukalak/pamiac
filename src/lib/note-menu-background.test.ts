@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
+import { readStylesheet } from "./stylesheet.ts";
 
-const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8");
+const css = readStylesheet();
 
 function expect(actual: string) {
   return {
@@ -38,7 +39,7 @@ describe("library note block menus", () => {
       ".library-shell .note-editor .bn-suggestion-menu,\n.library-shell .note-editor .bn-menu-dropdown,\n.library-shell .note-editor .bn-drag-handle-menu {",
     );
 
-    expect(menus).toMatch(/background-color:\s*#0d110e/);
+    expect(menus).toMatch(/background-color:\s*var\(--home-menu\)/);
     expect(menus).toContain(".bn-suggestion-menu");
     expect(menus).toContain(".bn-menu-dropdown");
     expect(menus).toContain(".bn-drag-handle-menu");
@@ -47,11 +48,14 @@ describe("library note block menus", () => {
   });
 
   it("keeps the shared panel token translucent and the desk menu opaque", () => {
-    const shell = block(css, ".library-shell {");
+    const circuit = block(
+      css,
+      '  :root:not([data-theme="light"]) .home,\n  :root:not([data-theme="light"]) .library-shell {',
+    );
     const dark = css.slice(css.indexOf("@media (prefers-color-scheme: dark)"));
     const desk = block(dark, ".note-editor .bn-container[data-color-scheme] {");
 
-    expect(shell).toMatch(/--home-panel:\s*rgba\(13,\s*17,\s*14,\s*0\.82\)/);
+    expect(circuit).toMatch(/--home-panel:\s*rgba\(13,\s*17,\s*14,\s*0\.82\)/);
     expect(desk).toMatch(/--bn-colors-menu-background:\s*var\(--card\)/);
     assert.doesNotMatch(desk, /#0d110e/);
   });

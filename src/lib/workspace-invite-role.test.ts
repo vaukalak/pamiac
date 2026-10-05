@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
+import { readStylesheet } from "./stylesheet.ts";
 import { memberRoleLabel } from "./workspace-member-view.ts";
 
 function read(path: string) {
@@ -63,7 +64,7 @@ describe("invite role", () => {
   });
 
   it("stacks email and role in the invite dialog without moving the add-workspace fields", () => {
-    const css = read("../app/globals.css");
+    const css = readStylesheet();
     const form = read("../components/library/workspace-member-add.tsx");
     const create = read("../components/library/workspace-create.tsx");
     const dialog = read("../components/workspace-members/workspace-members-invite-dialog.tsx");

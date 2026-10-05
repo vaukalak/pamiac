@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
+import { readStylesheet } from "./stylesheet.ts";
 
-const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8");
+const css = readStylesheet();
 const noteEditor = readFileSync(new URL("../components/note-editor.tsx", import.meta.url), "utf8");
 const umlEditor = readFileSync(
   new URL("../components/diagram/uml-canvas.tsx", import.meta.url),
@@ -136,29 +137,55 @@ test("light tokens stay on :root and shared chrome uses them", () => {
   assert.match(css, /::selection\s*\{[^}]*background:\s*var\(--teal\)/);
   assert.match(css, /::selection\s*\{[^}]*color:\s*var\(--on-ink\)/);
   assert.match(css, /::placeholder\s*\{[^}]*color:\s*var\(--ink-soft\)/);
-  assert.doesNotMatch(css, /localStorage/);
-  assert.doesNotMatch(css, /html\.dark/);
+  assert.match(css, /:root:not\(\[data-theme="light"\]\)/);
+  assert.match(css, /html\[data-theme="dark"\]/);
 });
 
-test("diagram and note surfaces follow the scheme without a toggle", () => {
+test("light, dark, and system choices drive tokens, notes, and diagrams", () => {
+  const theme = readFileSync(new URL("./theme.ts", import.meta.url), "utf8");
+  const themeChoice = readFileSync(new URL("./use-theme-choice.ts", import.meta.url), "utf8");
+  const panel = readFileSync(
+    new URL("../components/header/profile-menu-panel.tsx", import.meta.url),
+    "utf8",
+  );
+  const control = readFileSync(
+    new URL("../components/header/profile-theme.tsx", import.meta.url),
+    "utf8",
+  );
   assert.equal(umlNode.includes("#1a1814"), false);
   assert.match(umlNode, /stroke="var\(--uml-ink\)"/);
   assert.match(umlEditor, /stroke:\s*"var\(--uml-ink\)"/);
-  assert.match(umlEditor, /colorMode="system"/);
+  assert.match(umlEditor, /useThemeChoice/);
+  assert.match(umlEditor, /colorMode=\{choice\}/);
   assert.match(umlEditor, /color="var\(--flow-grid\)"/);
   assert.match(umlEditor, /fill="var\(--uml-fill\)"/);
   assert.match(umlEditor, /fill="var\(--uml-ink\)"/);
-  assert.match(noteEditor, /useSyncExternalStore/);
-  assert.match(noteEditor, /matchMedia\("\(prefers-color-scheme: dark\)"\)/);
-  assert.match(noteEditor, /return false/);
-  assert.match(noteEditor, /libraryShell = false/);
-  assert.match(noteEditor, /theme=\{libraryShell \|\| dark \? "dark" : "light"\}/);
+  assert.match(themeChoice, /useSyncExternalStore/);
+  assert.match(theme, /matchMedia\("\(prefers-color-scheme: dark\)"\)/);
+  assert.match(theme, /resolvedSchemeServerSnapshot\(\): ColorScheme \{\s*return "light"/);
+  assert.match(theme, /return isThemeChoice\(stored\) \? stored : "system"/);
+  assert.match(theme, /localStorage/);
+  assert.match(theme, /themeInitScript/);
+  assert.match(noteEditor, /useResolvedScheme/);
+  assert.match(noteEditor, /libraryShell\?: boolean/);
+  assert.match(noteEditor, /theme=\{scheme === "dark" \? "dark" : "light"\}/);
+  assert.doesNotMatch(noteEditor, /libraryShell \|\| scheme === "dark"/);
   const noteDocument = readFileSync(
     new URL("../components/document/note-document.tsx", import.meta.url),
     "utf8",
   );
   assert.match(noteDocument, /libraryShell/);
-  assert.doesNotMatch(noteEditor, /localStorage/);
+  assert.match(layout, /themeInitScript/);
+  assert.match(layout, /dangerouslySetInnerHTML/);
   assert.match(layout, /\(prefers-color-scheme: light\)", color: "#f3efe4"/);
   assert.match(layout, /\(prefers-color-scheme: dark\)", color: "#141210"/);
+  assert.match(panel, /<ProfileTheme \/>/);
+  assert.match(control, /Light/);
+  assert.match(control, /Dark/);
+  assert.match(control, /System/);
+  assert.match(css, /html\[data-theme="dark"\]/);
+  const explicit = css.slice(css.indexOf('html[data-theme="dark"]'));
+  for (const token of darkTokens) {
+    assert.ok(explicit.includes(token), token);
+  }
 });

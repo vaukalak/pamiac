@@ -1,12 +1,13 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
+import { readStylesheet } from "./stylesheet.ts";
 
 const form = readFileSync(
   new URL("../components/login/login-magic-link-form.tsx", import.meta.url),
   "utf8",
 );
-const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8");
+const css = readStylesheet();
 const member = readFileSync(
   new URL("../components/library/workspace-member-add.tsx", import.meta.url),
   "utf8",
@@ -83,8 +84,8 @@ describe("sign-in email danger", () => {
       ".home .home-sign-in-panel input,\n.home .home-sign-in-panel textarea {",
     );
 
-    expect(danger).toMatch(/border-color:\s*#ffb4ab/);
-    expect(danger).toMatch(/box-shadow:\s*0 0 0 3px rgba\(255,\s*180,\s*171,\s*0\.35\)/);
+    expect(danger).toMatch(/border-color:\s*var\(--home-danger\)/);
+    expect(danger).toMatch(/box-shadow:\s*0 0 0 3px var\(--home-danger-glow\)/);
     expect(danger).not.toMatch(/var\(--home-lime\)|var\(--teal\)|var\(--focus\)/);
     expect(focus).toMatch(/border-color:\s*var\(--teal\)/);
     expect(focus).toMatch(/box-shadow:\s*var\(--focus\)/);

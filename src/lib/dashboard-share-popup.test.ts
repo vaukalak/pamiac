@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
+import { readStylesheet } from "./stylesheet.ts";
 
 function read(path: string) {
   return readFileSync(new URL(path, import.meta.url), "utf8");
@@ -47,7 +48,7 @@ describe("dashboard share popup", () => {
     const hint = read("../components/share/share-dialog-hint.tsx");
     const shareActions = read("../components/share/share-actions.tsx");
     const screen = read("../components/document-screen.tsx");
-    const css = read("../app/globals.css");
+    const css = readStylesheet();
 
     assert.match(heading, /<Button className="ghost small"/);
     assert.match(hint, /<Paragraph>Control who can open this document\.<\/Paragraph>/);
@@ -82,7 +83,7 @@ describe("dashboard share popup", () => {
   });
 
   it("washes the selected share choice in faint lime and a lighter hover on the rest", () => {
-    const css = read("../app/globals.css");
+    const css = readStylesheet();
 
     assert.match(
       css,
