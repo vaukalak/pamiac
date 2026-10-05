@@ -7,12 +7,7 @@ import {
 } from "@/components/note-notify/note-notify-draft";
 import { NoteNotifyOption } from "@/components/note-notify/note-notify-option";
 
-interface Properties {
-  documentId: string;
-}
-
-export function NoteNotifyModes(props: Properties) {
-  const { documentId } = props;
+export function NoteNotifyModes() {
   const { watch } = useFormContext<NoteNotifyDraft>();
   const mode = watch("mode");
 
@@ -23,7 +18,6 @@ export function NoteNotifyModes(props: Properties) {
         <NoteNotifyOption
           checked={mode === item.value}
           detail={item.detail}
-          documentId={documentId}
           key={item.value}
           title={item.title}
           value={item.value}

@@ -3073,11 +3073,6 @@
   display: grid;
   gap: 10px;
 }
-.library-shell .note-notify-test {
-  display: grid;
-  gap: 8px;
-  justify-items: start;
-}
 .library-shell .note-notify-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;

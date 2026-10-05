@@ -1,16 +1,9 @@
 "use client";
 
-import { NoteNotifyTest } from "@/components/note-notify/note-notify-test";
 import { Form } from "@/ui/Form";
 import { Paragraph } from "@/ui/Paragraph";
 
-interface Properties {
-  documentId: string;
-}
-
-export function NoteNotifyCriteria(props: Properties) {
-  const { documentId } = props;
-
+export function NoteNotifyCriteria() {
   return (
     <div className="note-notify-criteria">
       <Form.Textarea
@@ -20,7 +13,6 @@ export function NoteNotifyCriteria(props: Properties) {
         rows={4}
       />
       <Paragraph>Example: “A blocker is added or the launch date changes.”</Paragraph>
-      <NoteNotifyTest documentId={documentId} />
     </div>
   );
 }
