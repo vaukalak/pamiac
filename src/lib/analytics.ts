@@ -1,6 +1,16 @@
 import { PostHog } from "posthog-node";
+import type { Visibility } from "./access.ts";
+import {
+  pageViewUrl,
+  posthogBrowserOptions,
+  posthogHost,
+  posthogKey,
+  POSTHOG_DEFAULT_HOST,
+} from "./analytics-public.ts";
+import type { DocumentType } from "./content.ts";
+import type { NoteNotifyMode } from "./note-notify.ts";
 
-export const POSTHOG_DEFAULT_HOST = "https://us.i.posthog.com";
+export { pageViewUrl, posthogBrowserOptions, posthogHost, posthogKey, POSTHOG_DEFAULT_HOST };
 
 export type NotificationCheckSource = "test" | "delivery";
 
@@ -14,59 +24,78 @@ export interface NotificationCheckConfirmedInput extends NotificationCheckInput 
   result: string | boolean | null;
 }
 
+export type AnalyticsProperty = string | boolean;
+
+export type AnalyticsEventName =
+  | "notification_check_triggered"
+  | "notification_check_confirmed"
+  | "workspace_created"
+  | "workspace_invite_accepted"
+  | "api_token_created"
+  | "document_created"
+  | "document_saved"
+  | "share_updated"
+  | "folder_created"
+  | "note_notification_saved"
+  | "image_uploaded"
+  | "support_request_sent";
+
+const ALLOWED_PROPERTY_KEYS = new Set([
+  "documentId",
+  "source",
+  "result",
+  "documentType",
+  "mode",
+  "folderId",
+]);
+
 export interface AnalyticsEvent {
   distinctId: string;
-  event: "notification_check_triggered" | "notification_check_confirmed";
-  properties: {
-    documentId: string;
-    source: NotificationCheckSource;
-    result?: string | boolean;
-  };
+  event: AnalyticsEventName;
+  properties: Record<string, AnalyticsProperty>;
 }
 
-export function posthogKey(env: NodeJS.ProcessEnv = process.env) {
-  return env.NEXT_PUBLIC_POSTHOG_KEY?.trim() ?? "";
-}
-
-export function posthogHost(env: NodeJS.ProcessEnv = process.env) {
-  return env.NEXT_PUBLIC_POSTHOG_HOST?.trim() || POSTHOG_DEFAULT_HOST;
-}
-
-export function posthogBrowserOptions(host: string) {
-  return {
-    api_host: host,
-    defaults: "2026-05-30" as const,
-    capture_pageview: false as const,
-    capture_pageleave: false as const,
-    autocapture: false,
-    disable_session_recording: true,
-  };
-}
-
-export function pageViewUrl(origin: string, pathname: string, search: string) {
-  const params = new URLSearchParams(search.startsWith("?") ? search.slice(1) : search);
-  for (const [key, value] of [...params.entries()]) {
-    if (value.includes("@") || /email/i.test(key)) params.delete(key);
+export function analyticsProperties(properties: Record<string, AnalyticsProperty>) {
+  const safe: Record<string, AnalyticsProperty> = {};
+  for (const [key, value] of Object.entries(properties)) {
+    if (!ALLOWED_PROPERTY_KEYS.has(key)) continue;
+    if (typeof value === "boolean") {
+      safe[key] = value;
+      continue;
+    }
+    const trimmed = value.trim();
+    if (!trimmed || trimmed.includes("@") || trimmed.length > 80) continue;
+    safe[key] = trimmed;
   }
-  const query = params.toString();
-  return query ? `${origin}${pathname}?${query}` : `${origin}${pathname}`;
+  return safe;
+}
+
+function distinctUser(userId: string) {
+  const distinctId = userId.trim();
+  if (!distinctId || distinctId.includes("@")) return "";
+  return distinctId;
+}
+
+function userEvent(
+  userId: string,
+  event: AnalyticsEventName,
+  properties: Record<string, AnalyticsProperty> = {},
+): AnalyticsEvent | null {
+  const distinctId = distinctUser(userId);
+  if (!distinctId) return null;
+  return { distinctId, event, properties };
 }
 
 function checkEvent(
   input: NotificationCheckInput,
-  event: AnalyticsEvent["event"],
+  event: "notification_check_triggered" | "notification_check_confirmed",
 ): AnalyticsEvent | null {
-  const userId = input.userId.trim();
   const documentId = input.documentId.trim();
-  if (!userId || !documentId) return null;
-  return {
-    distinctId: userId,
-    event,
-    properties: {
-      documentId,
-      source: input.source,
-    },
-  };
+  if (!documentId) return null;
+  return userEvent(input.userId, event, {
+    documentId,
+    source: input.source,
+  });
 }
 
 export function notificationCheckTriggeredEvent(input: NotificationCheckInput) {
@@ -87,31 +116,127 @@ export function notificationCheckConfirmedEvent(input: NotificationCheckConfirme
   };
 }
 
+export function workspaceCreatedEvent(userId: string) {
+  return userEvent(userId, "workspace_created");
+}
+
+export function workspaceInviteAcceptedEvent(userId: string) {
+  return userEvent(userId, "workspace_invite_accepted");
+}
+
+export function apiTokenCreatedEvent(userId: string) {
+  return userEvent(userId, "api_token_created");
+}
+
+function documentEvent(
+  input: { userId: string; documentId: string; documentType: string },
+  event: "document_created" | "document_saved",
+) {
+  const documentId = input.documentId.trim();
+  const documentType: DocumentType | null =
+    input.documentType === "note" || input.documentType === "diagram" ? input.documentType : null;
+  if (!documentId || !documentType) return null;
+  return userEvent(input.userId, event, {
+    documentId,
+    documentType,
+  });
+}
+
+export function documentCreatedEvent(input: {
+  userId: string;
+  documentId: string;
+  documentType: string;
+}) {
+  return documentEvent(input, "document_created");
+}
+
+export function documentSavedEvent(input: {
+  userId: string;
+  documentId: string;
+  documentType: string;
+}) {
+  return documentEvent(input, "document_saved");
+}
+
+const SHARE_MODES = new Set<Visibility>(["private", "public", "password", "emails"]);
+
+export function shareUpdatedEvent(input: { userId: string; documentId: string; mode: string }) {
+  const documentId = input.documentId.trim();
+  if (!documentId || !SHARE_MODES.has(input.mode as Visibility)) return null;
+  return userEvent(input.userId, "share_updated", {
+    documentId,
+    mode: input.mode,
+  });
+}
+
+export function folderCreatedEvent(input: { userId: string; folderId: string }) {
+  const folderId = input.folderId.trim();
+  if (!folderId) return null;
+  return userEvent(input.userId, "folder_created", { folderId });
+}
+
+const NOTE_MODES = new Set<NoteNotifyMode>(["never", "any", "criteria"]);
+
+export function noteNotificationSavedEvent(input: {
+  userId: string;
+  documentId: string;
+  mode: string;
+}) {
+  const documentId = input.documentId.trim();
+  if (!documentId || !NOTE_MODES.has(input.mode as NoteNotifyMode)) return null;
+  return userEvent(input.userId, "note_notification_saved", {
+    documentId,
+    mode: input.mode,
+  });
+}
+
+export function imageUploadedEvent(input: { userId: string; documentId: string | null }) {
+  const documentId = input.documentId?.trim() ?? "";
+  if (!documentId) return null;
+  return userEvent(input.userId, "image_uploaded", { documentId });
+}
+
+export function supportRequestSentEvent(userId: string | null) {
+  const distinctId = distinctUser(userId ?? "") || "anonymous";
+  return {
+    distinctId,
+    event: "support_request_sent" as const,
+    properties: {},
+  };
+}
+
 export async function captureServerEvent(
   event: AnalyticsEvent | null,
   env: NodeJS.ProcessEnv = process.env,
 ) {
-  if (!event) return;
-  const key = posthogKey(env);
-  if (!key) return;
-  const client = new PostHog(key, {
-    host: posthogHost(env),
-    flushAt: 1,
-    flushInterval: 0,
-    fetchRetryCount: 0,
-    fetchRetryDelay: 0,
-    requestTimeout: 1000,
-  });
   try {
-    await client.captureImmediate({
-      distinctId: event.distinctId,
-      event: event.event,
-      properties: event.properties,
+    if (!event) return;
+    const distinctId = distinctUser(event.distinctId);
+    if (!distinctId) return;
+    const key = posthogKey(env);
+    if (!key) return;
+    const properties = analyticsProperties(event.properties);
+    const client = new PostHog(key, {
+      host: posthogHost(env),
+      flushAt: 1,
+      flushInterval: 0,
+      fetchRetryCount: 0,
+      fetchRetryDelay: 0,
+      requestTimeout: 1000,
     });
+    try {
+      await client.captureImmediate({
+        distinctId,
+        event: event.event,
+        properties,
+      });
+    } catch {
+      // Analytics must not change the product result.
+    } finally {
+      await client._shutdown(1000).catch(() => undefined);
+    }
   } catch {
-    // Analytics must not change the notification result.
-  } finally {
-    await client._shutdown(1000).catch(() => undefined);
+    // Analytics must not change the product result.
   }
 }
 

@@ -4,6 +4,8 @@ import { documents, noteNotifications, user } from "@/db/schema";
 import {
   captureNotificationCheckConfirmed,
   captureNotificationCheckTriggered,
+  captureServerEvent,
+  noteNotificationSavedEvent,
 } from "@/lib/analytics";
 import { appBaseUrl } from "@/lib/config";
 import { HttpError } from "@/lib/http";
@@ -79,6 +81,13 @@ export async function saveNoteNotification(
       target: noteNotifications.documentId,
       set: { mode: input.mode, criteria, criteriaMatched: false },
     });
+  await captureServerEvent(
+    noteNotificationSavedEvent({
+      userId: ownerId,
+      documentId: id,
+      mode: input.mode,
+    }),
+  );
   return { mode: input.mode, criteria };
 }
 

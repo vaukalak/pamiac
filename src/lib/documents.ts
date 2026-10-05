@@ -21,6 +21,13 @@ import {
   workspaceMembers,
 } from "@/db/schema";
 import type { Visibility } from "@/lib/access";
+import {
+  captureServerEvent,
+  documentCreatedEvent,
+  documentSavedEvent,
+  apiTokenCreatedEvent,
+  shareUpdatedEvent,
+} from "@/lib/analytics";
 import { defaultTitle, documentText, readDiagram, type DocumentType } from "@/lib/content";
 import type { DiagramPatch } from "@/lib/diagram-patch";
 import { embedText, excerpt } from "@/lib/embeddings";
@@ -252,6 +259,13 @@ export async function createDocument(
     })
     .returning();
   await upsertEmbedding(created);
+  await captureServerEvent(
+    documentCreatedEvent({
+      userId: ownerId,
+      documentId: created.id,
+      documentType: created.type,
+    }),
+  );
   return created;
 }
 
@@ -377,6 +391,13 @@ export async function updateDocumentContent(
       console.error(error);
     }
   }
+  await captureServerEvent(
+    documentSavedEvent({
+      userId,
+      documentId: id,
+      documentType: updated.type,
+    }),
+  );
   return updated;
 }
 
@@ -534,6 +555,13 @@ export async function updateShare(
       throw new HttpError(502, "Could not send the note email");
     }
   }
+  await captureServerEvent(
+    shareUpdatedEvent({
+      userId: ownerId,
+      documentId: id,
+      mode: input.visibility,
+    }),
+  );
   return {
     visibility: input.visibility,
     emails,
@@ -804,6 +832,7 @@ export async function issueToken(
     allScopes: stored.allScopes,
     workspaceIds: stored.workspaceIds,
   });
+  await captureServerEvent(apiTokenCreatedEvent(userId));
   return { id, name: trimmed, token: created.token, tokenPrefix: created.tokenPrefix };
 }
 

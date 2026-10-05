@@ -4,7 +4,7 @@ import { PostHogProvider as PostHogClientProvider } from "@posthog/react";
 import posthog from "posthog-js";
 import { useEffect, type ReactNode } from "react";
 import { authClient } from "@/lib/auth-client";
-import { posthogBrowserOptions, posthogHost, posthogKey } from "@/lib/analytics";
+import { posthogBrowserOptions, posthogHost, posthogKey } from "@/lib/analytics-public";
 
 interface Properties {
   children: ReactNode;

@@ -1,4 +1,5 @@
 import { randomBytes } from "node:crypto";
+import { captureServerEvent, imageUploadedEvent } from "./analytics.ts";
 import { HttpError } from "./http.ts";
 import { isR2StorageHost } from "./stored-image-url.ts";
 
@@ -153,5 +154,8 @@ export async function acceptImageUpload(input: AcceptInput) {
     byteSize: input.bytes.byteLength,
     contentType: kind.contentType,
   });
+  await captureServerEvent(
+    imageUploadedEvent({ userId: input.userId, documentId: input.documentId }),
+  );
   return { url };
 }
