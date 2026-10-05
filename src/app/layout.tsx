@@ -1,5 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, IBM_Plex_Mono, Literata, Manrope, Outfit } from "next/font/google";
+import { Suspense } from "react";
+import { PostHogPageView } from "@/components/posthog-page-view";
+import { PostHogProvider } from "@/components/posthog-provider";
 import { QueryProvider } from "@/components/query-provider";
 import { ThemeBoot } from "@/components/theme-boot";
 import { appBaseUrl } from "@/lib/config";
@@ -50,8 +53,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     >
       <body>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
-        <ThemeBoot />
-        <QueryProvider>{children}</QueryProvider>
+        <PostHogProvider>
+          <Suspense fallback={null}>
+            <PostHogPageView />
+          </Suspense>
+          <ThemeBoot />
+          <QueryProvider>{children}</QueryProvider>
+        </PostHogProvider>
       </body>
     </html>
   );
