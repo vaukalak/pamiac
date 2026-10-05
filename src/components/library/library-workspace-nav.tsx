@@ -9,9 +9,9 @@ export function LibraryWorkspaceNav(props: Properties) {
   const { page } = props;
 
   return (
-    <>
-      <p className="library-rail-label">Workspace</p>
+    <div className="library-rail-section">
+      <p className="library-rail-label">Manage</p>
       <LibraryWorkspaceLinks page={page} />
-    </>
+    </div>
   );
 }

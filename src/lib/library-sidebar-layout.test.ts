@@ -57,31 +57,44 @@ describe("library sidebar and create plus", () => {
       css.indexOf(".library-shell .library-create .library-plus {"),
       css.indexOf(".library-shell .library-create .library-plus:hover"),
     );
-    const pressed = css.slice(
-      css.indexOf('.library-shell .workspace-selector button[aria-pressed="true"]'),
-      css.indexOf('.library-shell .workspace-selector button[aria-pressed="true"]:hover'),
+    const trigger = css.slice(
+      css.indexOf(".library-shell .workspace-selector button.workspace-switcher-trigger {"),
+      css.indexOf(".library-shell .workspace-selector button.workspace-switcher-trigger:hover"),
+    );
+    const selected = css.slice(
+      css.indexOf(
+        '.library-shell .workspace-selector button.workspace-switcher-option[aria-selected="true"]',
+      ),
+      css.indexOf(".library-shell .workspace-switcher-check"),
     );
 
     assert.match(selector, /librarySpaces/);
-    assert.match(selector, /pressed=\{selectedId === space\.id\}/);
-    assert.match(pressed, /background:\s*var\(--home-lime\)/);
-    assert.match(pressed, /font-weight:\s*700/);
+    assert.match(selector, /<WorkspaceSwitcherMenu/);
+    assert.doesNotMatch(trigger, /background:\s*var\(--home-lime\)/);
+    assert.match(trigger, /color-mix\(in srgb, var\(--home-lime\)/);
+    assert.doesNotMatch(selected, /background:\s*var\(--home-lime\)/);
     assert.match(plus, /background:\s*var\(--home-lime\)/);
     assert.match(plus, /color:\s*var\(--home-on-lime\)/);
+    assert.match(
+      css,
+      /\.library-shell \.library-nav-item\[aria-current="page"\] \{[^}]*background:\s*var\(--home-lime\)/,
+    );
   });
 
   it("bolds only the selected workspace row", () => {
     const css = readStylesheet();
     const idle = css.slice(
-      css.indexOf(".library-shell .workspace-selector button {"),
-      css.indexOf(".library-shell .workspace-space-mark"),
+      css.indexOf(".library-shell .workspace-selector button.workspace-switcher-option {"),
+      css.indexOf(".library-shell .workspace-selector button.workspace-switcher-option:hover"),
     );
     const pressed = css.slice(
-      css.indexOf('.library-shell .workspace-selector button[aria-pressed="true"]'),
-      css.indexOf('.library-shell .workspace-selector button[aria-pressed="true"]:hover'),
+      css.indexOf(
+        '.library-shell .workspace-selector button.workspace-switcher-option[aria-selected="true"]',
+      ),
+      css.indexOf(".library-shell .workspace-switcher-check"),
     );
 
-    assert.match(pressed, /font-weight:\s*700/);
+    assert.match(pressed, /font-weight:\s*650/);
     assert.equal(/font-weight/.test(idle), false);
   });
 
@@ -98,5 +111,31 @@ describe("library sidebar and create plus", () => {
     );
     assert.match(panel, /<p className="error">\{message\}<\/p>/);
     assert.equal(/role="menu"|role="menuitem"/.test(create), false);
+  });
+
+  it("pins the desktop sidebar to the viewport and scrolls the nav above the footer", () => {
+    const css = read("../app/circuit-library.css");
+    const panel = read("../components/library/library-sidebar-panel.tsx");
+    const scroll = read("../components/library/library-sidebar-scroll.tsx");
+    const desktop = css.slice(
+      css.indexOf("@media (min-width: 761px) {"),
+      css.indexOf(".library-shell > .library-main,"),
+    );
+    const mobile = css.slice(
+      css.indexOf(".library-shell > .library-sidebar {\n    position: fixed;"),
+      css.indexOf(".library-shell > .library-sidebar.is-open"),
+    );
+
+    assert.match(desktop, /position:\s*fixed/);
+    assert.match(desktop, /top:\s*0/);
+    assert.match(desktop, /bottom:\s*0/);
+    assert.match(desktop, /overflow:\s*visible/);
+    assert.match(desktop, /\.library-sidebar-scroll[\s\S]*overflow-y:\s*auto/);
+    assert.match(panel, /<LibrarySidebarScroll[\s\S]*<LibrarySidebarFooter/);
+    assert.match(scroll, /className="library-sidebar-scroll"/);
+    assert.equal(/LibrarySidebarFooter/.test(scroll), false);
+    assert.match(mobile, /top:\s*56px/);
+    assert.match(mobile, /overflow:\s*auto/);
+    assert.doesNotMatch(mobile, /library-sidebar-scroll/);
   });
 });

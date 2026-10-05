@@ -100,6 +100,7 @@ export function LibrarySidebar(props: Properties) {
 
     function onKey(event: KeyboardEvent) {
       if (document.querySelector(".workspace-add-dialog")) return;
+      if (document.querySelector(".workspace-switcher-menu")) return;
       const node = panelRef.current;
       if (!node) return;
       if (event.key === "Escape") {
@@ -154,6 +155,7 @@ export function LibrarySidebar(props: Properties) {
       />
       {open ? <LibraryMenuBackdrop onClose={close} /> : null}
       <LibrarySidebarPanel
+        email={email}
         filter={filter}
         menuId={menuId}
         mobile={mobile}
