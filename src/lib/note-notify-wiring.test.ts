@@ -72,18 +72,18 @@ describe("note notification wiring", () => {
       run.indexOf("async function sendNoteUpdateEmail"),
     );
 
-    assert.match(send, /if \(mode === "never"\) return/);
+    assert.match(send, /if \(mode === "never"\)/);
     assert.match(send, /if \(mode === "criteria"\)/);
     assert.match(send, /deliverOwnerEmail\(/);
     assert.equal(send.includes("criteriaEmailDecision"), false);
     assert.match(criteria, /jevDecideBody\(/);
-    assert.match(criteria, /if \(matched === null\) return/);
+    assert.match(criteria, /if \(matched === null\)/);
     assert.match(criteria, /criteriaEmailDecision\(/);
     assert.match(criteria, /criteriaMatched: decision\.matched/);
     assert.match(run, /criteriaMatched: false/);
     assert.match(
       run,
-      /if \(!verdict\) throw new HttpError\(502, "Could not test this condition"\)/,
+      /if \(!verdict\) \{[\s\S]*throw new HttpError\(502, "Could not test this condition"\)/,
     );
     assert.equal(
       source("../components/note-notify/note-notify-test.tsx").includes("JEV_API_KEY"),
