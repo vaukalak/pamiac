@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { NoteCopyMarkdown } from "@/components/note/note-copy-markdown";
 import { NoteExport } from "@/components/note/note-export";
+import { NoteImport } from "@/components/note/note-import";
 
 interface Properties {
   readMarkdown: () => string;
@@ -25,6 +26,7 @@ export function NoteShareMarkdown(props: Properties) {
     <div className="share-markdown-actions">
       <NoteCopyMarkdown readMarkdown={readMarkdown} />
       <NoteExport readMarkdown={readMarkdown} title={title} />
+      <NoteImport readMarkdown={readMarkdown} title={title} />
     </div>,
     slot,
   );

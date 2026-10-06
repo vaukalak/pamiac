@@ -98,6 +98,7 @@ describe("share popup", () => {
     assert.equal(folder.includes("markdownSlot"), false);
     assert.match(note, /Copy Markdown|NoteCopyMarkdown/);
     assert.match(note, /NoteExport/);
+    assert.ok(note.indexOf("<NoteExport") < note.indexOf("<NoteImport"));
     assert.equal(note.includes("saveShare"), false);
   });
 

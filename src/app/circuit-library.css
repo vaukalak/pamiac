@@ -2972,9 +2972,17 @@
 }
 .library-shell .share-access-dialog .share-markdown-actions {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 10px;
   margin: 0;
+}
+.library-shell .share-access-dialog .share-markdown-actions:has(.share-markdown-import) {
+  grid-template-columns: 1fr 1fr;
+}
+.library-shell .share-access-dialog .share-markdown-import {
+  display: grid;
+  grid-column: 1 / -1;
+  gap: 10px;
 }
 .library-shell .share-access-dialog .btn {
   min-height: 44px;
@@ -3012,7 +3020,8 @@
   }
 }
 @media (max-width: 420px) {
-  .library-shell .share-access-dialog .share-markdown-actions {
+  .library-shell .share-access-dialog .share-markdown-actions,
+  .library-shell .share-access-dialog .share-markdown-actions:has(.share-markdown-import) {
     grid-template-columns: 1fr;
   }
 }
