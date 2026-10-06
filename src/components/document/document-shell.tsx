@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { DocumentSidebar } from "@/components/document/document-sidebar";
 import { CircuitBoard } from "@/components/home/circuit-board";
+import { LibraryBrand } from "@/components/library/library-brand";
 import type { NamedWorkspace } from "@/lib/library-spaces";
 
 interface Properties {
@@ -21,6 +22,7 @@ export function DocumentShell(props: Properties) {
   return (
     <div className={shell}>
       <CircuitBoard />
+      {email === null ? <LibraryBrand href="/" /> : null}
       {email !== null ? (
         <DocumentSidebar
           documentType={documentType}
