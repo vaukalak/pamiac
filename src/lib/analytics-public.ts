@@ -1,11 +1,14 @@
 export const POSTHOG_DEFAULT_HOST = "https://us.i.posthog.com";
 
-export function posthogKey(env: NodeJS.ProcessEnv = process.env) {
-  return env.NEXT_PUBLIC_POSTHOG_KEY?.trim() ?? "";
+export function posthogKey(env?: NodeJS.ProcessEnv) {
+  return (env ? env.NEXT_PUBLIC_POSTHOG_KEY : process.env.NEXT_PUBLIC_POSTHOG_KEY)?.trim() ?? "";
 }
 
-export function posthogHost(env: NodeJS.ProcessEnv = process.env) {
-  return env.NEXT_PUBLIC_POSTHOG_HOST?.trim() || POSTHOG_DEFAULT_HOST;
+export function posthogHost(env?: NodeJS.ProcessEnv) {
+  return (
+    (env ? env.NEXT_PUBLIC_POSTHOG_HOST : process.env.NEXT_PUBLIC_POSTHOG_HOST)?.trim() ||
+    POSTHOG_DEFAULT_HOST
+  );
 }
 
 export function posthogBrowserOptions(host: string) {
