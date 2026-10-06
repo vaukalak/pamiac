@@ -200,19 +200,75 @@ describe("browser page views", () => {
     assert.equal(options.disable_session_recording, true);
   });
 
-  it("initializes in a client provider and captures a pageview on the route", () => {
+  it("initializes before the first pageview and captures a pageview on the route", () => {
     const provider = source("../components/posthog-provider.tsx");
     const pageView = source("../components/posthog-page-view.tsx");
     const layout = source("../app/layout.tsx");
+    const client = source("../instrumentation-client.ts");
+    const browser = source("./analytics-browser.ts");
+    const publicConfig = source("./analytics-public.ts");
 
-    assert.match(provider, /posthog\.init/);
+    assert.match(client, /posthog\.init/);
+    assert.match(client, /posthogKey\(\)/);
+    assert.match(client, /posthogHost\(\)/);
+    assert.equal(client.includes("useEffect"), false);
+    assert.equal(client.includes("env.NEXT_PUBLIC_POSTHOG_KEY"), false);
+    assert.equal(provider.includes("posthog.init"), false);
     assert.match(provider, /posthog\.identify\(userId\)/);
+    assert.match(provider, /posthog\.reset\(\)/);
     assert.equal(provider.includes("email"), false);
+    assert.match(publicConfig, /process\.env\.NEXT_PUBLIC_POSTHOG_KEY/);
+    assert.match(publicConfig, /process\.env\.NEXT_PUBLIC_POSTHOG_HOST/);
+    assert.match(browser, /posthogKey\(\)/);
+    assert.equal(browser.includes("env.NEXT_PUBLIC_POSTHOG_KEY"), false);
     assert.match(pageView, /capture\("\$pageview"/);
     assert.match(pageView, /usePathname/);
     assert.match(pageView, /useSearchParams/);
     assert.match(layout, /<PostHogProvider>/);
     assert.match(layout, /<PostHogPageView \/>/);
+  });
+
+  it("reads the public key and host from process.env when no env is passed", () => {
+    const previousKey = process.env.NEXT_PUBLIC_POSTHOG_KEY;
+    const previousHost = process.env.NEXT_PUBLIC_POSTHOG_HOST;
+    process.env.NEXT_PUBLIC_POSTHOG_KEY = "  phc_live  ";
+    process.env.NEXT_PUBLIC_POSTHOG_HOST = " https://eu.i.posthog.com ";
+    try {
+      assert.equal(posthogKey(), "phc_live");
+      assert.equal(posthogHost(), "https://eu.i.posthog.com");
+      assert.equal(posthogKey({ NEXT_PUBLIC_POSTHOG_KEY: "phc_override" }), "phc_override");
+      assert.equal(
+        posthogHost({ NEXT_PUBLIC_POSTHOG_HOST: "https://example.test" }),
+        "https://example.test",
+      );
+    } finally {
+      if (previousKey === undefined) delete process.env.NEXT_PUBLIC_POSTHOG_KEY;
+      else process.env.NEXT_PUBLIC_POSTHOG_KEY = previousKey;
+      if (previousHost === undefined) delete process.env.NEXT_PUBLIC_POSTHOG_HOST;
+      else process.env.NEXT_PUBLIC_POSTHOG_HOST = previousHost;
+    }
+  });
+
+  it("does not read process.env when an env argument is passed", () => {
+    const previousKey = process.env.NEXT_PUBLIC_POSTHOG_KEY;
+    const previousHost = process.env.NEXT_PUBLIC_POSTHOG_HOST;
+    process.env.NEXT_PUBLIC_POSTHOG_KEY = "phc_live";
+    process.env.NEXT_PUBLIC_POSTHOG_HOST = "https://eu.i.posthog.com";
+    try {
+      assert.equal(posthogKey({}), "");
+      assert.equal(posthogKey({ NEXT_PUBLIC_POSTHOG_KEY: "  " }), "");
+      assert.equal(posthogHost({}), "https://us.i.posthog.com");
+      assert.equal(posthogHost({ NEXT_PUBLIC_POSTHOG_HOST: "  " }), "https://us.i.posthog.com");
+      delete process.env.NEXT_PUBLIC_POSTHOG_KEY;
+      delete process.env.NEXT_PUBLIC_POSTHOG_HOST;
+      assert.equal(posthogKey(), "");
+      assert.equal(posthogHost(), "https://us.i.posthog.com");
+    } finally {
+      if (previousKey === undefined) delete process.env.NEXT_PUBLIC_POSTHOG_KEY;
+      else process.env.NEXT_PUBLIC_POSTHOG_KEY = previousKey;
+      if (previousHost === undefined) delete process.env.NEXT_PUBLIC_POSTHOG_HOST;
+      else process.env.NEXT_PUBLIC_POSTHOG_HOST = previousHost;
+    }
   });
 });
 
