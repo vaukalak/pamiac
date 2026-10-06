@@ -3,6 +3,7 @@
 import { useCreateBlockNote } from "@blocknote/react";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
+import { pasteNoteMarkdown } from "@/components/note/note-paste";
 import { bindNoteSelectAll } from "@/components/note/note-select-all";
 import { NoteEditorFrame } from "@/components/note/note-editor-frame";
 import { NoteEditorSurface } from "@/components/note/note-editor-surface";
@@ -103,6 +104,7 @@ export function NoteEditor(props: Properties) {
   const editor = useCreateBlockNote({
     schema: noteSchema,
     setIdAttribute: true,
+    pasteHandler: pasteNoteMarkdown,
     uploadFile: editable
       ? (file) => {
           holdSavesRef.current();
