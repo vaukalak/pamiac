@@ -1,5 +1,5 @@
 import { PostHog } from "posthog-node";
-import type { Visibility } from "./access.ts";
+import { VISIBILITIES, type Visibility } from "./access.ts";
 import {
   pageViewUrl,
   posthogBrowserOptions,
@@ -158,7 +158,7 @@ export function documentSavedEvent(input: {
   return documentEvent(input, "document_saved");
 }
 
-const SHARE_MODES = new Set<Visibility>(["private", "public", "password", "emails"]);
+const SHARE_MODES = new Set<Visibility>(VISIBILITIES);
 
 export function shareUpdatedEvent(input: { userId: string; documentId: string; mode: string }) {
   const documentId = input.documentId.trim();

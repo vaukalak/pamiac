@@ -1,5 +1,7 @@
+export type ShareModeIconName = "globe" | "key" | "lock" | "mail" | "people";
+
 interface Properties {
-  name: "globe" | "key" | "lock" | "mail";
+  name: ShareModeIconName;
 }
 
 const PATHS = {
@@ -8,6 +10,8 @@ const PATHS = {
   key: "M15.5 7.5a4 4 0 1 1-3.2 6.4L7 19.2 4.8 17l1.4-1.4L4.8 14.2 7 12l5.2-1.1a4 4 0 0 1 3.3-3.4Z",
   lock: "M8 11V8a4 4 0 0 1 8 0v3M7 11h10a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1Z",
   mail: "M4 7h16v10H4V7Zm0 0 8 6 8-6",
+  people:
+    "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75",
 } as const;
 
 export function ShareModeIcon(props: Properties) {

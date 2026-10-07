@@ -18,11 +18,13 @@ interface Properties {
   message: string;
   pending: boolean;
   target: "document" | "folder";
+  workspaceId: string | null;
   onClose: () => void;
 }
 
 export function ShareAccessBody(props: Properties) {
-  const { children, error, hasPassword, id, message, pending, target, onClose } = props;
+  const { children, error, hasPassword, id, message, pending, target, workspaceId, onClose } =
+    props;
   const { watch } = useFormContext<ShareDraft>();
   const mode = watch("visibility");
 
@@ -30,7 +32,7 @@ export function ShareAccessBody(props: Properties) {
     <>
       <ShareDialogHeading onClose={onClose} />
       <ShareDialogHint />
-      <ShareModeList />
+      <ShareModeList workspaceId={workspaceId} />
       <ShareModeFields hasPassword={hasPassword} />
       <ShareLink id={id} key={mode} mode={mode} path={target === "folder" ? "f" : "d"} />
       <ShareAccessFooter error={error} message={message} pending={pending}>

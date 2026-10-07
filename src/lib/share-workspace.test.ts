@@ -32,7 +32,7 @@ describe("share workspace choice", () => {
     assert.deepEqual(shareWorkspaceBody("ws-2", "ws-9", [atlas, notes]), {});
   });
 
-  it("keeps the four open modes and does not assign a workspace from the popup", () => {
+  it("offers anyone in the workspace and does not assign a workspace from the popup", () => {
     const modes = readFileSync(
       new URL("../components/share/share-mode-list.tsx", import.meta.url),
       "utf8",
@@ -56,7 +56,11 @@ describe("share workspace choice", () => {
     assert.match(modes, /By email/);
     assert.match(modes, /By password/);
     assert.match(modes, /Public/);
-    assert.equal(/workspace/i.test(modes), false);
+    const rendered = modes.slice(modes.indexOf("return ("));
+    assert.match(rendered, /<ShareWorkspaceMode workspaceId=\{workspaceId\} \/>/);
+    assert.ok(rendered.indexOf("onlyMe") < rendered.indexOf("ShareWorkspaceMode"));
+    assert.ok(rendered.indexOf("ShareWorkspaceMode") < rendered.indexOf("rest.map"));
+    assert.ok(modes.indexOf('title: "Only me"') < modes.indexOf('title: "By email"'));
     assert.match(modeOption, /register\("visibility"\)/);
     assert.match(body, /<ShareModeList/);
     assert.equal(modal.includes("ShareWorkspaceChoice"), false);

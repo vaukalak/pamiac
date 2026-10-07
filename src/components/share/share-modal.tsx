@@ -175,6 +175,7 @@ export function ShareModal(props: Properties) {
       message={saveShare.isSuccess ? "Sharing updated" : ""}
       pending={saveShare.isPending}
       target={target}
+      workspaceId={workspaceId}
       onClose={onClose}
       onSubmit={submit}
     >
