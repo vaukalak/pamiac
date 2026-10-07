@@ -12,6 +12,7 @@ import { isDocumentWorkspaceMember } from "@/lib/documents";
 import { folderGrantChain, getFolderBundle, listDirectFolderContents } from "@/lib/folders";
 import type { NamedWorkspace } from "@/lib/library-spaces";
 import { unlockCookieName, unlockMatches } from "@/lib/passwords";
+import { privatePageRobots } from "@/lib/indexing";
 import { getLibrarySession } from "@/lib/session";
 import { listMemberWorkspaces } from "@/lib/workspaces";
 
@@ -22,7 +23,7 @@ interface Properties {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-  return { title: "Folder" };
+  return { title: "Folder", robots: privatePageRobots };
 }
 
 export default async function FolderPage(props: Properties) {

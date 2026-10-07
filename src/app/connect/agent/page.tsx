@@ -1,14 +1,20 @@
+import type { Metadata } from "next";
 import { ConnectAgentInstructions } from "@/components/connect/connect-agent-instructions";
 import { ConnectAgentSignIn } from "@/components/connect/connect-agent-sign-in";
 import { ConnectAgentSignedIn } from "@/components/connect/connect-agent-signed-in";
 import { CircuitBoard } from "@/components/home/circuit-board";
 import { AppHeader } from "@/components/header/app-header";
 import { SetupScreen } from "@/components/setup-screen";
+import { privatePageRobots } from "@/lib/indexing";
 import { getSession } from "@/lib/session";
 import { Page } from "@/ui/Page";
 import { Section } from "@/ui/Section";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  robots: privatePageRobots,
+};
 
 export default async function ConnectAgentPage() {
   const result = await getSession();

@@ -7,7 +7,12 @@ import { QueryProvider } from "@/components/query-provider";
 import { ThemeBoot } from "@/components/theme-boot";
 import { appBaseUrl } from "@/lib/config";
 import { themeInitScript } from "@/lib/theme";
-import { appShareTarget, sharePageMetadata, sharePreviewFromDocument } from "@/lib/share-preview";
+import {
+  SHARE_APP_TITLE,
+  appShareTarget,
+  sharePageMetadata,
+  sharePreviewFromDocument,
+} from "@/lib/share-preview";
 import "./globals.css";
 
 const sans = Outfit({
@@ -32,9 +37,19 @@ const mono = IBM_Plex_Mono({
   variable: "--font-mono",
 });
 
+const {
+  alternates: _homeCanonical,
+  title: _shareTitle,
+  ...shareMetadata
+} = sharePageMetadata(sharePreviewFromDocument(null), appShareTarget());
+
 export const metadata: Metadata = {
   metadataBase: new URL(appBaseUrl()),
-  ...sharePageMetadata(sharePreviewFromDocument(null), appShareTarget()),
+  ...shareMetadata,
+  title: {
+    default: SHARE_APP_TITLE,
+    template: "%s · Pamiac",
+  },
 };
 
 export const viewport: Viewport = {

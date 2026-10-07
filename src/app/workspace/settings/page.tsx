@@ -1,11 +1,17 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { QueryProvider } from "@/components/query-provider";
 import { SetupScreen } from "@/components/setup-screen";
 import { WorkspaceSettingsScreen } from "@/components/workspace-settings/workspace-settings-screen";
+import { privatePageRobots } from "@/lib/indexing";
 import { getLibrarySession } from "@/lib/session";
 import { listMemberWorkspaces } from "@/lib/workspaces";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  robots: privatePageRobots,
+};
 
 function setupDetail(error: unknown) {
   const message = error instanceof Error ? error.message : "Could not reach the database";

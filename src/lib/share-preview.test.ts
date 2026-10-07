@@ -11,6 +11,7 @@ import {
   SHARE_EXCERPT_LENGTH,
   SHARE_GENERIC_TITLE,
   appShareTarget,
+  documentPageMetadata,
   documentShareTarget,
   noteShareExcerpt,
   shareImageAlt,
@@ -63,7 +64,8 @@ describe("public note previews", () => {
 
     assert.equal(preview.publicNote, true);
     assert.equal(preview.title, "Ship the notes");
-    assert.equal(metadata.title, "Ship the notes");
+    assert.deepEqual(metadata.title, { absolute: "Ship the notes" });
+    assert.equal(metadata.alternates.canonical, metadata.openGraph.url);
     assert.equal(metadata.description, preview.description);
     assert.equal(metadata.openGraph.type, "article");
     assert.equal(metadata.openGraph.title, "Ship the notes");
@@ -171,6 +173,8 @@ describe("private share cards", () => {
       const metadata = pageMetadata(preview);
       assert.equal(metadata.openGraph.type, "website");
       assert.equal(metadata.title, SHARE_APP_TITLE);
+      assert.equal(metadata.alternates.canonical, "https://pamiac.com/d/doc-1");
+      assert.equal(metadata.robots, undefined);
       assert.equal(metadata.openGraph.title, SHARE_GENERIC_TITLE);
       assert.equal(metadata.twitter.title, SHARE_GENERIC_TITLE);
       assert.equal(metadata.openGraph.siteName, SHARE_APP_TITLE);
@@ -245,6 +249,42 @@ describe("sharePreviewForId", () => {
   });
 });
 
+describe("document page metadata", () => {
+  afterEach(() => {
+    if (originalBaseUrl === undefined) delete process.env.BETTER_AUTH_URL;
+    else process.env.BETTER_AUTH_URL = originalBaseUrl;
+  });
+
+  it("keeps a public note indexable under its own title", () => {
+    process.env.BETTER_AUTH_URL = "https://pamiac.com";
+    const metadata = documentPageMetadata(
+      sharePreviewFromDocument(note("Visible title", "Hello from the note")),
+      "doc-1",
+    );
+
+    assert.deepEqual(metadata.title, { absolute: "Visible title" });
+    assert.equal(metadata.robots, undefined);
+    assert.equal(metadata.alternates.canonical, "https://pamiac.com/d/doc-1");
+    assert.equal(metadata.openGraph.title, "Visible title");
+  });
+
+  it("noindexes private and missing notes and leaves their secrets out", () => {
+    process.env.BETTER_AUTH_URL = "https://pamiac.com";
+    const secret = note("Secret title", "Secret body that must stay hidden", "private");
+    const hidden = documentPageMetadata(sharePreviewFromDocument(secret), "doc-1");
+    const missing = documentPageMetadata(sharePreviewFromDocument(null), "missing");
+
+    assert.deepEqual(hidden.robots, { index: false, follow: false });
+    assert.deepEqual(hidden.title, { absolute: SHARE_APP_TITLE });
+    assert.equal(hidden.openGraph.title, SHARE_GENERIC_TITLE);
+    assert.equal(hidden.description, SHARE_APP_DESCRIPTION);
+    assert.equal(JSON.stringify(hidden).includes("Secret"), false);
+    assert.deepEqual(missing.robots, { index: false, follow: false });
+    assert.deepEqual(missing.title, { absolute: SHARE_APP_TITLE });
+    assert.equal(JSON.stringify(missing).includes("Secret"), false);
+  });
+});
+
 describe("share targets", () => {
   afterEach(() => {
     if (originalBaseUrl === undefined) delete process.env.BETTER_AUTH_URL;
@@ -261,6 +301,7 @@ describe("share targets", () => {
       imagePath: "/share-card.png",
     });
     assert.equal(metadata.title, SHARE_APP_TITLE);
+    assert.equal(metadata.alternates.canonical, "https://pamiac.com");
     assert.equal(metadata.openGraph.url, "https://pamiac.com");
     assert.equal(metadata.openGraph.images[0].url, "https://pamiac.com/share-card.png");
     assert.deepEqual(metadata.twitter.images, ["https://pamiac.com/share-card.png"]);
@@ -309,10 +350,7 @@ describe("share wiring", () => {
     assert.match(page, /export const dynamic = "force-dynamic"/);
     assert.match(page, /const \{ id \} = await params/);
     assert.match(page, /loadSharePreview\(id\)/);
-    assert.match(
-      page,
-      /sharePageMetadata\(await loadSharePreview\(id\), documentShareTarget\(id\)\)/,
-    );
+    assert.match(page, /documentPageMetadata\(await loadSharePreview\(id\), id\)/);
     assert.equal(page.includes("notFound"), true);
     assert.doesNotMatch(page, /opengraph-image|twitter-image/);
     assert.match(image, /loadSharePreview\(id\)/);
@@ -334,14 +372,19 @@ describe("share wiring", () => {
     assert.match(layout, /metadataBase: new URL\(appBaseUrl\(\)\)/);
     assert.match(
       layout,
-      /sharePageMetadata\(sharePreviewFromDocument\(null\), appShareTarget\(\)\)/,
+      /sharePageMetadata\(\s*sharePreviewFromDocument\(null\),\s*appShareTarget\(\)\s*\)/,
     );
+    assert.match(layout, /default: SHARE_APP_TITLE/);
+    assert.match(layout, /template: "%s · Pamiac"/);
     assert.doesNotMatch(layout, /opengraph-image|twitter-image/);
     assert.match(metadataSource, /siteName: SHARE_APP_TITLE/);
     assert.match(
       metadataSource,
       /type: preview\.publicNote \? \("article" as const\) : \("website" as const\)/,
     );
+    assert.match(metadataSource, /canonical: target\.url/);
+    assert.match(metadataSource, /absolute: preview\.title/);
+    assert.match(metadataSource, /robots: privatePageRobots/);
     assert.match(metadataSource, /card: "summary_large_image" as const/);
     assert.match(metadataSource, /images: \[image\]/);
     assert.match(metadataSource, /images: \[imageUrl\]/);

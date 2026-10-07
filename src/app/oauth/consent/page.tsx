@@ -1,12 +1,18 @@
+import type { Metadata } from "next";
 import { AppHeader } from "@/components/header/app-header";
 import { ConsentCard } from "@/components/oauth/consent-card";
 import { ConsentSignIn } from "@/components/oauth/consent-sign-in";
 import { SetupScreen } from "@/components/setup-screen";
+import { privatePageRobots } from "@/lib/indexing";
 import { getSession } from "@/lib/session";
 import { consentLoginHref, oauthClientLabel, toSearchParams } from "@/lib/oauth-return";
 import { Page } from "@/ui/Page";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  robots: privatePageRobots,
+};
 
 export default async function ConsentPage({
   searchParams,

@@ -1,10 +1,16 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { AppHeader } from "@/components/header/app-header";
 import { PlanPaywall } from "@/components/plan/plan-paywall";
 import { SetupScreen } from "@/components/setup-screen";
+import { privatePageRobots } from "@/lib/indexing";
 import { getSession } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  robots: privatePageRobots,
+};
 
 export default async function ProfilePage() {
   const result = await getSession();
