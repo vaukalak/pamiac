@@ -144,6 +144,7 @@ export default async function DocumentPage(props: Properties) {
         hasPassword={Boolean(bundle.document.passwordHash)}
         id={bundle.document.id}
         isOwner={access.level === "edit" && access.reason === "owner"}
+        signedIn={Boolean(user)}
         spaceName={spaceName}
         title={bundle.document.title}
         type={documentType}

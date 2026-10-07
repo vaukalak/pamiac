@@ -51,7 +51,7 @@ async function loadClosedDocument(documentId: string, caller: Caller) {
     passwordOk,
     workspaceMember,
   });
-  if (access.level !== "none") throw new HttpError(409, "You already have access");
+  if (access.level === "edit") throw new HttpError(409, "You already have access");
   return document;
 }
 
