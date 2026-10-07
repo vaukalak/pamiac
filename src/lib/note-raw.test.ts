@@ -61,6 +61,7 @@ describe("copy markdown", () => {
       /<NoteShareMarkdown[\s\S]*readMarkdown=\{\(\) => latest\.current\.content\}/,
     );
     assert.ok(share.indexOf("<NoteCopyMarkdown") < share.indexOf("<NoteExport"));
+    assert.ok(share.indexOf("<NoteExport") < share.indexOf("<NoteImport"));
     assert.match(share, /readMarkdown=\{readMarkdown\}/);
     assert.match(share, /createPortal/);
     assert.match(

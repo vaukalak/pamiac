@@ -136,6 +136,7 @@ describe("note file controls", () => {
     assert.match(drop, /router\.push\(`\/d\/\$\{id\}`\)/);
     assert.match(note, /<NoteShareMarkdown/);
     assert.match(shareMarkdown, /<NoteExport/);
+    assert.ok(shareMarkdown.indexOf("<NoteExport") < shareMarkdown.indexOf("<NoteImport"));
     assert.match(editor, /linkifyWikiBlocks/);
     assert.match(editor, /withNoteComments/);
     assert.match(editor, /return packNoteContent\(marked, editor\.document\)/);
