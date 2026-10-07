@@ -3190,3 +3190,55 @@
 .library-shell:has(.library-main .note-notify-layer) > .library-main {
   z-index: 4;
 }
+.library-shell .note-page-picker {
+  background: var(--home-menu);
+  color: var(--home-text);
+}
+.library-shell .note-page-picker section {
+  display: grid;
+  gap: 12px;
+}
+.library-shell .note-page-picker h2 {
+  margin: 0;
+  color: var(--home-text);
+  font-size: 28px;
+  letter-spacing: -0.03em;
+}
+.library-shell .note-page-picker .text-pretty,
+.library-shell .note-page-picker .status {
+  margin: 0;
+  color: var(--home-soft);
+}
+.library-shell .note-page-picker .error {
+  color: var(--home-danger);
+}
+.note-page-picker-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: min(320px, 50dvh);
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+  list-style: none;
+}
+.note-page-picker-list .btn {
+  height: auto;
+  justify-content: flex-start;
+  text-align: left;
+  white-space: normal;
+  width: 100%;
+}
+.library-shell .note-page-picker .btn.secondary {
+  border-color: var(--home-hair-strong);
+  background: transparent;
+  color: var(--home-text);
+}
+.library-shell .note-page-picker .btn.secondary:hover {
+  border-color: var(--home-lime);
+  color: var(--home-lime);
+}
+.library-shell .note-page-picker .btn:focus-visible {
+  outline: 2px solid var(--home-text);
+  outline-offset: 3px;
+}

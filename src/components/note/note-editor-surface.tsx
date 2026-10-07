@@ -8,6 +8,7 @@ import { NoteFormattingToolbarController } from "@/components/note/note-formatti
 import { NoteMenuKeyboard } from "@/components/note/note-menu-keyboard";
 import { NoteSideMenu } from "@/components/note/note-side-menu";
 import { NoteBlockMenuSheet } from "@/components/note/note-block-menu-sheet";
+import { NoteSlashMenu } from "@/components/note/note-slash-menu";
 import { NoteSlashMenuSheet } from "@/components/note/note-slash-menu-sheet";
 
 interface Properties {
@@ -28,12 +29,14 @@ export function NoteEditorSurface(props: Properties) {
       formattingToolbar={false}
       onChange={onChange}
       sideMenu={false}
+      slashMenu={false}
       theme={theme}
     >
       <FilePanelController filePanel={NoteFilePanel} />
       <NoteFormattingToolbarController />
       <SideMenuController sideMenu={NoteSideMenu} />
       <NoteCommentLayer />
+      <NoteSlashMenu />
       <NoteSlashMenuSheet />
       <NoteBlockMenuSheet />
       <NoteMenuKeyboard />
