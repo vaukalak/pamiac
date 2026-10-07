@@ -60,7 +60,10 @@ describe("agent documents in the token workspace", () => {
     assert.match(read, /agentDocumentWhere\(userId, scope\)/);
     assert.equal(/eq\(documents\.ownerId|visibility/.test(read), false);
     assert.match(library, /listDocuments\(ownerId\)/);
-    assert.equal(/listAgentDocuments|agentDocumentWhere/.test(library), false);
+    assert.match(library, /eq\(documents\.visibility, "workspace"\)/);
+    assert.match(library, /eq\(workspaceMembers\.userId, ownerId\)/);
+    assert.match(library, /eq\(workspaceMembers\.workspaceId, documents\.workspaceId\)/);
+    assert.equal(/listAgentDocuments|agentDocumentWhere|accountDocumentWhere/.test(library), false);
   });
 
   it("searches the bound workspace and leaves a former member with nothing", () => {
@@ -136,7 +139,12 @@ describe("agent documents in the token workspace", () => {
     assert.ok(patch.indexOf("getAgentDocument") < patch.indexOf("updateDocumentContent"));
     assert.match(
       patch,
-      /updateDocumentContent\(\s*agent\.id,\s*id,\s*\{\s*title: input\.title,\s*content: input\.content,\s*patch: input\.patch,\s*expectedVersion: input\.version,\s*\},\s*agent\.scope,\s*\)/,
+      new RegExp(
+        "updateDocumentContent\\(\\s*agent\\.id,\\s*id,\\s*\\{" +
+          "\\s*title: input\\.title,\\s*content: input\\.content," +
+          "\\s*patch: input\\.patch,\\s*expectedVersion: input\\.version," +
+          "\\s*\\},\\s*agent\\.scope,\\s*\\)",
+      ),
     );
     assert.match(searchRoute, /agent\.scope\.allScopes/);
     assert.match(
@@ -155,14 +163,16 @@ describe("agent documents in the token workspace", () => {
       "utf8",
     );
     const sentence =
-      "Search reaches the workspace this token was bound to, and a personal binding reaches only that user's personal documents.";
+      "Search reaches the workspace this token was bound to, " +
+      "and a personal binding reaches only that user's personal documents.";
 
     assert.equal(cursorSkill, published);
     assert.equal(published.includes(sentence), true);
     assert.equal(published.includes("Search uses this user's document embeddings."), false);
     assert.equal(
       published.includes(
-        "Search uses embeddings for this user's personal documents and the documents in workspaces where this user is a member.",
+        "Search uses embeddings for this user's personal documents " +
+          "and the documents in workspaces where this user is a member.",
       ),
       false,
     );

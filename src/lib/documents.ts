@@ -7,7 +7,9 @@ import {
   exists,
   ilike,
   inArray,
+  isNotNull,
   isNull,
+  ne,
   or,
   sql,
 } from "drizzle-orm";
@@ -136,7 +138,30 @@ export async function agentCreateWorkspace(userId: string, scope: AgentScope) {
 }
 
 export async function listLibraryDocuments(ownerId: string) {
-  const rows = await listDocuments(ownerId);
+  const owned = await listDocuments(ownerId);
+  const shared = await getDb()
+    .select()
+    .from(documents)
+    .where(
+      and(
+        eq(documents.visibility, "workspace"),
+        isNotNull(documents.workspaceId),
+        ne(documents.ownerId, ownerId),
+        exists(
+          getDb()
+            .select({ id: workspaceMembers.id })
+            .from(workspaceMembers)
+            .where(
+              and(
+                eq(workspaceMembers.workspaceId, documents.workspaceId),
+                eq(workspaceMembers.userId, ownerId),
+              ),
+            ),
+        ),
+      ),
+    )
+    .orderBy(asc(documents.sortIndex), asc(documents.createdAt));
+  const rows = [...owned, ...shared];
   const ids = rows.map((row) => row.id);
   const shares = ids.length
     ? await getDb().select().from(documentShares).where(inArray(documentShares.documentId, ids))
