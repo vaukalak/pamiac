@@ -1,5 +1,6 @@
 import { WorkspaceInviteActions } from "@/components/library/workspace-invite-actions";
 import type { WorkspaceInviteDetails } from "@/lib/library-workspace-invites";
+import { Paragraph } from "@/ui/Paragraph";
 
 interface Properties {
   invite: WorkspaceInviteDetails;
@@ -11,8 +12,8 @@ export function WorkspaceInviteChoice(props: Properties) {
 
   return (
     <div className="share-actions">
-      <p className="workspace-invite-name">{invite.workspaceName}</p>
-      <p className="hint">Join this workspace, or decline.</p>
+      <Paragraph className="workspace-invite-name">{invite.workspaceName}</Paragraph>
+      <Paragraph className="hint">Join this workspace, or decline.</Paragraph>
       <WorkspaceInviteActions inviteId={invite.id} onDone={onDone} />
     </div>
   );

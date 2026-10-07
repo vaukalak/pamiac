@@ -5,6 +5,7 @@ interface Properties {
   type?: "button" | "submit" | "reset";
   disabled?: boolean;
   className?: string;
+  id?: string;
   onClick?: () => void;
   pressed?: boolean;
   expanded?: boolean;
@@ -22,6 +23,7 @@ export function Button(props: Properties) {
     disabled = false,
     className,
     controls,
+    id,
     onClick,
     popup,
     pressed,
@@ -41,6 +43,7 @@ export function Button(props: Properties) {
       aria-selected={selected}
       className={classes}
       disabled={disabled}
+      id={id}
       onClick={onClick}
       role={role}
       title={title}

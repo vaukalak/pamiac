@@ -4,6 +4,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { acceptWorkspaceInvite, rejectWorkspaceInvite } from "@/lib/library-workspace-invites";
 import { workspacesQueryKey } from "@/lib/library-workspaces";
+import { Alert } from "@/ui/Alert";
+import { Button } from "@/ui/Button";
 
 interface Properties {
   inviteId: string;
@@ -32,24 +34,24 @@ export function WorkspaceInviteActions(props: Properties) {
 
   return (
     <div className="row-actions">
-      <button
-        className="btn"
+      <Button
+        className="library-lime"
         disabled={mutation.isPending}
         id="workspace-invite-accept"
         onClick={() => mutation.mutate("accept")}
         type="button"
       >
         {pending === "accept" ? "Accepting…" : "Accept"}
-      </button>
-      <button
-        className="btn secondary"
+      </Button>
+      <Button
+        className="secondary"
         disabled={mutation.isPending}
         onClick={() => mutation.mutate("reject")}
         type="button"
       >
         {pending === "reject" ? "Rejecting…" : "Reject"}
-      </button>
-      {message ? <p className="error workspace-invite-error">{message}</p> : null}
+      </Button>
+      {message ? <Alert>{message}</Alert> : null}
     </div>
   );
 }

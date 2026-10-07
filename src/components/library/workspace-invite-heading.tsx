@@ -1,3 +1,5 @@
+import { Button } from "@/ui/Button";
+
 interface Properties {
   onClose: () => void;
 }
@@ -8,9 +10,9 @@ export function WorkspaceInviteHeading(props: Properties) {
   return (
     <div className="share-dialog-head">
       <h2 id="workspace-invite-title">Workspace invitation</h2>
-      <button className="btn ghost small" onClick={onClose} type="button">
+      <Button className="ghost" onClick={onClose} type="button">
         Close
-      </button>
+      </Button>
     </div>
   );
 }

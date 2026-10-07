@@ -54,7 +54,7 @@ export function WorkspaceInvitePanel(props: Properties) {
     <div
       aria-labelledby="workspace-invite-title"
       aria-modal="true"
-      className="share-dialog"
+      className="share-dialog workspace-invite-dialog"
       onClick={(event) => event.stopPropagation()}
       ref={dialogRef}
       role="dialog"
