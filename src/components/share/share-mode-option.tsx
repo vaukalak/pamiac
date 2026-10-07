@@ -4,12 +4,12 @@ import { useFormContext } from "react-hook-form";
 import type { Visibility } from "@/lib/access";
 import type { ShareDraft } from "@/components/share/share-draft";
 import { ShareModeCopy } from "@/components/share/share-mode-copy";
-import { ShareModeIcon } from "@/components/share/share-mode-icon";
+import { ShareModeIcon, type ShareModeIconName } from "@/components/share/share-mode-icon";
 
 interface Properties {
   checked: boolean;
   detail: string;
-  icon: "globe" | "key" | "lock" | "mail";
+  icon: ShareModeIconName;
   title: string;
   value: Visibility;
 }

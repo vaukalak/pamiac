@@ -3,6 +3,11 @@
 import { useFormContext } from "react-hook-form";
 import type { ShareDraft } from "@/components/share/share-draft";
 import { ShareModeOption } from "@/components/share/share-mode-option";
+import { ShareWorkspaceMode } from "@/components/share/share-workspace-mode";
+
+interface Properties {
+  workspaceId: string | null;
+}
 
 const MODES = [
   {
@@ -31,14 +36,24 @@ const MODES = [
   },
 ] as const;
 
-export function ShareModeList() {
+export function ShareModeList(props: Properties) {
+  const { workspaceId } = props;
   const { watch } = useFormContext<ShareDraft>();
   const mode = watch("visibility");
+  const [onlyMe, ...rest] = MODES;
 
   return (
     <fieldset className="share-modes">
       <legend>Who can open this document</legend>
-      {MODES.map((item) => (
+      <ShareModeOption
+        checked={mode === onlyMe.value}
+        detail={onlyMe.detail}
+        icon={onlyMe.icon}
+        title={onlyMe.title}
+        value={onlyMe.value}
+      />
+      {workspaceId ? <ShareWorkspaceMode workspaceId={workspaceId} /> : null}
+      {rest.map((item) => (
         <ShareModeOption
           checked={mode === item.value}
           detail={item.detail}

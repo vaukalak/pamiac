@@ -8,6 +8,7 @@ interface Properties {
 
 const VISIBILITY_LABEL: Record<Visibility, string> = {
   private: "Only me",
+  workspace: "Workspace",
   emails: "Email",
   password: "Password",
   public: "Public",

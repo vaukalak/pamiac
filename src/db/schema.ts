@@ -9,6 +9,7 @@ import {
   uniqueIndex,
   vector,
 } from "drizzle-orm/pg-core";
+import { VISIBILITIES } from "../lib/access";
 import { EMBEDDING_DIMENSIONS } from "../lib/embeddings";
 
 export const user = pgTable("user", {
@@ -124,9 +125,7 @@ export const folders = pgTable(
     workspaceId: text("workspace_id").references(() => workspaces.id, { onDelete: "cascade" }),
     parentId: text("parent_id"),
     name: text("name").notNull(),
-    visibility: text("visibility", { enum: ["private", "public", "password", "emails"] })
-      .notNull()
-      .default("private"),
+    visibility: text("visibility", { enum: VISIBILITIES }).notNull().default("private"),
     passwordHash: text("password_hash"),
     sortIndex: integer("sort_index").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -160,9 +159,7 @@ export const documents = pgTable(
     type: text("type", { enum: ["note", "diagram"] }).notNull(),
     title: text("title").notNull(),
     content: text("content").notNull(),
-    visibility: text("visibility", { enum: ["private", "public", "password", "emails"] })
-      .notNull()
-      .default("private"),
+    visibility: text("visibility", { enum: VISIBILITIES }).notNull().default("private"),
     passwordHash: text("password_hash"),
     workspaceId: text("workspace_id").references(() => workspaces.id, { onDelete: "cascade" }),
     folderId: text("folder_id").references(() => folders.id),

@@ -15,6 +15,7 @@ interface Properties {
   message: string;
   pending: boolean;
   target: "document" | "folder";
+  workspaceId: string | null;
   onClose: () => void;
   onSubmit: (values: ShareDraft) => void;
 }
@@ -30,6 +31,7 @@ export function ShareDialogSurface(props: Properties) {
     message,
     pending,
     target,
+    workspaceId,
     onClose,
     onSubmit,
   } = props;
@@ -53,6 +55,7 @@ export function ShareDialogSurface(props: Properties) {
         message={message}
         pending={pending}
         target={target}
+        workspaceId={workspaceId}
         onClose={onClose}
         onSubmit={onSubmit}
       >

@@ -1,4 +1,4 @@
-export const VISIBILITIES = ["private", "public", "password", "emails"] as const;
+export const VISIBILITIES = ["private", "workspace", "public", "password", "emails"] as const;
 export type Visibility = (typeof VISIBILITIES)[number];
 
 export type Access =

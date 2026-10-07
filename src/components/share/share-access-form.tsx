@@ -15,13 +15,25 @@ interface Properties {
   message: string;
   pending: boolean;
   target: "document" | "folder";
+  workspaceId: string | null;
   onClose: () => void;
   onSubmit: (values: ShareDraft) => void;
 }
 
 export function ShareAccessForm(props: Properties) {
-  const { children, error, form, hasPassword, id, message, pending, target, onClose, onSubmit } =
-    props;
+  const {
+    children,
+    error,
+    form,
+    hasPassword,
+    id,
+    message,
+    pending,
+    target,
+    workspaceId,
+    onClose,
+    onSubmit,
+  } = props;
 
   return (
     <Form.Context className="share-access-form" form={form} onSubmit={onSubmit}>
@@ -32,6 +44,7 @@ export function ShareAccessForm(props: Properties) {
         message={message}
         pending={pending}
         target={target}
+        workspaceId={workspaceId}
         onClose={onClose}
       >
         {children}
