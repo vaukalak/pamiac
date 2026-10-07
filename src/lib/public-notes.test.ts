@@ -3,12 +3,22 @@ import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import { privacyNote, termsNote } from "./public-notes.ts";
 
+function expect(actual: string) {
+  return {
+    toMatch(pattern: RegExp) {
+      assert.match(actual, pattern);
+    },
+  };
+}
+
 function read(path: string) {
   return readFileSync(new URL(path, import.meta.url), "utf8");
 }
 
 const privacyPage = read("../app/privacy/page.tsx");
 const termsPage = read("../app/terms/page.tsx");
+const shell = read("../components/document/document-shell.tsx");
+const brand = read("../components/library/library-brand.tsx");
 const note = read("../components/public-note/public-note.tsx");
 const document = read("../components/public-note/public-note-document.tsx");
 const tools = read("../components/public-note/public-note-tools.tsx");
@@ -55,20 +65,44 @@ describe("public privacy and terms notes", () => {
   it("renders the notes at /privacy and /terms without a library row or a sign-in gate", () => {
     assert.match(privacyPage, /privacyNote/);
     assert.match(termsPage, /termsNote/);
-    assert.match(privacyPage, /<PublicNote /);
-    assert.match(termsPage, /<PublicNote /);
-    for (const page of [privacyPage, termsPage, note, document]) {
+    assert.match(privacyPage, /<PublicNote[\s>]/);
+    assert.match(termsPage, /<PublicNote[\s>]/);
+    for (const page of [privacyPage, termsPage]) {
+      assert.match(page, /getLibrarySession\(/);
+      assert.match(page, /email=\{email\}/);
+      assert.equal(page.includes("getDocumentBundle"), false);
+      assert.equal(page.includes("redirect("), false);
+      assert.equal(page.includes("owner_id"), false);
+    }
+    for (const page of [note, document]) {
       assert.equal(page.includes("getLibrarySession"), false);
       assert.equal(page.includes("getDocumentBundle"), false);
       assert.equal(page.includes("redirect("), false);
       assert.equal(page.includes("owner_id"), false);
     }
-    assert.match(note, /email=\{null\}/);
+    assert.match(note, /email=\{email\}/);
+    assert.match(shell, /email === null \? <LibraryBrand href="\/" \/> : null/);
+    assert.match(brand, /href = "\/workspace"/);
+    assert.match(brand, /className="brand"/);
+    assert.match(brand, /className="brand-mark"/);
+    assert.match(brand, />\s*Pamiac/);
     assert.match(document, /<NoteTitle disabled/);
     assert.match(tools, /<SaveState canEdit=\{false\}/);
     assert.match(tools, /<span className="badge">public<\/span>/);
     assert.match(body, /<PublicNoteBlock /);
     assert.match(block, /<Paragraph>/);
+  });
+
+  it("keeps privacy and terms readable when the library session is missing", () => {
+    for (const page of [privacyPage, termsPage]) {
+      expect(page).toMatch(/export const dynamic = "force-dynamic"/);
+      expect(page).toMatch(
+        /result\.status === "ok" \? \(result\.session\?\.user\.email \?\? null\) : null/,
+      );
+      assert.equal(page.includes("SetupScreen"), false);
+      assert.equal(page.includes("redirect("), false);
+      expect(page).toMatch(/<PublicNote/);
+    }
   });
 
   it("lists the public HTTPS URLs in the ChatGPT submission", () => {

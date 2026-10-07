@@ -15,6 +15,21 @@ function read(path: string) {
   return readFileSync(new URL(path, import.meta.url), "utf8");
 }
 
+function block(source: string, start: string, end: string) {
+  const from = source.indexOf(start);
+  const to = source.indexOf(end, from + start.length);
+  assert.ok(from >= 0 && to > from, `${start} .. ${end}`);
+  return source.slice(from, to);
+}
+
+function expect(actual: string) {
+  return {
+    toMatch(pattern: RegExp) {
+      assert.match(actual, pattern);
+    },
+  };
+}
+
 describe("document library shell", () => {
   it("keeps a stored library filter and drops anything else", () => {
     assert.equal(libraryFilter("all"), "all");
@@ -78,6 +93,8 @@ describe("document library shell", () => {
     assert.match(shell, /email !== null/);
     assert.match(shell, /library-shell-solo/);
     assert.match(shell, /<CircuitBoard \/>/);
+    assert.match(shell, /email === null \? <LibraryBrand href="\/" \/> : null/);
+    assert.equal(/AppHeader/.test(shell), false);
     assert.match(sidebar, /<LibrarySidebar/);
     assert.equal(/function LibrarySidebar/.test(sidebar), false);
     assert.match(sidebar, /filter=\{documentType\}/);
@@ -95,6 +112,33 @@ describe("document library shell", () => {
       css,
       /@media \(max-width:\s*760px\)\s*\{\s*\.library-shell\s*\{\s*grid-template-columns:\s*minmax\(0,\s*1fr\);/,
     );
+  });
+
+  it("puts one home brand on the solo shell and leaves the signed-in shell with the workspace brand", () => {
+    const shell = read("../components/document/document-shell.tsx");
+    const sidebar = read("../components/library/library-sidebar-panel.tsx");
+    const header = read("../components/library/library-mobile-header.tsx");
+    const css = readStylesheet();
+    const signedIn = shell.slice(shell.indexOf("email !== null ?"));
+    const shared = block(css, ".library-shell .brand {", ".library-shell .brand-mark {");
+    const solo = block(
+      css,
+      ".library-shell.library-shell-solo > .brand {",
+      ".library-shell.library-shell-solo > .library-main {",
+    );
+
+    expect(signedIn).toMatch(/<DocumentSidebar/);
+    assert.equal(signedIn.includes("<LibraryBrand"), false);
+    expect(sidebar).toMatch(/<LibraryBrand \/>/);
+    expect(header).toMatch(/<LibraryBrand \/>/);
+    assert.equal(/<LibraryBrand href="\/"/.test(sidebar), false);
+    assert.equal(/<LibraryBrand href="\/"/.test(header), false);
+    expect(shared).toMatch(/padding-right:\s*64px/);
+    expect(solo).toMatch(/z-index:\s*2/);
+    expect(solo).toMatch(/align-self:\s*start/);
+    expect(solo).toMatch(/padding-right:\s*0/);
+    expect(solo).toMatch(/margin:\s*22px 0 0 32px/);
+    expect(css).toMatch(/\.library-shell \.library-main\s*\{[^}]*padding:\s*72px 72px 40px 32px/);
   });
 
   it("uses Button for share and delete", () => {

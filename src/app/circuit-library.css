@@ -559,6 +559,9 @@
     padding: 24px 16px 32px;
     padding-top: 72px;
   }
+  .library-shell.library-shell-solo > .brand {
+    margin: 16px 0 0 16px;
+  }
   .library-shell .note-editor div:has(> .bn-suggestion-menu) {
     position: static !important;
     top: auto !important;
@@ -1297,6 +1300,16 @@
 }
 .library-shell.library-shell-solo {
   grid-template-columns: minmax(0, 1fr);
+}
+.library-shell.library-shell-solo > .brand {
+  position: relative;
+  z-index: 2;
+  grid-column: 1;
+  grid-row: 1;
+  align-self: start;
+  justify-self: start;
+  margin: 22px 0 0 32px;
+  padding-right: 0;
 }
 .library-shell.library-shell-solo > .library-main {
   grid-column: 1;
