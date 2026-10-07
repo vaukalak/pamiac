@@ -17,7 +17,7 @@ import { noteExportMarkdown } from "@/lib/note-file";
 import { rewriteStoredR2Images } from "@/lib/stored-image-url";
 import { isRawNoteView } from "@/lib/note-raw";
 import { unlockCookieName, unlockMatches } from "@/lib/passwords";
-import { documentShareTarget, sharePageMetadata } from "@/lib/share-preview";
+import { documentPageMetadata } from "@/lib/share-preview";
 import { getLibrarySession } from "@/lib/session";
 import { listMemberWorkspaces } from "@/lib/workspaces";
 
@@ -31,7 +31,7 @@ interface Properties {
 export async function generateMetadata(props: Properties): Promise<Metadata> {
   const { params } = props;
   const { id } = await params;
-  return sharePageMetadata(await loadSharePreview(id), documentShareTarget(id));
+  return documentPageMetadata(await loadSharePreview(id), id);
 }
 
 export default async function DocumentPage(props: Properties) {

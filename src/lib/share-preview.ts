@@ -2,6 +2,7 @@ import { appBaseUrl } from "./config.ts";
 import { readableBlockMarkdown } from "./block-link.ts";
 import { defaultTitle } from "./content.ts";
 import { excerpt } from "./embeddings.ts";
+import { privatePageRobots } from "./indexing.ts";
 import { noteMarkdown } from "./note-blocks.ts";
 
 export const SHARE_APP_TITLE = "Pamiac";
@@ -136,8 +137,11 @@ export function sharePageMetadata(preview: SharePreview, target: SharePageTarget
   };
 
   return {
-    title: preview.title,
+    title: preview.publicNote ? { absolute: preview.title } : preview.title,
     description: preview.description,
+    alternates: {
+      canonical: target.url,
+    },
     openGraph: {
       title: socialTitle,
       description: preview.description,
@@ -152,6 +156,15 @@ export function sharePageMetadata(preview: SharePreview, target: SharePageTarget
       description: preview.description,
       images: [imageUrl],
     },
+  };
+}
+
+export function documentPageMetadata(preview: SharePreview, id: string) {
+  const metadata = sharePageMetadata(preview, documentShareTarget(id));
+  return {
+    ...metadata,
+    title: preview.publicNote ? metadata.title : { absolute: SHARE_APP_TITLE },
+    robots: privatePageRobots,
   };
 }
 

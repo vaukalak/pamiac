@@ -1,14 +1,20 @@
+import type { Metadata } from "next";
 import { GoogleConnectDecision } from "@/components/connect/google-connect-decision";
 import { GoogleConnectSignIn } from "@/components/connect/google-connect-sign-in";
 import { AppHeader } from "@/components/header/app-header";
 import { CircuitBoard } from "@/components/home/circuit-board";
 import { SetupScreen } from "@/components/setup-screen";
 import { findGoogleLoginAgentName } from "@/lib/google-agent-login";
+import { privatePageRobots } from "@/lib/indexing";
 import { getSession } from "@/lib/session";
 import { Page } from "@/ui/Page";
 import { Section } from "@/ui/Section";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  robots: privatePageRobots,
+};
 
 interface Properties {
   searchParams: Promise<Record<string, string | string[] | undefined>>;

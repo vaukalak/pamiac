@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { AppHeader } from "@/components/header/app-header";
 import { CircuitBoard } from "@/components/home/circuit-board";
@@ -13,11 +14,16 @@ import {
   oauthLoginReturnPath,
   toSearchParams,
 } from "@/lib/oauth-return";
+import { privatePageRobots } from "@/lib/indexing";
 import { getLibrarySession, getSession } from "@/lib/session";
 import { Page } from "@/ui/Page";
 import { Section } from "@/ui/Section";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  robots: privatePageRobots,
+};
 
 interface Properties {
   searchParams: Promise<Record<string, string | string[] | undefined>>;

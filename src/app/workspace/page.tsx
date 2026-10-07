@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { DocumentBoard, type BoardDocument } from "@/components/library/document-board";
 import { WorkspaceInviteDialog } from "@/components/library/workspace-invite-dialog";
@@ -6,11 +7,16 @@ import { SetupScreen } from "@/components/setup-screen";
 import type { Visibility } from "@/lib/access";
 import type { DocumentType } from "@/lib/content";
 import { listLibraryDocuments } from "@/lib/documents";
+import { privatePageRobots } from "@/lib/indexing";
 import { getLibrarySession } from "@/lib/session";
 import { workspaceInvitePath } from "@/lib/workspace-invite-link";
 import { listMemberWorkspaces } from "@/lib/workspaces";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  robots: privatePageRobots,
+};
 
 function setupDetail(error: unknown) {
   const message = error instanceof Error ? error.message : "Could not reach the database";
