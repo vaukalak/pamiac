@@ -255,7 +255,7 @@ describe("document page metadata", () => {
     else process.env.BETTER_AUTH_URL = originalBaseUrl;
   });
 
-  it("keeps a public note indexable under its own title", () => {
+  it("noindexes a public note and keeps its title, preview, and canonical url", () => {
     process.env.BETTER_AUTH_URL = "https://pamiac.com";
     const metadata = documentPageMetadata(
       sharePreviewFromDocument(note("Visible title", "Hello from the note")),
@@ -263,9 +263,16 @@ describe("document page metadata", () => {
     );
 
     assert.deepEqual(metadata.title, { absolute: "Visible title" });
-    assert.equal(metadata.robots, undefined);
+    assert.deepEqual(metadata.robots, { index: false, follow: false });
+    assert.equal(metadata.description, "Hello from the note");
     assert.equal(metadata.alternates.canonical, "https://pamiac.com/d/doc-1");
     assert.equal(metadata.openGraph.title, "Visible title");
+    assert.equal(metadata.openGraph.description, "Hello from the note");
+    assert.equal(metadata.twitter.title, "Visible title");
+    assert.equal(metadata.twitter.description, "Hello from the note");
+    assert.equal(metadata.openGraph.type, "article");
+    assert.equal(metadata.openGraph.url, "https://pamiac.com/d/doc-1");
+    assert.equal(metadata.openGraph.images[0].url, "https://pamiac.com/d/doc-1/share-card.png");
   });
 
   it("noindexes private and missing notes and leaves their secrets out", () => {

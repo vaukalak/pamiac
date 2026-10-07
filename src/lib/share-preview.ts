@@ -161,10 +161,9 @@ export function sharePageMetadata(preview: SharePreview, target: SharePageTarget
 
 export function documentPageMetadata(preview: SharePreview, id: string) {
   const metadata = sharePageMetadata(preview, documentShareTarget(id));
-  if (preview.publicNote) return metadata;
   return {
     ...metadata,
-    title: { absolute: SHARE_APP_TITLE },
+    title: preview.publicNote ? metadata.title : { absolute: SHARE_APP_TITLE },
     robots: privatePageRobots,
   };
 }

@@ -66,15 +66,6 @@ export async function listDocuments(ownerId: string) {
     .orderBy(asc(documents.sortIndex), asc(documents.createdAt));
 }
 
-export async function listPublicNoteIds() {
-  const rows = await getDb()
-    .select({ id: documents.id })
-    .from(documents)
-    .where(and(eq(documents.visibility, "public"), eq(documents.type, "note")))
-    .orderBy(asc(documents.updatedAt), asc(documents.id));
-  return rows.map((row) => row.id);
-}
-
 function agentDocumentWhere(userId: string, scope: AgentScope) {
   if (scope.allScopes) return accountDocumentWhere(userId);
   return selectedDocumentWhere(userId, scope.workspaceIds);

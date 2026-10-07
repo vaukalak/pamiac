@@ -11,7 +11,7 @@ import {
   sharePreviewFromDocument,
   type ShareDocument,
 } from "./share-preview.ts";
-import { sitemapEntries, sitemapForNotes } from "./sitemap-entries.ts";
+import { sitemapEntries } from "./sitemap-entries.ts";
 
 const originalDatabaseUrl = process.env.DATABASE_URL;
 const originalBaseUrl = process.env.BETTER_AUTH_URL;
@@ -41,7 +41,7 @@ describe("robots", () => {
     const rules = Array.isArray(body.rules) ? body.rules[0] : body.rules;
 
     assert.equal(rules.userAgent, "*");
-    assert.deepEqual(rules.allow, ["/", "/privacy", "/terms", "/support", "/d/"]);
+    assert.deepEqual(rules.allow, ["/", "/privacy", "/terms", "/support"]);
     assert.deepEqual(rules.disallow, [
       "/login",
       "/profile",
@@ -51,6 +51,7 @@ describe("robots", () => {
       "/f/",
       "/api/",
       "/.well-known/",
+      "/d/",
     ]);
     assert.equal(body.sitemap, "https://pamiac.com/sitemap.xml");
     assert.equal(body.host, appBaseUrl());
@@ -61,8 +62,8 @@ describe("robots", () => {
 describe("sitemap entries", () => {
   afterEach(restoreEnv);
 
-  it("lists the public pages and encoded public note urls only", () => {
-    const entries = sitemapEntries("https://pamiac.com/", ["plain", "a/b", "id with space"]);
+  it("lists only the public marketing pages", () => {
+    const entries = sitemapEntries("https://pamiac.com/");
     const urls = entries.map((entry) => entry.url);
 
     assert.deepEqual(urls, [
@@ -70,48 +71,21 @@ describe("sitemap entries", () => {
       "https://pamiac.com/privacy",
       "https://pamiac.com/terms",
       "https://pamiac.com/support",
-      "https://pamiac.com/d/plain",
-      "https://pamiac.com/d/a%2Fb",
-      "https://pamiac.com/d/id%20with%20space",
     ]);
     assert.equal(
-      urls.some((url) => /\/(f|workspace|api|login|oauth|connect)(\/|$)/.test(url)),
+      urls.some((url) => /\/(d|f|workspace|api|login|oauth|connect)(\/|$)/.test(url)),
       false,
     );
   });
 
-  it("returns only static urls when the database is not configured", async () => {
-    delete process.env.DATABASE_URL;
-    let called = false;
-    const entries = await sitemapForNotes("https://pamiac.com", async () => {
-      called = true;
-      return ["secret-note"];
-    });
-
-    assert.equal(called, false);
-    assert.deepEqual(
-      entries.map((entry) => entry.url),
-      sitemapEntries("https://pamiac.com", []).map((entry) => entry.url),
-    );
-    assert.equal(JSON.stringify(entries).includes("secret-note"), false);
-  });
-
-  it("adds public note ids and drops back to static urls when the read fails", async () => {
+  it("ignores the database and never emits a document url", () => {
     process.env.DATABASE_URL = "postgres://example";
-    const listed = await sitemapForNotes("https://pamiac.com", async () => ["note-1"]);
-    const failed = await sitemapForNotes("https://pamiac.com", async () => {
-      throw new Error("secret row");
-    });
+    const withDatabase = sitemapEntries("https://pamiac.com/");
+    delete process.env.DATABASE_URL;
+    const withoutDatabase = sitemapEntries("https://pamiac.com/");
 
-    assert.deepEqual(
-      listed.map((entry) => entry.url),
-      sitemapEntries("https://pamiac.com", ["note-1"]).map((entry) => entry.url),
-    );
-    assert.deepEqual(
-      failed.map((entry) => entry.url),
-      sitemapEntries("https://pamiac.com", []).map((entry) => entry.url),
-    );
-    assert.equal(JSON.stringify(failed).includes("secret"), false);
+    assert.deepEqual(withDatabase, withoutDatabase);
+    assert.equal(JSON.stringify(withDatabase).includes("/d/"), false);
   });
 });
 
@@ -133,6 +107,18 @@ describe("indexable metadata", () => {
       assert.equal(metadata.description, SHARE_APP_DESCRIPTION);
       assert.equal(JSON.stringify(metadata).includes("Secret"), false);
     }
+  });
+
+  it("noindexes a public note and keeps its title, description, and canonical url", () => {
+    process.env.BETTER_AUTH_URL = "https://pamiac.com";
+    const metadata = documentPageMetadata(sharePreviewFromDocument(note("public")), "doc-1");
+
+    assert.deepEqual(metadata.robots, { index: false, follow: false });
+    assert.deepEqual(metadata.title, { absolute: "Secret title" });
+    assert.match(metadata.description, /Secret body/);
+    assert.equal(metadata.alternates.canonical, "https://pamiac.com/d/doc-1");
+    assert.equal(metadata.openGraph.title, "Secret title");
+    assert.equal(metadata.twitter.title, "Secret title");
   });
 
   it("leaves the home card indexable with the generic social title", () => {
@@ -188,13 +174,12 @@ describe("indexable metadata", () => {
     const privacy = readFileSync(new URL("../app/privacy/page.tsx", import.meta.url), "utf8");
     assert.match(privacy, /title: "Privacy policy"/);
     const documents = readFileSync(new URL("./documents.ts", import.meta.url), "utf8");
-    assert.match(documents, /eq\(documents\.visibility, "public"\)/);
-    assert.match(documents, /eq\(documents\.type, "note"\)/);
-    assert.match(documents, /select\(\{ id: documents\.id \}\)/);
+    assert.doesNotMatch(documents, /listPublicNoteIds/);
     const sitemapSource = readFileSync(new URL("../app/sitemap.ts", import.meta.url), "utf8");
     const robotsSource = readFileSync(new URL("../app/robots.ts", import.meta.url), "utf8");
     assert.match(sitemapSource, /export const revalidate = 3600/);
-    assert.match(sitemapSource, /sitemapForNotes\(appBaseUrl\(\), listPublicNoteIds\)/);
+    assert.match(sitemapSource, /sitemapEntries\(appBaseUrl\(\)\)/);
+    assert.doesNotMatch(sitemapSource, /listPublicNoteIds|sitemapForNotes|documents/);
     assert.match(robotsSource, /return robotsPolicy\(\)/);
   });
 });

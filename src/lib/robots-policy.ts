@@ -5,7 +5,7 @@ export function robotsPolicy() {
   return {
     rules: {
       userAgent: "*",
-      allow: ["/", "/privacy", "/terms", "/support", "/d/"],
+      allow: ["/", "/privacy", "/terms", "/support"],
       disallow: [
         "/login",
         "/profile",
@@ -15,6 +15,7 @@ export function robotsPolicy() {
         "/f/",
         "/api/",
         "/.well-known/",
+        "/d/",
       ],
     },
     sitemap: `${base}/sitemap.xml`,
