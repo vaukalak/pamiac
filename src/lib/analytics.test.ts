@@ -291,16 +291,16 @@ describe("notification check call sites", () => {
       delivery.indexOf("captureNotificationCheckTriggered") < delivery.indexOf("postDecide"),
     );
     assert.ok(
-      delivery.indexOf("if (matched === null) return") <
+      delivery.indexOf("if (matched === null)") <
         delivery.indexOf("captureNotificationCheckConfirmed"),
     );
     assert.equal(deliveryCaptures.length, 2);
     assert.match(delivery, /source: "delivery"/);
 
     assert.ok(test.indexOf("captureNotificationCheckTriggered") < test.indexOf("postDecide"));
+    assert.ok(test.indexOf("test_no_verdict") < test.indexOf("throw new HttpError"));
     assert.ok(
-      test.indexOf("if (!verdict) throw new HttpError") <
-        test.indexOf("captureNotificationCheckConfirmed"),
+      test.indexOf("throw new HttpError") < test.indexOf("captureNotificationCheckConfirmed"),
     );
     assert.equal(testCaptures.length, 2);
     assert.match(test, /source: "test"/);

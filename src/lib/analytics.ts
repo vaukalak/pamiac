@@ -37,6 +37,7 @@ export type AnalyticsEventName =
   | "share_updated"
   | "folder_created"
   | "note_notification_saved"
+  | "note_notification"
   | "image_uploaded"
   | "support_request_sent";
 
@@ -47,6 +48,7 @@ const ALLOWED_PROPERTY_KEYS = new Set([
   "documentType",
   "mode",
   "folderId",
+  "step",
 ]);
 
 export interface AnalyticsEvent {
@@ -188,6 +190,66 @@ export function noteNotificationSavedEvent(input: {
     documentId,
     mode: input.mode,
   });
+}
+
+const NOTE_NOTIFY_SOURCES = new Set<NotificationCheckSource>(["test", "delivery"]);
+
+export const NOTE_NOTIFICATION_STEPS = new Set([
+  "mode_never_cleared",
+  "burst_armed",
+  "immediate_delivery",
+  "timer_fired",
+  "claim_missed",
+  "claimed",
+  "skipped_same_text",
+  "missing_note",
+  "mode_never",
+  "mode_any",
+  "mode_criteria",
+  "jev_missing_key",
+  "jev_http",
+  "jev_network",
+  "jev_unreadable",
+  "judge_unavailable",
+  "match_unreadable",
+  "not_matched",
+  "matched_email",
+  "matched_suppressed",
+  "no_owner_email",
+  "email_returned",
+  "test_no_verdict",
+  "timer_failed",
+]);
+
+const NOTE_NOTIFY_RESULTS = new Set(["cleared", "idle", "empty", "mismatch", "same_text"]);
+
+function noteNotifyResult(result: string | boolean | undefined) {
+  if (typeof result === "boolean") return result;
+  if (typeof result !== "string") return undefined;
+  const trimmed = result.trim();
+  if (NOTE_NOTIFY_RESULTS.has(trimmed) || /^\d{3}$/.test(trimmed)) return trimmed;
+  return undefined;
+}
+
+export function noteNotificationEvent(input: {
+  userId: string;
+  documentId: string;
+  step: string;
+  mode?: string;
+  source?: string;
+  result?: string | boolean;
+}) {
+  const documentId = input.documentId.trim();
+  const step = input.step.trim();
+  if (!documentId || !NOTE_NOTIFICATION_STEPS.has(step)) return null;
+  const properties: Record<string, AnalyticsProperty> = { documentId, step };
+  if (input.mode && NOTE_MODES.has(input.mode as NoteNotifyMode)) properties.mode = input.mode;
+  if (input.source && NOTE_NOTIFY_SOURCES.has(input.source as NotificationCheckSource)) {
+    properties.source = input.source;
+  }
+  const result = noteNotifyResult(input.result);
+  if (result !== undefined) properties.result = result;
+  return userEvent(input.userId, "note_notification", properties);
 }
 
 export function imageUploadedEvent(input: { userId: string; documentId: string | null }) {
