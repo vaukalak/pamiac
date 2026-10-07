@@ -3,6 +3,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { WorkspaceInviteChoice } from "@/components/library/workspace-invite-choice";
 import { fetchWorkspaceInvite, workspaceInviteQueryKey } from "@/lib/library-workspace-invites";
+import { Alert } from "@/ui/Alert";
+import { Paragraph } from "@/ui/Paragraph";
 
 interface Properties {
   inviteId: string;
@@ -21,8 +23,8 @@ export function WorkspaceInviteBody(props: Properties) {
 
   return (
     <div>
-      {query.isPending ? <p className="hint">Loading the invitation.</p> : null}
-      {message ? <p className="error">{message}</p> : null}
+      {query.isPending ? <Paragraph className="hint">Loading the invitation.</Paragraph> : null}
+      {message ? <Alert>{message}</Alert> : null}
       {invite ? <WorkspaceInviteChoice invite={invite} onDone={onClose} /> : null}
     </div>
   );

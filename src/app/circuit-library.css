@@ -1882,6 +1882,76 @@
 .library-shell .workspace-invite-backdrop .share-dialog {
   background: var(--home-menu);
 }
+.library-shell .share-backdrop:has(.workspace-invite-dialog) {
+  background: var(--home-scrim);
+}
+.library-shell .workspace-invite-dialog {
+  border: 1px solid var(--home-hair-strong);
+  border-radius: 20px;
+  background: var(--home-menu);
+  box-shadow: var(--home-shadow);
+  color: var(--home-text);
+  font-family: var(--sans);
+}
+.library-shell .workspace-invite-dialog h2 {
+  margin: 0;
+  color: var(--home-text);
+  font-family: var(--sans);
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+.library-shell .workspace-invite-dialog .btn.ghost {
+  min-height: 44px;
+  color: var(--home-soft);
+  font-family: var(--sans);
+}
+.library-shell .workspace-invite-dialog .workspace-invite-name {
+  margin: 4px 0 0;
+  color: var(--home-text);
+  font-family: var(--sans);
+  font-size: 28px;
+  font-weight: 650;
+  line-height: 1.2;
+}
+.library-shell .workspace-invite-dialog .hint {
+  color: var(--home-soft);
+  font-size: 15px;
+  line-height: 1.45;
+}
+.library-shell .workspace-invite-dialog .btn.library-lime {
+  background: var(--home-lime);
+  border-color: var(--home-lime);
+  color: var(--home-on-lime);
+  font-weight: 700;
+}
+.library-shell .workspace-invite-dialog .btn.library-lime:hover:not(:disabled) {
+  background: var(--home-lime-deep);
+  border-color: var(--home-lime-deep);
+  color: var(--home-on-lime);
+}
+.library-shell .workspace-invite-dialog .btn.secondary {
+  background: transparent;
+  border-color: var(--home-hair-strong);
+  color: var(--home-text);
+}
+.library-shell .workspace-invite-dialog .btn.secondary:hover:not(:disabled) {
+  background: transparent;
+  border-color: var(--home-lime);
+  color: var(--home-lime);
+}
+.library-shell .workspace-invite-dialog .btn:focus-visible {
+  outline: 2px solid var(--home-lime);
+  outline-offset: 2px;
+}
+.library-shell .workspace-invite-dialog .error {
+  color: var(--home-danger);
+}
+.library-shell .workspace-invite-dialog .row-actions .error {
+  flex-basis: 100%;
+  margin: 0;
+}
 .library-status {
   grid-column: 1 / -1;
   margin: 0;
