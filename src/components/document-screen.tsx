@@ -7,6 +7,7 @@ import { DiagramChrome } from "@/components/document/diagram-chrome";
 import { DocumentBreadcrumb } from "@/components/document/document-breadcrumb";
 import { DocumentOwnerActions } from "@/components/document/document-owner-actions";
 import { NoteDocument } from "@/components/document/note-document";
+import { RequestEdit } from "@/components/document/request-edit";
 import { SaveState } from "@/components/document/save-state";
 import { ShareModal } from "@/components/share/share-modal";
 import type { Visibility } from "@/lib/access";
@@ -28,6 +29,7 @@ interface Properties {
   workspaceId: string | null;
   canEdit: boolean;
   isOwner: boolean;
+  signedIn: boolean;
   spaceName: string | null;
 }
 
@@ -44,6 +46,7 @@ export function DocumentScreen(props: Properties) {
     workspaceId,
     canEdit,
     isOwner,
+    signedIn,
     spaceName,
   } = props;
   const router = useRouter();
@@ -53,6 +56,7 @@ export function DocumentScreen(props: Properties) {
   const tools = (
     <div className="library-heading-actions topbar-tools">
       <SaveState canEdit={canEdit} id={id} />
+      <RequestEdit canEdit={canEdit} id={id} signedIn={signedIn} />
       {isOwner ? (
         <DocumentOwnerActions id={id} kind={type} onShare={() => setSharing(true)} />
       ) : (
