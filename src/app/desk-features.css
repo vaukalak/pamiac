@@ -395,6 +395,59 @@ input.title-input:focus {
 .note-editor .bn-block:hover:not(:has(.bn-block:hover)):not(:has(> .bn-block-content)) {
   background: var(--note-lasso-fill);
 }
+.note-block-link-host.is-empty {
+  display: none;
+}
+.note-sheet .text-pretty.note-block-link-notice,
+.library-shell .note-sheet .text-pretty.note-block-link-notice {
+  margin: 0 0 12px;
+  max-width: none;
+  color: var(--home-soft, var(--ink-soft));
+  font-size: 14px;
+  line-height: 1.4;
+}
+.note-editor .bn-block > .bn-block-content.note-block-link-target,
+.note-editor .bn-block.note-block-link-target:not(:has(> .bn-block-content)) {
+  border-radius: 8px;
+  background-color: rgba(180, 230, 40, 0.1);
+  box-shadow: inset 3px 0 0 var(--home-lime);
+}
+.note-editor .bn-block > .bn-block-content.note-block-link-arriving,
+.note-editor .bn-block.note-block-link-arriving:not(:has(> .bn-block-content)) {
+  background-color: rgba(180, 230, 40, 0.28);
+}
+.note-editor
+  .bn-block:hover:not(:has(.bn-block:hover)):not(:has(> .bn-block-content)).note-block-link-target {
+  border-radius: 8px;
+  background-color: rgba(180, 230, 40, 0.1);
+  box-shadow: inset 3px 0 0 var(--home-lime);
+}
+.note-editor
+  .bn-block:hover:not(:has(.bn-block:hover)):not(
+    :has(> .bn-block-content)
+  ).note-block-link-arriving {
+  background-color: rgba(180, 230, 40, 0.28);
+}
+.note-editor .bn-block > .bn-block-content.note-block-link-settle,
+.note-editor .bn-block.note-block-link-settle:not(:has(> .bn-block-content)) {
+  transition: background-color 400ms ease;
+}
+.note-editor .bn-block:hover:not(:has(.bn-block:hover)) > .bn-block-content.note-block-link-target {
+  border-radius: 8px;
+  background-color: rgba(180, 230, 40, 0.1);
+  box-shadow: inset 3px 0 0 var(--home-lime);
+}
+.note-editor
+  .bn-block:hover:not(:has(.bn-block:hover))
+  > .bn-block-content.note-block-link-arriving {
+  background-color: rgba(180, 230, 40, 0.28);
+}
+@media (prefers-reduced-motion: reduce) {
+  .note-editor .bn-block > .bn-block-content.note-block-link-settle,
+  .note-editor .bn-block.note-block-link-settle:not(:has(> .bn-block-content)) {
+    transition: none;
+  }
+}
 
 .uml-layout {
   display: grid;

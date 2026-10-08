@@ -3,6 +3,7 @@
 import { useCreateBlockNote } from "@blocknote/react";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
+import { NoteBlockLink } from "@/components/note/note-block-link";
 import { bindNoteSelectAll } from "@/components/note/note-select-all";
 import { NoteEditorFrame } from "@/components/note/note-editor-frame";
 import { NoteEditorSurface } from "@/components/note/note-editor-surface";
@@ -10,7 +11,6 @@ import { NoteLasso } from "@/components/note/note-lasso";
 import { bindNoteMarkdownPublisher } from "@/components/note/note-markdown-publisher";
 import { noteSchema } from "@/components/note/note-schema";
 import {
-  blockIdFromHash,
   blocksFromMarkedMarkdown,
   markedMarkdownFromBlocks,
   parseBlockMarkdown,
@@ -56,23 +56,6 @@ async function postNoteImage(documentId: string, file: File) {
     throw new Error(payload?.error || "Image upload failed");
   }
   return payload.url;
-}
-
-function scrollToBlock(id: string) {
-  let frames = 0;
-
-  const step = () => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ block: "center" });
-      return;
-    }
-
-    frames += 1;
-    if (frames < 10) window.requestAnimationFrame(step);
-  };
-
-  window.requestAnimationFrame(step);
 }
 
 function commentIds(blocks: readonly { id: string; children?: readonly { id: string }[] }[]) {
@@ -121,6 +104,7 @@ export function NoteEditor(props: Properties) {
   const commentsRef = useRef<NoteCommentMap>(readNoteComments(markdown || ""));
   const [comments, setComments] = useState<NoteCommentMap>(commentsRef.current);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [contentReady, setContentReady] = useState(false);
   const scheme = useResolvedScheme();
 
   function noteMarkdown() {
@@ -164,7 +148,6 @@ export function NoteEditor(props: Properties) {
   useEffect(() => {
     if (appliedVersion.current === version) return;
 
-    const first = appliedVersion.current === null;
     applying.current = true;
     const note = readNoteContent(markdown || "");
     const marked = note.blocks ? null : parseBlockMarkdown(note.markdown);
@@ -183,10 +166,7 @@ export function NoteEditor(props: Properties) {
     appliedVersion.current = version;
     ready.current = true;
     applying.current = false;
-
-    if (!first) return;
-    const blockId = blockIdFromHash(window.location.hash, editor.document);
-    if (blockId) scrollToBlock(blockId);
+    setContentReady(true);
   }, [editor, markdown, version]);
 
   function handleChange() {
@@ -241,6 +221,7 @@ export function NoteEditor(props: Properties) {
       }}
       workspaceId={workspaceId}
     >
+      <NoteBlockLink blocks={editor.document} ready={contentReady} />
       <NoteEditorSurface
         editable={editable}
         editor={editor}
