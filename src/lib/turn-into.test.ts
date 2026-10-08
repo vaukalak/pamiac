@@ -174,7 +174,8 @@ test("the note editor keeps theme wiring and mounts one custom side menu", () =>
   assert.match(copyLink, /copyToClipboard/);
   assert.doesNotMatch(noteEditor, /blocksToMarkdownLossy\(editor\.document\)/);
   assert.match(noteEditor, /setIdAttribute: true/);
-  assert.match(noteEditor, /scrollIntoView\(\{ block: "center" \}\)/);
+  assert.match(noteEditor, /<NoteBlockLink /);
+  assert.doesNotMatch(noteEditor, /scrollIntoView\(\{ block: "center" \}\)/);
   assert.match(dragHandle, /dict\.drag_handle\.colors_menuitem/);
   assert.match(dragHandle, /dict\.drag_handle\.header_row_menuitem/);
   assert.match(dragHandle, /dict\.drag_handle\.header_column_menuitem/);
