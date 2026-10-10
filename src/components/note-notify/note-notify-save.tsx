@@ -59,7 +59,7 @@ export function NoteNotifySave(props: Properties) {
 
   return (
     <Form.Context className="share-access-form" form={form} onSubmit={submit}>
-      <NoteNotifyModes documentId={documentId} />
+      <NoteNotifyModes />
       <NoteNotifyActions pending={save.isPending} onCancel={onClose} />
       {error ? <Alert>{error}</Alert> : null}
     </Form.Context>

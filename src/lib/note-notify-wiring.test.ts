@@ -86,10 +86,6 @@ describe("note notification wiring", () => {
       /if \(!verdict\) throw new HttpError\(502, "Could not test this condition"\)/,
     );
     assert.equal(
-      source("../components/note-notify/note-notify-test.tsx").includes("JEV_API_KEY"),
-      false,
-    );
-    assert.equal(
       source("../app/api/documents/[id]/notification/test/route.ts").includes("JEV_API_KEY"),
       false,
     );
@@ -103,7 +99,6 @@ describe("note notification wiring", () => {
   it("shows three choices, a condition field, and cancel or save without an email rule", () => {
     const draft = source("../components/note-notify/note-notify-draft.ts");
     const criteria = source("../components/note-notify/note-notify-criteria.tsx");
-    const test = source("../components/note-notify/note-notify-test.tsx");
     const actions = source("../components/note-notify/note-notify-actions.tsx");
     const save = source("../components/note-notify/note-notify-save.tsx");
     const bell = source("../components/note-notify/note-notify-bell.tsx");
@@ -117,7 +112,6 @@ describe("note notification wiring", () => {
     assert.equal(save.includes("Form.Select"), false);
     assert.match(criteria, /Describe the condition you want Pamiac to watch for\.\.\./);
     assert.match(criteria, /A blocker is added or the launch date changes/);
-    assert.match(test, /Test criteria/);
     assert.match(actions, /Cancel/);
     assert.match(actions, /"Save"/);
     assert.match(bell, /Notifications off/);
@@ -127,5 +121,25 @@ describe("note notification wiring", () => {
     assert.match(dialog, /max-width: 760px/);
     assert.match(css, /\.note-notify-layer/);
     assert.match(css, /max-width: 760px/);
+  });
+
+  it("drops the criteria test control and keeps the test route", () => {
+    const criteria = source("../components/note-notify/note-notify-criteria.tsx");
+    const option = source("../components/note-notify/note-notify-option.tsx");
+    const modes = source("../components/note-notify/note-notify-modes.tsx");
+    const css = source("../app/circuit-library.css");
+
+    assert.equal(criteria.includes("NoteNotifyTest"), false);
+    assert.equal(criteria.includes("Test criteria"), false);
+    assert.equal(criteria.includes("documentId"), false);
+    assert.equal(option.includes("documentId"), false);
+    assert.equal(modes.includes("documentId"), false);
+    assert.equal(css.includes("note-notify-test"), false);
+    assert.throws(() => source("../components/note-notify/note-notify-test.tsx"));
+    assert.throws(() => source("../components/note-notify/note-notify-test-result.tsx"));
+    assert.match(
+      source("../app/api/documents/[id]/notification/test/route.ts"),
+      /export async function POST/,
+    );
   });
 });
